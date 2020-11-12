@@ -14,6 +14,7 @@ CXXFLAGS :=  $(SDK_FLAGS) $(CXXFLAGS)
 # for timerisset()
 CFLAGS += -D_DARWIN_C_SOURCE
 CFLAGS += -g
+CFLAGS += -fno-objc-arc
 
 LDFLAGS += -L/usr/lib
 LDFLAGS += -L/usr/X11/lib
