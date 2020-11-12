@@ -1,0 +1,10 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    BrowserWindowController = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSWindowController;
+    };
+}

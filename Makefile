@@ -109,7 +109,7 @@ ifeq ($(TARGET),)
 endif
 
 # valid values for the TARGET
-VLDTARGET := riscos gtk2 gtk3 beos amiga amigaos3 framebuffer windows atari monkey
+VLDTARGET := riscos gtk2 gtk3 beos amiga amigaos3 framebuffer windows atari monkey gnustep
 
 # Check for valid TARGET
 ifeq ($(filter $(VLDTARGET),$(TARGET)),)
