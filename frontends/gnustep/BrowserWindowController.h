@@ -2,11 +2,14 @@
 
 #include <AppKit/AppKit.h>
 
-@interface BrowserWindowController : NSWindowController
+@interface BrowserWindowController : NSWindowController<NSTextFieldDelegate>
 {
   id backButton;
   id forwardButton;
-  id tabView;
+  id scrollView;
   id urlBar;
 }
+
+-(id)back: (id)sender;
+-(id)forward: (id)sender;
 @end

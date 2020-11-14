@@ -44,7 +44,7 @@ static struct gui_window *gnustep_window_create(struct browser_window *bw,
 	BrowserWindowController *controller = [[BrowserWindowController alloc] 
 		initWithWindowNibName: @"Browser"];
 	[controller loadWindow];
-	return controller;
+	return (struct gui_window*)controller;
 }
 
 // Destroy the specified window
@@ -149,7 +149,7 @@ static struct gui_download_table gnustep_download_table = {
 /*******************/
 
 // Return the MIME type of the specified file. Returned string can be inval on next req.
-static char *gnustep_fetch_filetype(const char *unix_path) {
+static const char *gnustep_fetch_filetype(const char *unix_path) {
 	static char filetype[100];
 	filetype[0] = '\0';
 	return filetype;
@@ -229,13 +229,13 @@ static bool gnustep_bitmap_test_opaque(void *bitmap) {
 }
 
 // Get the image buffer for the bitmap
-static char *gnustep_bitmap_get_buffer(void *bitmap) {
+static unsigned char *gnustep_bitmap_get_buffer(void *bitmap) {
 	NSLog(@"gnustep_bitmap_get_buffer");
 	return NULL;
 }
 
 // Get the number of bytes per row of the bitmap
-static size_t *gnustep_bitmap_get_rowstride(void *bitmap) {
+static size_t gnustep_bitmap_get_rowstride(void *bitmap) {
 	NSLog(@"gnustep_bitmap_get_rowstride");
 	return 0;
 }
@@ -370,7 +370,6 @@ static nserror set_defaults(struct nsoption_s *defaults)
 int main(int argc, char **argv) {
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
-       struct nsurl *url;
        nserror error;
        struct netsurf_table gnustep_table = {
                .misc = &gnustep_misc_table,

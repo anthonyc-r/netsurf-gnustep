@@ -39,6 +39,7 @@ VERSION_MIN := $(shell sed -n '/_minor/{s/.* = \([0-9]*\).*/\1/;p;}' desktop/ver
 S_FRONTEND := \
 	AppDelegate.m	\
 	BrowserWindowController.m	\
+	PlotView.m	\
 
 
 # This is the final source build list

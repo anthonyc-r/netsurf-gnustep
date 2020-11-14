@@ -2,13 +2,31 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     BrowserWindowController = {
 	Actions = (
+	    "back:",
+	    "forward:",
+	    "navigate:"
 	);
 	Outlets = (
 	    backButton,
 	    forwardButton,
-	    tabView,
-	    urlBar
+	    urlBar,
+	    scrollView
 	);
 	Super = NSWindowController;
+    };
+    FirstResponder = {
+	Actions = (
+	    "back:",
+	    "forward:",
+	    "navigate:"
+	);
+	Super = NSObject;
+    };
+    PlotterView = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSView;
     };
 }
