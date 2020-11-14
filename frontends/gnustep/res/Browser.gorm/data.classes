@@ -4,6 +4,10 @@
 	Actions = (
 	);
 	Outlets = (
+	    backButton,
+	    forwardButton,
+	    tabView,
+	    urlBar
 	);
 	Super = NSWindowController;
     };

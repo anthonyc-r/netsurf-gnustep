@@ -1,7 +1,10 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
+
 #import "AppDelegate.h"
+#import "BrowserWindowController.h"
+
 #import "netsurf/netsurf.h"
 #import "netsurf/misc.h"
 #import "netsurf/window.h"
@@ -11,11 +14,16 @@
 #import "netsurf/search.h"
 #import "netsurf/bitmap.h"
 #import "netsurf/layout.h"
+#import "netsurf/browser_window.h"
+#import "utils/nsoption.h"
+#import "utils/nsurl.h"
 
+/*******************/
 /****** Misc *******/
+/*******************/
 
 // Schedule a callback to be run after t ms, or removed if ngtv, func and param.
-static void nserror gnustep_misc_schedule(int t, void (*callback)(void *p), void *p) {
+static nserror gnustep_misc_schedule(int t, void (*callback)(void *p), void *p) {
 	NSLog(@"gnustep_misc_schedule");
 	return NSERROR_OK;
 }
@@ -24,14 +32,19 @@ static struct gui_misc_table gnustep_misc_table = {
 	.schedule = gnustep_misc_schedule
 };
 
+/********************/
 /****** Window ******/
+/********************/
 
 // Create and open a browser window
 static struct gui_window *gnustep_window_create(struct browser_window *bw,
 			struct gui_window *existing,
 			gui_window_create_flags flags) {
 	NSLog(@"gnustep_window_create");
-	return NULL;
+	BrowserWindowController *controller = [[BrowserWindowController alloc] 
+		initWithWindowNibName: @"Browser"];
+	[controller loadWindow];
+	return controller;
 }
 
 // Destroy the specified window
@@ -75,11 +88,13 @@ static struct gui_window_table gnustep_window_table = {
 	.invalidate = gnustep_window_invalidate,
 	.get_scroll = gnustep_window_get_scroll,
 	.set_scroll = gnustep_window_set_scroll,
-	.get_dimensions = gnustep_window_get_dimension,
+	.get_dimensions = gnustep_window_get_dimensions,
 	.event = gnustep_window_event
 };
 
+/***********************/
 /****** Clipboard ******/
+/***********************/
 
 // Put content of clipboard into buffer up to a maximum length
 static void gnustep_clipboard_get(char **buffer, size_t *length) {
@@ -96,7 +111,9 @@ static struct gui_clipboard_table gnustep_clipboard_table = {
 	.set = gnustep_clipboard_set
 };
 
+/**********************/
 /****** Download ******/
+/**********************/
 
 // Create and display a downloads window?
 static struct gui_download_window *gnustep_download_create(struct download_context *ctx, struct gui_window *parent) {
@@ -127,18 +144,24 @@ static struct gui_download_table gnustep_download_table = {
 	.done = gnustep_download_done
 };
 
+/*******************/
 /****** Fetch ******/ 
+/*******************/
 
 // Return the MIME type of the specified file. Returned string can be inval on next req.
 static char *gnustep_fetch_filetype(const char *unix_path) {
-	return "";
+	static char filetype[100];
+	filetype[0] = '\0';
+	return filetype;
 }
 
 static struct gui_fetch_table gnustep_fetch_table = {
-	NSLog(@"gnustep_fetch_table");
+	.filetype = gnustep_fetch_filetype
 };
 
+/********************/
 /****** Search ******/
+/********************/
 
 // Change displayed search status found/notfound?
 static void gnustep_search_status(bool found, void *p) {
@@ -165,7 +188,7 @@ static void gnustep_search_back_state(bool active, void *p) {
 	NSLog(@"gnustep_search_back_state");
 }
 
-static struct gui_search_table *gnustep_search_table = {
+static struct gui_search_table gnustep_search_table = {
 	.status = gnustep_search_status,
 	.hourglass = gnustep_search_hourglass,
 	.add_recent = gnustep_search_add_recent,
@@ -173,80 +196,82 @@ static struct gui_search_table *gnustep_search_table = {
 	.back_state = gnustep_search_back_state
 };
 
+/********************/
 /****** Bitmap ******/
+/********************/
 
 // Create a new bitmap of width height
 static void *gnustep_bitmap_create(int width, int height, unsigned int state) {
-	NSLog("gnustep_bitmap_create");
+	NSLog(@"gnustep_bitmap_create");
 	return NULL;
 }
 
 // Destroy the specified bitmap
 static void gnustep_bitmap_destroy(void *bitmap) {
-	NSLog("gnustep_bitmap_destroy");
+	NSLog(@"gnustep_bitmap_destroy");
 }
 
 // Set whether it's opaque or not
 static void gnustep_bitmap_set_opaque(void *bitmap, bool opaque) {
-	NSLog("gnustep_bitmap_set_opaque");
+	NSLog(@"gnustep_bitmap_set_opaque");
 }
 
 // Get whether it's opaque or not
 static bool gnustep_bitmap_get_opaque(void *bitmap) {
-	NSLog("gnustep_bitmap_get_opaque");
+	NSLog(@"gnustep_bitmap_get_opaque");
 	return 0;
 }
 
 // Test? whether it's opaque or not
 static bool gnustep_bitmap_test_opaque(void *bitmap) {
-	NSLog("gnustep_bitmap_test_opaque");
+	NSLog(@"gnustep_bitmap_test_opaque");
 	return 0;
 }
 
 // Get the image buffer for the bitmap
 static char *gnustep_bitmap_get_buffer(void *bitmap) {
-	NSLog("gnustep_bitmap_get_buffer");
+	NSLog(@"gnustep_bitmap_get_buffer");
 	return NULL;
 }
 
 // Get the number of bytes per row of the bitmap
 static size_t *gnustep_bitmap_get_rowstride(void *bitmap) {
-	NSLog("gnustep_bitmap_get_rowstride");
+	NSLog(@"gnustep_bitmap_get_rowstride");
 	return 0;
 }
 
 // Get its width in pixels
 static int gnustep_bitmap_get_width(void *bitmap) {
-	NSLog("gnustep_bitmap_get_width");
+	NSLog(@"gnustep_bitmap_get_width");
 	return 0;
 }
 
 // Get height in pixels
 static int gnustep_bitmap_get_height(void *bitmap) {
-	NSLog("gnustep_bitmap_get_height");
+	NSLog(@"gnustep_bitmap_get_height");
 	return 0;
 }
 
 // Get how many byytes pet pixel
 static size_t gnustep_bitmap_get_bpp(void *bitmap) {
-	NSLog("gnustep_bitmap_get_bpp");
+	NSLog(@"gnustep_bitmap_get_bpp");
 	return 0;
 }
 
 // Save the bitmap to the specified path
 static bool gnustep_bitmap_save(void *bitmap, const char *path, unsigned flags) {
-	NSLog("gnustep_bitmap_save");
+	NSLog(@"gnustep_bitmap_save");
 	return 0;
 }
 
 // Mark bitmap as modified
 static void gnustep_bitmap_modified(void *bitmap) {
-	NSLog("gnustep_bitmap_modified");
+	NSLog(@"gnustep_bitmap_modified");
 }
 
 // Render content into the specified bitmap
 static nserror gnustep_bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content) {
-	NSLog("gnustep_bitmap_render");
+	NSLog(@"gnustep_bitmap_render");
 	return NSERROR_OK;
 }
 
@@ -262,6 +287,7 @@ static struct gui_bitmap_table gnustep_bitmap_table = {
 	.get_height = gnustep_bitmap_get_height,
 	.get_bpp = gnustep_bitmap_get_bpp,
 	.save = gnustep_bitmap_save,
+	.modified = gnustep_bitmap_modified,
 	.render = gnustep_bitmap_render
 };
 
@@ -292,13 +318,51 @@ static struct gui_layout_table gnustep_layout_table = {
 	.width = gnustep_layout_width,
 	.position = gnustep_layout_position,
 	.split = gnustep_layout_split
-};	
+};
+
+/**
+ * Set option defaults for (taken from the cocoa frontend)
+ *
+ * @param defaults The option table to update.
+ * @return error status.
+ */
+static nserror set_defaults(struct nsoption_s *defaults)
+{
+        /* Set defaults for absent option strings */
+        const char * const ca_bundle = [[[NSBundle mainBundle] pathForResource: @"ca-bundle" ofType: @""] UTF8String];
+	if (ca_bundle == NULL) {
+		return NSERROR_BAD_URL;
+	}
+
+        nsoption_setnull_charp(ca_bundle, strdup(ca_bundle));
+        return NSERROR_OK;
+}
+
 
 @implementation AppDelegate 
 
 -(void)applicationDidFinishLaunching: (NSNotification*)aNotification {
 	NSLog(@"NSApp did finish launching..");
-	[NSBundle loadNibNamed: @"NetSurf" owner: self];
+	[NSBundle loadNibNamed: @"Menu" owner: NSApp];
+}
+
+-(void)didTapNewWindow: (id)sender {
+	NSLog(@"Will create a new window");
+	struct nsurl *url;
+	nserror error;
+        if (nsoption_charp(homepage_url) != NULL) {
+                error = nsurl_create(nsoption_charp(homepage_url), &url);
+	} else {
+                error = nsurl_create(NETSURF_HOMEPAGE, &url);
+	}
+
+	if (error == NSERROR_OK) {
+		error = browser_window_create(BW_CREATE_HISTORY, url, NULL, NULL, NULL);
+		nsurl_unref(url);
+	}
+	if (error != NSERROR_OK) {
+		NSLog(@"Failed to create window");
+	}
 }
 
 @end
@@ -306,28 +370,27 @@ static struct gui_layout_table gnustep_layout_table = {
 int main(int argc, char **argv) {
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
-        nsurl *url;
-        nserror error;
-        struct netsurf_table gnustep_table = {
-                .misc = gnustep_misc_table,
-                .window = gnustep_window_table,
-                .clipboard = gnustep_clipboard_table,
-                .download = gnustep_download_table,
-                .fetch = gnustep_fetch_table,
-                .search = gnustep_search_table,
-                .bitmap = gnustep_bitmap_table,
-                .layout = gnustep_layout_table,
-        };
-        error = netsurf_register(&gnustep_table);
-        if (error != NSERROR_OK) {
-                die("NetSurf operation table failed registration");
-        }
-        /* common initialisation */
-        error = netsurf_init(NULL);
-        if (error != NSERROR_OK) {
-                die("NetSurf failed to initialise");
-        }
-
+       struct nsurl *url;
+       nserror error;
+       struct netsurf_table gnustep_table = {
+               .misc = &gnustep_misc_table,
+               .window = &gnustep_window_table,
+               .clipboard = &gnustep_clipboard_table,
+               .download = &gnustep_download_table,
+               .fetch = &gnustep_fetch_table,
+               .search = &gnustep_search_table,
+               .bitmap = &gnustep_bitmap_table,
+               .layout = &gnustep_layout_table,
+       };
+       error = netsurf_register(&gnustep_table);
+	NSCAssert(error == NSERROR_OK, @"NetSurf operation table failed registration");
+	
+       /* common initialisation */
+	error = nsoption_init(set_defaults, &nsoptions, &nsoptions_default);
+       NSCAssert(error == NSERROR_OK, @"Options failed to initialise");
+       error = netsurf_init(NULL);
+       NSCAssert(error == NSERROR_OK, @"NetSurf failed to initialise");
+		
 	NSApplication *app = [NSApplication sharedApplication];
 	AppDelegate *delegate = [AppDelegate new];
 	[app setDelegate: delegate];

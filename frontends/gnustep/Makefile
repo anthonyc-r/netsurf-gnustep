@@ -38,6 +38,7 @@ VERSION_MIN := $(shell sed -n '/_minor/{s/.* = \([0-9]*\).*/\1/;p;}' desktop/ver
 # sources purely for the Mac OS X build
 S_FRONTEND := \
 	AppDelegate.m	\
+	BrowserWindowController.m	\
 
 
 # This is the final source build list
@@ -52,7 +53,9 @@ $(shell pwd)/content/fetchers/about.c: testament
 EXETARGET := NetSurf
 
 R_RESOURCES := \
-	NetSurf.gorm	\
+	ca-bundle	\
+	Menu.gorm	\
+	Browser.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 
