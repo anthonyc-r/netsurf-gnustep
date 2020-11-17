@@ -12,14 +12,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
-
-#import "NetsurfCallback.h"
-
-@interface AppDelegate: NSResponder<NSApplicationDelegate> {
-@private
+@interface NetsurfCallback: NSObject {
+	void (*callback)(void *p);
+	void *parameter;
 }
-
++(id)newOrScheduledWithFunctionPointer: (void (*)(void *p))aCallback parameter: (void*)p;
+-(void)scheduleAfterMillis: (int)ms;
+-(void)cancel;
 @end

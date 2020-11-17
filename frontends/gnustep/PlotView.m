@@ -1,11 +1,84 @@
+/**
+* Large chunks from the cocoa port
+*/
+
 #import <AppKit/AppKit.h>
 #import "PlotView.h"
 #import "utils/errors.h"
 #import "netsurf/plotters.h"
 #import "netsurf/browser_window.h"
 
+#define colour_red_component( c )		(((c) >>  0) & 0xFF)
+#define colour_green_component( c )		(((c) >>  8) & 0xFF)
+#define colour_blue_component( c )		(((c) >> 16) & 0xFF)
+#define colour_alpha_component( c )		(((c) >> 24) & 0xFF)
+#define colour_from_rgba( r, g, b, a)	((((colour)(r)) <<  0) | \
+	(((colour)(g)) <<  8) | \
+	(((colour)(b)) << 16) | \
+	(((colour)(a)) << 24))
+#define colour_from_rgb( r, g, b ) colour_from_rgba( (r), (g), (b), 0xFF )
+
+static NSRect cocoa_plot_clip_rect;
+
+static NSColor *cocoa_convert_colour( colour clr )
+{
+	return [NSColor colorWithDeviceRed: (float)colour_red_component( clr ) / 0xFF 
+		green: (float)colour_green_component( clr ) / 0xFF
+		blue: (float)colour_blue_component( clr ) / 0xFF 
+		alpha: 1.0];
+}
+
+
+static void cocoa_plot_path_set_stroke_pattern(NSBezierPath *path, const plot_style_t *pstyle) 
+{
+	static const CGFloat dashed_pattern[2] = { 5.0, 2.0 };
+	static const CGFloat dotted_pattern[2] = { 2.0, 2.0 };
+	
+	switch (pstyle->stroke_type) {
+		case PLOT_OP_TYPE_DASH: 
+			[path setLineDash: dashed_pattern count: 2 phase: 0];
+			break;
+			
+		case PLOT_OP_TYPE_DOT: 
+			[path setLineDash: dotted_pattern count: 2 phase: 0];
+			break;
+			
+		default:
+			// ignore
+			break;
+	}
+
+	[path setLineWidth: pstyle->stroke_width > 0 ? pstyle->stroke_width : 1];
+}
+
+void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle) 
+{
+	[NSGraphicsContext saveGraphicsState];
+	[NSBezierPath clipRect: cocoa_plot_clip_rect];
+	
+	if (pstyle->fill_type != PLOT_OP_TYPE_NONE) {
+		[cocoa_convert_colour( pstyle->fill_colour ) setFill];
+		[path fill];
+	}
+	
+	if (pstyle->stroke_type != PLOT_OP_TYPE_NONE) {
+		if (pstyle->stroke_width == 0 || pstyle->stroke_width % 2 != 0)
+			;
+			//cocoa_center_pixel( true, true );
+		
+		cocoa_plot_path_set_stroke_pattern(path,pstyle);
+		
+		[cocoa_convert_colour( pstyle->stroke_colour ) set];
+		
+		[path stroke];
+	}
+	
+	[NSGraphicsContext restoreGraphicsState];
+}
+
 static nserror plot_clip(const struct redraw_context *ctx, const struct rect *clip) {
 	NSLog(@"plot_clip");
+	[NSBezierPath clipRect: NSMakeRect(clip->x0, clip->y0, clip->x1, clip->y1)];
 	return NSERROR_OK;
 }
 
@@ -26,6 +99,10 @@ static nserror plot_line(const struct redraw_context *ctx, const plot_style_t *p
 
 static nserror plot_rectangle(const struct redraw_context *ctx, const plot_style_t *pstyle, const struct rect *rectangle) {
 	NSLog(@"plot_rectangle");
+	NSRect nsrect = NSMakeRect(rectangle->x0, rectangle->y0, rectangle->x1, 
+		rectangle->y1);
+	//cocoa_plot_render_path(path, pstyle);
+	
 	return NSERROR_OK;
 }
 
@@ -69,6 +146,7 @@ static const struct plotter_table gnustep_plotters = {
 }
 
 -(void)drawRect: (NSRect)rect {
+	NSLog(@"Drawing plotview");
 	struct redraw_context ctx = {
 		.interactive = true,
 		.background_images = true,

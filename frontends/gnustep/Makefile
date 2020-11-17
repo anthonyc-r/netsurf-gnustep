@@ -8,6 +8,7 @@ EXETARGET := nscocoa
 SDK_FLAGS := $(gnustep-config --objc-flags)
 CFLAGS :=  $(SDK_FLAGS) $(CFLAGS)
 CFLAGS += -I/usr/local/include/gnustep
+CFLAGS += -Ifrontends/gnustep
 LDFLAGS :=  $(LDFLAGS)
 CXXFLAGS :=  $(SDK_FLAGS) $(CXXFLAGS)
 
@@ -40,6 +41,15 @@ S_FRONTEND := \
 	AppDelegate.m	\
 	BrowserWindowController.m	\
 	PlotView.m	\
+	NetsurfCallback.m	\
+	tables/misc.m	\
+	tables/bitmap.m	\
+	tables/clipboard.m	\
+	tables/download.m	\
+	tables/fetch.m	\
+	tables/layout.m	\
+	tables/search.m	\
+	tables/window.m	\
 
 
 # This is the final source build list
