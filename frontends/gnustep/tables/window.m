@@ -23,6 +23,7 @@ static struct gui_window *gnustep_window_create(struct browser_window *bw,
 // Destroy the specified window
 static void gnustep_window_destroy(struct gui_window *gw) {
 	NSLog(@"gnustep_window_destroy");
+	[(id)gw release];
 }
 
 // Trigger a redraw of the specified area, or the entire window if null
@@ -52,6 +53,25 @@ static nserror gnustep_window_get_dimensions(struct gui_window *gw, int *width, 
 // Some kind of event happened
 static nserror gnustep_window_event(struct gui_window *gw, enum gui_window_event event) {
 	NSLog(@"gnustep_window_event");
+	switch (event) {
+	case GW_EVENT_UPDATE_EXTENT:
+		NSLog(@"GW_EVENT_UPDATE_EXTENT");
+		break;
+	case GW_EVENT_REMOVE_CARET:
+		NSLog(@"GW_EVENT_REMOVE_CARET");
+		break;
+	case GW_EVENT_NEW_CONTENT:
+		NSLog(@"GW_EVENT_NEW_CONTENT");
+		break;
+	case GW_EVENT_START_THROBBER:
+		NSLog(@"GW_EVENT_START_THROBBER");
+		break;
+	case GW_EVENT_STOP_THROBBER:
+		NSLog(@"GW_EVENT_STOP_THROBBER");
+		break;
+	default:
+		break;
+	}
 	return NSERROR_OK;
 }
 
