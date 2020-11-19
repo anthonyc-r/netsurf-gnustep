@@ -42,12 +42,7 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	struct nsurl *url;
 	nserror error;
 
-        if (nsoption_charp(homepage_url) != NULL) {
-                error = nsurl_create(nsoption_charp(homepage_url), &url);
-	} else {
-		NSLog(@"opening default page %s", NETSURF_HOMEPAGE);
-                error = nsurl_create(NETSURF_HOMEPAGE, &url);
-	}
+        error = nsurl_create("https://www.startpage.com", &url);
 
 	if (error == NSERROR_OK) {
 		error = browser_window_create(BW_CREATE_HISTORY, url, NULL, NULL, NULL);

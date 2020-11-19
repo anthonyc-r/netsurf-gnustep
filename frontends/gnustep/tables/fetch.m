@@ -9,6 +9,7 @@
 
 // Return the MIME type of the specified file. Returned string can be inval on next req.
 static const char *gnustep_fetch_filetype(const char *unix_path) {
+	NSLog(@"gnustep_fetch_filetype");
 	static char filetype[100];
 	filetype[0] = '\0';
 	return filetype;

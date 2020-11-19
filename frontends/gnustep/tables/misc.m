@@ -14,7 +14,7 @@ static nserror gnustep_misc_schedule(int t, void (*callback)(void *p), void *p) 
 	NSLog(@"gnustep_misc_schedule in %dms", t);
 	NetsurfCallback *nsCallback = [NetsurfCallback newOrScheduledWithFunctionPointer: 
 		callback parameter: p];
-	if (t < 1) {
+	if (t < 0) {
 		[nsCallback cancel];
 		return NSERROR_OK;
 	} else {

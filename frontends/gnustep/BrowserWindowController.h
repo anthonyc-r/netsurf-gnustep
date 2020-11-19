@@ -9,6 +9,7 @@ struct browser_window;
 	id scrollView;
 	id urlBar;
 	struct browser_window *browser;
+	id plotView;
 }
 
 -(id)initWithBrowser: (struct browser_window*)aBrowser;

@@ -70,6 +70,7 @@ static nserror gnustep_window_event(struct gui_window *gw, enum gui_window_event
 		NSLog(@"GW_EVENT_STOP_THROBBER");
 		break;
 	default:
+		NSLog(@"Unknown window event.");
 		break;
 	}
 	return NSERROR_OK;
