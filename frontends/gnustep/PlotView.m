@@ -1,6 +1,21 @@
-/**
-* Large chunks from the cocoa port
-*/
+/*
+ * Copyright 2011 Sven Weidauer <sven.weidauer@gmail.com>
+ * Copyright 2020 Anthony Cohn-Richardby <anthonyc@gmx.co.uk>
+ *
+ * This file is part of NetSurf, http://www.netsurf-browser.org/
+ *
+ * NetSurf is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * NetSurf is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #import <AppKit/AppKit.h>
 #import "PlotView.h"
@@ -78,7 +93,8 @@ void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle)
 
 static nserror plot_clip(const struct redraw_context *ctx, const struct rect *clip) {
 	NSLog(@"plot_clip");
-	[NSBezierPath clipRect: NSMakeRect(clip->x0, clip->y0, clip->x1, clip->y1)];
+	cocoa_plot_clip_rect = NSMakeRect(clip->x0, clip->y0, clip->x1, clip->y1);
+	//[NSBezierPath clipRect: ];
 	return NSERROR_OK;
 }
 
@@ -101,7 +117,8 @@ static nserror plot_rectangle(const struct redraw_context *ctx, const plot_style
 	NSLog(@"plot_rectangle");
 	NSRect nsrect = NSMakeRect(rectangle->x0, rectangle->y0, rectangle->x1, 
 		rectangle->y1);
-	//cocoa_plot_render_path(path, pstyle);
+	NSBezierPath *path = [NSBezierPath bezierPathWithRect: nsrect];
+	cocoa_plot_render_path(path, pstyle);
 	
 	return NSERROR_OK;
 }

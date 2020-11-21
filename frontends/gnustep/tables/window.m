@@ -3,6 +3,7 @@
 #import "BrowserWindowController.h"
 #import "netsurf/netsurf.h"
 #import "netsurf/window.h"
+#import "netsurf/types.h"
 
 /********************/
 /****** Window ******/
@@ -29,6 +30,12 @@ static void gnustep_window_destroy(struct gui_window *gw) {
 // Trigger a redraw of the specified area, or the entire window if null
 static nserror gnustep_window_invalidate(struct gui_window *gw, const struct rect *rect) {
 	NSLog(@"gnustep_window_invalidate");
+	if (rect == NULL) {
+		[(id)gw invalidateBrowser];
+	} else {
+		[(id)gw invalidateBrowser: NSMakeRect(rect->x0, rect->y0, 
+			rect->x1, rect->y1)];
+	}
 	return NSERROR_OK;
 }
 
@@ -46,7 +53,10 @@ static nserror gnustep_window_set_scroll(struct gui_window *gw, const struct rec
 
 // Put the dimensions of the specified window into width, height
 static nserror gnustep_window_get_dimensions(struct gui_window *gw, int *width, int *height) {
-	NSLog(@"gnustep_window_get_dimensions");
+	NSSize size = [(id)gw getBrowserSize];
+	*width = size.width;
+	*height = size.height;
+	NSLog(@"gnustep_window_get_dimensions (%d, %d)", *width, *height);
 	return NSERROR_OK;
 }
 

@@ -15,4 +15,9 @@ struct browser_window;
 -(id)initWithBrowser: (struct browser_window*)aBrowser;
 -(id)back: (id)sender;
 -(id)forward: (id)sender;
+
+// Browser control
+-(NSSize)getBrowserSize;
+-(void)invalidateBrowser;
+-(void)invalidateBrowser: (NSRect)rect;
 @end

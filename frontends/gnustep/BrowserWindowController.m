@@ -41,4 +41,14 @@
 	NSLog(@"Browser forward");
 }
 
+-(NSSize)getBrowserSize {
+	return [plotView frame].size;
+}
+-(void)invalidateBrowser {
+	[plotView setNeedsDisplay: YES];
+}
+-(void)invalidateBrowser: (NSRect)rect {
+	[plotView setNeedsDisplayInRect: rect];
+}
+
 @end

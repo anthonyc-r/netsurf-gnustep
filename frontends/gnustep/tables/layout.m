@@ -1,7 +1,9 @@
 #import <Cocoa/Cocoa.h>
+#import <string.h>
 
 #import "netsurf/netsurf.h"
 #import "netsurf/layout.h"
+
 
 
 /********************/
@@ -10,8 +12,14 @@
 
 // Put the measured width of the string into width
 static nserror gnustep_layout_width(const struct plot_font_style *fstyle, const char *string, size_t length, int *width) {
-	*width = 0;
-	NSLog(@"gnustep_layout_width");
+	NSLog(@"gnustep_layout_width of %s, len %d", string, length);
+	if (string == NULL || length == 0) {
+		*width = 0;
+		return NSERROR_OK;
+	}
+	// TODO: = impl properly.
+	*width = 5 * length;
+	return NSERROR_OK;
 }
 
 // Put the character offset and actual x coordinate of the character for which the x 
