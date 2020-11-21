@@ -10,10 +10,10 @@
 /*******************/
 
 // Schedule a callback to be run after t ms, or removed if ngtv, func and param.
-static nserror gnustep_misc_schedule(int t, void (*callback)(void *p), void *p) {
-	NSLog(@"gnustep_misc_schedule in %dms", t);
+static nserror gnustep_misc_schedule(int t, void (*callback)(void *p), void *cbctx) {
+	//NSLog(@"gnustep_misc_schedule in %dms", t);
 	NetsurfCallback *nsCallback = [NetsurfCallback newOrScheduledWithFunctionPointer: 
-		callback parameter: p];
+		callback parameter: cbctx];
 	if (t < 0) {
 		[nsCallback cancel];
 		return NSERROR_OK;

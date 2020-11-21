@@ -3,6 +3,7 @@
 #import "netsurf/netsurf.h"
 #import "utils/nsoption.h"
 #import "utils/nsurl.h"
+#import "utils/log.h"
 
 #import "AppDelegate.h"
 #import "BrowserWindowController.h"
@@ -58,6 +59,7 @@ static nserror set_defaults(struct nsoption_s *defaults)
 int main(int argc, char **argv) {
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
+	nslog_init(NULL, &argc, argv);
        nserror error;
        struct netsurf_table gnustep_table = {
                .misc = &gnustep_misc_table,

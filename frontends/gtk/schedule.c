@@ -105,6 +105,8 @@ nserror nsgtk_schedule(int t, void (*callback)(void *p), void *cbctx)
         _nsgtk_callback_t *cb;
         nserror res;
 
+	printf("nsgtk_schedule %p in %dms\n", callback, t);
+
         /* Kill any pending schedule of this kind. */
         res = schedule_remove(callback, cbctx);
 
