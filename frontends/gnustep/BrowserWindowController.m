@@ -16,7 +16,7 @@
 }
 
 -(void)awakeFromNib {
-	plotView = [[PlotView alloc] initWithFrame: NSMakeRect(0, 0, 1000, 1000)];
+	plotView = [[PlotView alloc] initWithFrame: NSMakeRect(0, 0, 800, 600)];
 	[plotView setBrowser: browser];
 	[[scrollView contentView] addSubview: plotView];
 	NSLog(@"Browser window loaded");
@@ -24,16 +24,7 @@
 
 -(id)back: (id)sender {
 	NSLog(@"Browser backward");
-	[plotView display];
-	bool ready = browser_window_redraw_ready(browser);
-	if (ready) {
-		NSLog(@"redraw ready!");
-	}
-	if (browser_window_has_content(browser)) {
-		NSLog(@"has content");
-	}
-	struct nsurl *url = browser_window_access_url(browser);
-	NSLog(@"url: '%s'", nsurl_access(url));
+
 	
 }
 
@@ -49,6 +40,29 @@
 }
 -(void)invalidateBrowser: (NSRect)rect {
 	[plotView setNeedsDisplayInRect: rect];
+}
+
+-(BOOL)control: (NSControl*)control textShouldEndEditing: (NSText*)fieldEditor {
+	NSLog(@"textShouldEndEditing");
+
+
+	nserror error;
+	struct nsurl *url;
+	NSString *string = [fieldEditor text];
+	error = nsurl_create([string cString], &url);
+	if (error != NSERROR_OK) {
+		NSLog(@"nsurl_create error");
+		return YES;
+	}
+	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL,
+		NULL);
+	if (error != NSERROR_OK) {
+		NSLog(@"browser_window_navigate error");
+	} else {
+		NSLog(@"OK");
+	}	
+	nsurl_unref(url);
+	return YES;
 }
 
 @end

@@ -47,9 +47,9 @@ S_FRONTEND := \
 	tables/clipboard.m	\
 	tables/download.m	\
 	tables/fetch.m	\
-	tables/layout.m	\
 	tables/search.m	\
 	tables/window.m	\
+	tables/font.m	\
 
 
 # This is the final source build list

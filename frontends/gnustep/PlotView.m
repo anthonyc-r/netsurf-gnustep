@@ -94,22 +94,56 @@ void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle)
 static nserror plot_clip(const struct redraw_context *ctx, const struct rect *clip) {
 	NSLog(@"plot_clip");
 	cocoa_plot_clip_rect = NSMakeRect(clip->x0, clip->y0, clip->x1, clip->y1);
-	//[NSBezierPath clipRect: ];
 	return NSERROR_OK;
 }
 
 static nserror plot_arc(const struct redraw_context *ctx, const plot_style_t *pstyle, int x, int y, int radius, int angle1, int angle2) {
 	NSLog(@"plot_arc");
+	NSBezierPath *path = [NSBezierPath bezierPath];
+	[path appendBezierPathWithArcWithCenter: NSMakePoint( x, y ) radius: radius
+		startAngle: angle1 endAngle: angle2 clockwise: NO];
+	
+	cocoa_plot_render_path(path, pstyle);
+	
 	return NSERROR_OK;
 }
 
 static nserror plot_disc(const struct redraw_context *ctx, const plot_style_t *pstyle, int x, int y, int radius) {
 	NSLog(@"plot_disc");
+	NSBezierPath *path  = [NSBezierPath bezierPathWithOvalInRect:
+		NSMakeRect( x - radius, y-radius, 2*radius, 2*radius )];
+	
+	cocoa_plot_render_path( path, pstyle );
+	
 	return NSERROR_OK;
 }
 
 static nserror plot_line(const struct redraw_context *ctx, const plot_style_t *pstyle, const struct rect *line) {
 	NSLog(@"plot_line");
+	int x0 = line->x0;
+	int y0 = line->y0;
+	int x1 = line->x1;
+	int y1 = line->y1;
+
+	if (pstyle->stroke_type == PLOT_OP_TYPE_NONE) return NSERROR_OK;
+
+	[NSGraphicsContext saveGraphicsState];
+	[NSBezierPath clipRect: cocoa_plot_clip_rect];
+	
+	NSBezierPath *path = [NSBezierPath bezierPath];
+	[path moveToPoint: NSMakePoint( x0, y0 )];
+	[path lineToPoint: NSMakePoint( x1, y1 )];
+	cocoa_plot_path_set_stroke_pattern( path, pstyle );
+	
+	const bool horizontal = y0 == y1;
+	const bool vertical = x0 == x1;
+	const bool oddThickness = pstyle->stroke_width != 0 ? (pstyle->stroke_width % 2) != 0 : true;
+	
+	[cocoa_convert_colour( pstyle->stroke_colour ) set];
+	[path stroke];
+	
+	[NSGraphicsContext restoreGraphicsState];
+	
 	return NSERROR_OK;
 }
 
@@ -125,6 +159,17 @@ static nserror plot_rectangle(const struct redraw_context *ctx, const plot_style
 
 static nserror plot_polygon(const struct redraw_context *ctx, const plot_style_t *pstyle, const int *p, unsigned int n) {
 	NSLog(@"plot_polygon");
+	if (n <= 1) return NSERROR_OK;
+	
+	NSBezierPath *path = [NSBezierPath bezierPath];
+	[path moveToPoint: NSMakePoint(p[0], p[1])];
+	for (unsigned int i = 1; i < n; i++) {
+		[path lineToPoint: NSMakePoint(p[2*i], p[2*i+1])];
+	}
+	[path closePath];
+	
+	cocoa_plot_render_path( path, pstyle );
+	
 	return NSERROR_OK;
 }
 
@@ -140,6 +185,13 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 
 static nserror plot_text(const struct redraw_context *ctx, const plot_font_style_t *fstyle, int x, int y, const char *text, size_t length) {
 	NSLog(@"plot_text");
+	[NSGraphicsContext saveGraphicsState];
+	[NSBezierPath clipRect: cocoa_plot_clip_rect];
+	
+	cocoa_draw_string(x, y, text, length, fstyle);
+	
+	[NSGraphicsContext restoreGraphicsState];
+	
 	return NSERROR_OK;
 }
 
