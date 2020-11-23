@@ -151,8 +151,9 @@ static inline CGFloat cocoa_layout_width( NSLayoutManager *layout )
 
 static inline CGFloat cocoa_layout_width_chars( NSLayoutManager *layout, size_t characters )
 {
-	NSUInteger glyphIndex = [layout glyphIndexForCharacterAtIndex: characters];
-	return [layout locationForGlyphAtIndex: glyphIndex].x;
+	NSRange range = [layout glyphRangeForCharacterRange: 
+		NSMakeRange((unsigned int)characters, 1) actualCharacterRange: NULL];
+	return [layout locationForGlyphAtIndex: range.location].x;
 }
 
 static inline NSUInteger cocoa_glyph_for_location( NSLayoutManager *layout, CGFloat x )

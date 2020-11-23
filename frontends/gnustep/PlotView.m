@@ -180,6 +180,28 @@ static nserror plot_path(const struct redraw_context *ctx, const plot_style_t *p
 
 static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitmap, int x, int y, int width, int height, colour bg, bitmap_flags_t flags) {
 	NSLog(@"plot_bitmap");
+	[NSGraphicsContext saveGraphicsState];
+	[NSBezierPath clipRect: cocoa_plot_clip_rect];
+	
+	const bool tileX = flags & BITMAPF_REPEAT_X;
+	const bool tileY = flags & BITMAPF_REPEAT_Y;
+
+	NSBitmapImageRep *bmp = (id)bitmap;
+
+	NSRect rect = NSMakeRect(x, y, width, height );
+	
+	NSImage *image = [[NSImage alloc] init];
+	[image addRepresentation: bmp];
+
+	NSAffineTransform *tf = [GSCurrentContext() GSCurrentCTM];
+	[tf scaleXBy: 0.85 yBy: 0.85];
+	[GSCurrentContext() GSSetCTM: tf];
+	//[GSCurrentContext() DPSscale: 1.0, y: -1.0];
+	[image drawRepresentation: bmp inRect: rect];
+	[image release];
+	
+	[NSGraphicsContext restoreGraphicsState];
+	
 	return NSERROR_OK;
 }
 
@@ -188,7 +210,7 @@ static nserror plot_text(const struct redraw_context *ctx, const plot_font_style
 	[NSGraphicsContext saveGraphicsState];
 	[NSBezierPath clipRect: cocoa_plot_clip_rect];
 	
-	cocoa_draw_string(x, y, text, length, fstyle);
+	//cocoa_draw_string(x, y, text, length, fstyle);
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
@@ -228,6 +250,10 @@ static const struct plotter_table gnustep_plotters = {
 		.y1 = NSMaxY(rect)
 	};
 	browser_window_redraw(browser, 0, 0, &clip, &ctx);
+}
+
+-(BOOL)isFlipped {
+	return YES;
 }
 
 @end
