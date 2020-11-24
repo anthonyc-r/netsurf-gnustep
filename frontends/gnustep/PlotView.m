@@ -240,6 +240,7 @@ static const struct plotter_table gnustep_plotters = {
 
 -(void)drawRect: (NSRect)rect {
 	NSLog(@"Drawing plotview");
+
 	struct redraw_context ctx = {
 		.interactive = true,
 		.background_images = true,

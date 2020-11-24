@@ -6,7 +6,6 @@ struct browser_window;
 @interface BrowserWindowController : NSWindowController<NSTextFieldDelegate> {
 	id backButton;
 	id forwardButton;
-	id scrollView;
 	id urlBar;
 	struct browser_window *browser;
 	id plotView;
@@ -18,6 +17,8 @@ struct browser_window;
 
 // Browser control
 -(NSSize)getBrowserSize;
+-(NSPoint)getBrowserScroll;
+-(void)setBrowserScroll: (NSPoint)scroll;
 -(void)invalidateBrowser;
 -(void)invalidateBrowser: (NSRect)rect;
 @end

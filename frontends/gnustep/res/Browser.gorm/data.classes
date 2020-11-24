@@ -10,7 +10,7 @@
 	    backButton,
 	    forwardButton,
 	    urlBar,
-	    scrollView
+	    plotView
 	);
 	Super = NSWindowController;
     };
@@ -22,7 +22,7 @@
 	);
 	Super = NSObject;
     };
-    PlotterView = {
+    PlotView = {
 	Actions = (
 	);
 	Outlets = (

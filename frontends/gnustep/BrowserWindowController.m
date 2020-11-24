@@ -16,9 +16,7 @@
 }
 
 -(void)awakeFromNib {
-	plotView = [[PlotView alloc] initWithFrame: NSMakeRect(0, 0, 800, 600)];
 	[plotView setBrowser: browser];
-	[[scrollView contentView] addSubview: plotView];
 	NSLog(@"Browser window loaded");
 }
 
@@ -34,6 +32,12 @@
 
 -(NSSize)getBrowserSize {
 	return [plotView frame].size;
+}
+-(NSPoint)getBrowserScroll {
+	return [plotView visibleRect].origin;
+}
+-(void)setBrowserScroll: (NSPoint)scroll {
+	[plotView scrollPoint: scroll];
 }
 -(void)invalidateBrowser {
 	[plotView setNeedsDisplay: YES];
