@@ -194,9 +194,11 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	[image addRepresentation: bmp];
 
 	NSAffineTransform *tf = [GSCurrentContext() GSCurrentCTM];
-	[tf scaleXBy: 0.85 yBy: 0.85];
+	int offset = (y + (height / 2));
+	[tf translateXBy: 0 yBy: offset];
+	[tf scaleXBy: 1.0 yBy: -1.0];
+	[tf translateXBy: 0 yBy: -offset];
 	[GSCurrentContext() GSSetCTM: tf];
-	//[GSCurrentContext() DPSscale: 1.0, y: -1.0];
 	[image drawRepresentation: bmp inRect: rect];
 	[image release];
 	

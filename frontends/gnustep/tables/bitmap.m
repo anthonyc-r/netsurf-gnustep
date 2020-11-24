@@ -142,7 +142,7 @@ static void gnustep_bitmap_modified(void *bitmap) {
 // Render content into the specified bitmap
 static nserror gnustep_bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content) {
 	NSLog(@"gnustep_bitmap_render");
-	return NSERROR_OK;
+	return NSERROR_NOT_IMPLEMENTED;
 }
 
 struct gui_bitmap_table gnustep_bitmap_table = {
