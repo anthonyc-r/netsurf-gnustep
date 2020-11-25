@@ -21,7 +21,7 @@
 
 #import "netsurf/plot_style.h"
 
-void cocoa_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, const struct plot_font_style *style );
+void cocoa_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, const plot_font_style_t *style );
 
 struct gui_layout_table *cocoa_layout_table;
 

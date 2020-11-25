@@ -45,7 +45,7 @@ NSColor *cocoa_convert_colour( colour clr )
 		alpha: 1.0];
 }
 
-static NSLayoutManager *cocoa_prepare_layout_manager( const char *string, size_t length, 
+NSLayoutManager *cocoa_prepare_layout_manager( const char *string, size_t length, 
 													 const plot_font_style_t *style );
 static CGFloat cocoa_layout_width( NSLayoutManager *layout );
 static CGFloat cocoa_layout_width_chars( NSLayoutManager *layout, size_t characters );
@@ -53,8 +53,8 @@ static NSUInteger cocoa_glyph_for_location( NSLayoutManager *layout, CGFloat x )
 static size_t cocoa_bytes_for_characters( const char *string, size_t characters );
 static NSDictionary *cocoa_font_attributes( const plot_font_style_t *style );
 
-static NSTextStorage *cocoa_text_storage = nil;
-static NSTextContainer *cocoa_text_container = nil;
+NSTextStorage *cocoa_text_storage = nil;
+NSTextContainer *cocoa_text_container = nil;
 
 static nserror cocoa_font_width(const plot_font_style_t *style,
                             const char *string, size_t length,
@@ -124,24 +124,6 @@ struct gui_layout_table gnustep_layout_table = {
 };
 
 
-#pragma mark -
-
-void cocoa_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, const plot_font_style_t *style )
-{
-	NSLayoutManager *layout = cocoa_prepare_layout_manager( bytes, length, style );
-	if (layout == nil) return;
-	
-	NSFont *font = [cocoa_text_storage attribute: NSFontAttributeName atIndex: 0 effectiveRange: NULL];
-
-	CGFloat baseline = [font defaultLineHeightForFont] * 3.0 / 4.0;
-	
-	NSRange glyphRange = [layout glyphRangeForTextContainer: cocoa_text_container];
-	[layout drawGlyphsForGlyphRange: glyphRange atPoint: NSMakePoint( x, y - baseline )];
-}
-
-
-#pragma mark -
-
 static inline CGFloat cocoa_layout_width( NSLayoutManager *layout )
 {
 	if (layout == nil) return 0.0;
@@ -180,7 +162,7 @@ static inline size_t cocoa_bytes_for_characters( const char *string, size_t char
 	return offset;
 }
 
-static NSLayoutManager *cocoa_prepare_layout_manager( const char *bytes, size_t length, 
+NSLayoutManager *cocoa_prepare_layout_manager( const char *bytes, size_t length, 
 													 const plot_font_style_t *style )
 {
 	if (NULL == bytes || 0 == length) return nil;
