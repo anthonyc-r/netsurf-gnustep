@@ -261,13 +261,30 @@ static const struct plotter_table gnustep_plotters = {
 
 @implementation PlotView
 
+-(id)init {
+	if ((self = [super init])) {
+		reallyDraw = NO;
+	}
+	return self;
+}
+
 -(void)setBrowser: (void*)aBrowser {
 	browser = aBrowser;
 }
 
+/*
+* inLiveRedraw doesn't seem to be implemented so this works around it by only triggering a 
+* redraw after a 0.01 sec delay. So if we're in the middle of a resize it won't do the
+* expensive draws.
+*/
 -(void)drawRect: (NSRect)rect {
 	NSLog(@"Drawing plotview");
-
+	if (!reallyDraw) {
+		[NSObject cancelPreviousPerformRequestsWithTarget: self];
+		[self performSelector: @selector(reallyTriggerDraw) withObject: nil
+			afterDelay: 0.01];
+		return;
+	}
 	struct redraw_context ctx = {
 		.interactive = true,
 		.background_images = true,
@@ -280,6 +297,12 @@ static const struct plotter_table gnustep_plotters = {
 		.y1 = NSMaxY(rect)
 	};
 	browser_window_redraw(browser, 0, 0, &clip, &ctx);
+}
+
+-(void)reallyTriggerDraw {
+	reallyDraw = YES;
+	[self display];
+	reallyDraw = NO;
 }
 
 -(BOOL)isFlipped {
