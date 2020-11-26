@@ -189,9 +189,6 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	NSBitmapImageRep *bmp = (id)bitmap;
 
 	NSRect rect = NSMakeRect(x, y, width, height );
-	
-	NSImage *image = [[NSImage alloc] init];
-	[image addRepresentation: bmp];
 
 	NSAffineTransform *tf = [GSCurrentContext() GSCurrentCTM];
 	int offset = (y + (height / 2));
@@ -199,17 +196,23 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	[tf scaleXBy: 1.0 yBy: -1.0];
 	[tf translateXBy: 0 yBy: -offset];
 	[GSCurrentContext() GSSetCTM: tf];
-	[image drawRepresentation: bmp inRect: rect];
-	[image release];
+	if ([bmp isOpaque]) {
+		NSLog(@"Opaque!!!!!");
+	} else {
+		NSLog(@"Not opaque!!!");
+	}	
+	if ([bmp hasAlpha]) {
+		NSLog(@"hasAlpha!!!!!");
+	} else {
+		NSLog(@"Not hasAlpha!!!");
+	}
+	[[NSColor redColor] set];
+	[GSCurrentContext() setCompositingOperation: NSCompositeSourceOver];
+	[bmp drawInRect: rect];
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
 	return NSERROR_OK;
-}
-
-void testfn(int x, int y, const char *txt, size_t len) {
-	NSLog(@"plot_text len %d", len);
-	NSLog(@"plot_text val %s", txt);
 }
 
 NSLayoutManager *cocoa_prepare_layout_manager( const char *bytes, size_t length, const plot_font_style_t *style );
@@ -218,14 +221,9 @@ extern NSTextStorage *cocoa_text_storage;
 extern NSTextContainer *cocoa_text_container;
 void test_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, const plot_font_style_t *style )
 { 
-	NSLog(@"pre prep layout");
-	NSLog(@"plot_text val %s", bytes);
 	NSLayoutManager *layout = cocoa_prepare_layout_manager( bytes, length, style );
 	if (layout == nil) return;
-	NSLog(@"post prep layout");
-
 	NSFont *font = [cocoa_text_storage attribute: NSFontAttributeName atIndex: 0 effectiveRange: NULL];
-	NSLog(@"post font");
 
 	CGFloat baseline = [font defaultLineHeightForFont] * 3.0 / 4.0;
 	
@@ -234,11 +232,8 @@ void test_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, c
 }
 
 static nserror plot_text(const struct redraw_context *ctx, const plot_font_style_t *fstyle, int x, int y, const char *text, size_t length) {
-	NSLog(@"plot_text len %d", length);
-	NSLog(@"plot_text val %s", text);
 	[NSGraphicsContext saveGraphicsState];
 	[NSBezierPath clipRect: cocoa_plot_clip_rect];
-	testfn(x, y, text, length);
 	test_draw_string(x, y, text, length, fstyle);
 	
 	[NSGraphicsContext restoreGraphicsState];
