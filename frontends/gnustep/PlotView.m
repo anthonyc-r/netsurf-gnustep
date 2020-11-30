@@ -22,6 +22,12 @@
 #import "utils/errors.h"
 #import "netsurf/plotters.h"
 #import "netsurf/browser_window.h"
+#import "netsurf/keypress.h"
+#import "utils/nsurl.h"
+#import "utils/utils.h"
+#import "netsurf/content.h"
+#import "utils/nsoption.h"
+#import "utils/messages.h"
 
 #define colour_red_component( c )		(((c) >>  0) & 0xFF)
 #define colour_green_component( c )		(((c) >>  8) & 0xFF)
@@ -303,5 +309,349 @@ static const struct plotter_table gnustep_plotters = {
 -(BOOL)isFlipped {
 	return YES;
 }
+
+- (void) popUpContextMenuForEvent: (NSEvent *) event
+{
+        NSMenu *popupMenu = [[NSMenu alloc] initWithTitle: @""];
+        NSPoint point = [self convertMousePoint: event];
+
+        struct browser_window_features cont;
+
+        browser_window_get_features(browser, point.x, point.y, &cont);
+
+        if (cont.object != NULL) {
+		id bitmap = (id)content_get_bitmap( cont.object );
+		const char *cstr = nsurl_access(hlcache_handle_get_url( cont.object ));
+               NSString *imageURL = [NSString stringWithUTF8String: cstr];
+
+               [[popupMenu addItemWithTitle: @"Open image in new tab"
+			action: @selector(cmOpenURLInTab:)
+			keyEquivalent: @""] setRepresentedObject: imageURL];
+
+               [[popupMenu addItemWithTitle: @"Open image in new window"
+			action: @selector(cmOpenURLInWindow:)
+			keyEquivalent: @""] setRepresentedObject: imageURL];
+               [[popupMenu addItemWithTitle: @"Save image as"
+			action: @selector(cmDownloadURL:)
+			keyEquivalent: @""] setRepresentedObject: imageURL];
+               [[popupMenu addItemWithTitle: @"Copy image"
+			action: @selector(cmImageCopy:)
+			keyEquivalent: @""] setRepresentedObject: bitmap];
+
+		[popupMenu addItem: [NSMenuItem separatorItem]];
+        }
+
+        if (cont.link != NULL) {
+                NSString *target = [NSString stringWithUTF8String: nsurl_access(cont.link)];
+
+		[[popupMenu addItemWithTitle: @"Open link in new tab"
+			action: @selector(cmOpenURLInTab:)
+			keyEquivalent: @""] setRepresentedObject: target];
+		[[popupMenu addItemWithTitle: @"Open link in new window"
+  			action: @selector(cmOpenURLInWindow:)
+			keyEquivalent: @""] setRepresentedObject: target];
+		[[popupMenu addItemWithTitle: @"Save link target"
+			action: @selector(cmDownloadURL:)
+			keyEquivalent: @""] setRepresentedObject: target];
+		[[popupMenu addItemWithTitle: @"Copy link"
+			action: @selector(cmLinkCopy:)
+			keyEquivalent: @""] setRepresentedObject: target];
+
+                [popupMenu addItem: [NSMenuItem separatorItem]];
+        }
+
+	[popupMenu addItemWithTitle: @"Back"
+		action: @selector(goBack:) keyEquivalent: @""];
+	[popupMenu addItemWithTitle: @"Reload"
+		action: @selector(reloadPage:) keyEquivalent: @""];
+	[popupMenu addItemWithTitle:  @"Forward"
+		action: @selector(goForward:) keyEquivalent: @""];
+	[popupMenu addItemWithTitle: @"View Source"
+		action: @selector(viewSource:) keyEquivalent: @""];
+
+	[NSMenu popUpContextMenu: popupMenu withEvent: event forView: self];
+
+	[popupMenu release];
+}
+
+static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
+	browser_mouse_state result = 0;
+	NSUInteger flags = [evt modifierFlags];
+
+	if (flags & NSShiftKeyMask) result |= BROWSER_MOUSE_MOD_1;
+	if (flags & NSAlternateKeyMask) result |= BROWSER_MOUSE_MOD_2;
+
+	return result;
+}
+
+- (NSPoint) convertMousePoint: (NSEvent *)event {
+	NSPoint loc1 = [event locationInWindow];
+	NSPoint location = [self convertPoint: [event locationInWindow] fromView: nil];
+	float bscale = browser_window_get_scale(browser);
+
+	location.x /= bscale;
+	location.y /= bscale;
+
+	return location;
+}
+
+- (void) mouseDown: (NSEvent *)theEvent {
+	if ([theEvent modifierFlags] & NSControlKeyMask) {
+		[self popUpContextMenuForEvent: theEvent];
+		return;
+	}
+	dragStart = [self convertMousePoint: theEvent];
+	browser_window_mouse_click(browser,
+		BROWSER_MOUSE_PRESS_1 | cocoa_mouse_flags_for_event( theEvent ),
+ 		dragStart.x,
+ 		dragStart.y );
+}
+
+- (void) rightMouseDown: (NSEvent *)theEvent {
+        [self popUpContextMenuForEvent: theEvent];
+}
+
+- (void) mouseUp: (NSEvent *)theEvent {
+        NSPoint location = [self convertMousePoint: theEvent];
+        browser_mouse_state modifierFlags = cocoa_mouse_flags_for_event(theEvent);
+        if (isDragging) {
+                isDragging = NO;
+                browser_window_mouse_track(browser, (browser_mouse_state)0, location.x, 
+			location.y);
+        } else {
+                modifierFlags |= BROWSER_MOUSE_CLICK_1;
+                if ([theEvent clickCount] == 2) modifierFlags |= BROWSER_MOUSE_DOUBLE_CLICK;
+                browser_window_mouse_click(browser, modifierFlags, location.x, location.y);
+        }
+}
+
+
+#define squared(x) ((x)*(x))
+#define MinDragDistance (5.0)
+
+- (void) mouseDragged: (NSEvent *)theEvent {
+       NSPoint location = [self convertMousePoint: theEvent];
+	browser_mouse_state modifierFlags = cocoa_mouse_flags_for_event( theEvent );
+
+	if (!isDragging) {
+		const CGFloat distance = squared( dragStart.x - location.x ) + 
+			squared( dragStart.y - location.y );
+
+                if (distance >= squared( MinDragDistance)) {
+                        isDragging = YES;
+                        browser_window_mouse_click(browser, BROWSER_MOUSE_DRAG_1 | 
+				modifierFlags, dragStart.x, dragStart.y);
+                }
+        }
+        if (isDragging) {
+                browser_window_mouse_track(browser, BROWSER_MOUSE_HOLDING_1 | 
+			BROWSER_MOUSE_DRAG_ON | modifierFlags, location.x, location.y );
+        }
+}
+
+- (void) mouseMoved: (NSEvent *)theEvent {
+	NSPoint location = [self convertMousePoint: theEvent];
+	browser_window_mouse_track(browser, cocoa_mouse_flags_for_event(theEvent),
+		location.x, location.y);
+}
+
+- (void) mouseExited: (NSEvent *) theEvent {
+        [[NSCursor arrowCursor] set];
+}
+
+- (void) keyDown: (NSEvent *)theEvent {
+	[self interpretKeyEvents: [NSArray arrayWithObject: theEvent]];
+}
+
+
+- (void) insertText: (id)string {
+        for (NSUInteger i = 0, length = [string length]; i < length; i++) {
+                unichar ch = [string characterAtIndex: i];
+                if (!browser_window_key_press( browser, ch )) {
+                        if (ch == ' ') [self scrollPageDown: self];
+                        break;
+                }
+        }
+        [self setMarkedText: nil];
+}
+
+- (void) moveLeft: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_LEFT )) return;
+        [self scrollHorizontal: -[[self enclosingScrollView] horizontalLineScroll]];
+}
+
+- (void) moveRight: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_RIGHT )) return;
+        [self scrollHorizontal: [[self enclosingScrollView] horizontalLineScroll]];
+}
+
+- (void) moveUp: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_UP )) return;
+        [self scrollVertical: -[[self enclosingScrollView] lineScroll]];
+}
+
+- (void) moveDown: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_DOWN )) return;
+        [self scrollVertical: [[self enclosingScrollView] lineScroll]];
+}
+
+- (void) deleteBackward: (id)sender {
+        if (!browser_window_key_press( browser, NS_KEY_DELETE_LEFT )) {
+                [NSApp sendAction: @selector( goBack: ) to: nil from: self];
+        }
+}
+
+- (void) deleteForward: (id)sender {
+        browser_window_key_press( browser, NS_KEY_DELETE_RIGHT );
+}
+
+- (void) cancelOperation: (id)sender {
+        browser_window_key_press( browser, NS_KEY_ESCAPE );
+}
+
+- (void) scrollPageUp: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_PAGE_UP )) {
+                return;
+        }
+        [self scrollVertical: -[self pageScroll]];
+}
+
+- (void) scrollPageDown: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_PAGE_DOWN )) {
+                return;
+        }
+        [self scrollVertical: [self pageScroll]];
+}
+
+- (void) insertTab: (id)sender {
+        browser_window_key_press( browser, NS_KEY_TAB );
+}
+
+- (void) insertBacktab: (id)sender {
+        browser_window_key_press( browser, NS_KEY_SHIFT_TAB );
+}
+
+- (void) moveToBeginningOfLine: (id)sender {
+        browser_window_key_press( browser, NS_KEY_LINE_START );
+}
+
+- (void) moveToEndOfLine: (id)sender {
+        browser_window_key_press( browser, NS_KEY_LINE_END );
+}
+
+- (void) moveToBeginningOfDocument: (id)sender {
+        if (browser_window_key_press( browser, NS_KEY_TEXT_START )) return;
+}
+
+- (void) scrollToBeginningOfDocument: (id) sender {
+        NSPoint origin = [self visibleRect].origin;
+        origin.y = 0;
+        [self scrollPoint: origin];
+}
+
+- (void) moveToEndOfDocument: (id)sender {
+        browser_window_key_press( browser, NS_KEY_TEXT_END );
+}
+
+- (void) scrollToEndOfDocument: (id) sender {
+        NSPoint origin = [self visibleRect].origin;
+        origin.y = NSHeight( [self frame] );
+        [self scrollPoint: origin];
+}
+
+- (void) insertNewline: (id)sender {
+        browser_window_key_press( browser, NS_KEY_NL );
+}
+
+- (void) selectAll: (id)sender {
+        browser_window_key_press( browser, NS_KEY_SELECT_ALL );
+}
+
+- (void) copy: (id)sender {
+        browser_window_key_press( browser, NS_KEY_COPY_SELECTION );
+}
+
+- (void) cut: (id)sender {
+        browser_window_key_press( browser, NS_KEY_CUT_SELECTION );
+}
+
+- (void) paste: (id)sender {
+        browser_window_key_press( browser, NS_KEY_PASTE );
+}
+
+- (BOOL) acceptsFirstResponder {
+        return YES;
+}
+
+- (void) adjustFrame {
+        if (browser)
+                browser_window_schedule_reformat(browser);
+}
+
+
+- (void) scrollHorizontal: (CGFloat) amount {
+        NSPoint currentPoint = [self visibleRect].origin;
+        currentPoint.x += amount;
+        [self scrollPoint: currentPoint];
+}
+
+- (void) scrollVertical: (CGFloat) amount {
+        NSPoint currentPoint = [self visibleRect].origin;
+        currentPoint.y += amount;
+        [self scrollPoint: currentPoint];
+}
+
+- (CGFloat) pageScroll {
+        return NSHeight( [[self superview] frame] ) - [[self enclosingScrollView] pageScroll];
+}
+
+
+- (void) cmOpenURLInTab: (id)sender {
+        struct nsurl *url;
+        nserror error;
+
+        error = nsurl_create([[sender representedObject] UTF8String], &url);
+        if (error == NSERROR_OK) {
+                error = browser_window_create(BW_CREATE_HISTORY | BW_CREATE_TAB |
+			BW_CREATE_CLONE, url, NULL, browser, NULL);
+                nsurl_unref(url);
+        }
+}
+
+- (void) cmOpenURLInWindow: (id)sender {
+        struct nsurl *url;
+        nserror error;
+
+        error = nsurl_create([[sender representedObject] UTF8String], &url);
+        if (error == NSERROR_OK) {
+                error = browser_window_create(BW_CREATE_HISTORY | BW_CREATE_CLONE,
+			url, NULL, browser, NULL);
+                nsurl_unref(url);
+        }
+}
+
+- (void) cmDownloadURL: (id)sender {
+        struct nsurl *url;
+
+        if (nsurl_create([[sender representedObject] UTF8String], &url) == NSERROR_OK) {
+                browser_window_navigate(browser, url, NULL, BW_NAVIGATE_DOWNLOAD, NULL,
+			NULL, NULL);
+                nsurl_unref(url);
+        }
+}
+
+- (void) cmImageCopy: (id)sender {
+        NSPasteboard *pb = [NSPasteboard generalPasteboard];
+        [pb declareTypes: [NSArray arrayWithObject: NSTIFFPboardType] owner: nil];
+        [pb setData: [[sender representedObject] TIFFRepresentation] 
+		forType: NSTIFFPboardType];
+}
+
+- (void) cmLinkCopy: (id)sender {
+        NSPasteboard *pb = [NSPasteboard generalPasteboard];
+        [pb declareTypes: [NSArray arrayWithObject: NSStringPboardType] owner: nil];
+        [pb setString: [sender representedObject] forType: NSStringPboardType];
+}
+
 
 @end
