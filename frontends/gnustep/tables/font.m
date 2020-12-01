@@ -75,10 +75,19 @@ static nserror cocoa_font_position(const plot_font_style_t *style,
                 return NSERROR_BAD_PARAMETER;
         }
 	
-	NSUInteger glyphIndex = cocoa_glyph_for_location( layout, x );
-	NSUInteger chars = [layout characterIndexForGlyphAtIndex: glyphIndex];
-	if (chars >= [cocoa_text_storage length]) *char_offset = length;
-	else *char_offset = cocoa_bytes_for_characters( string, chars );
+	NSUInteger glyphIndex = cocoa_glyph_for_location(layout, x);
+	NSLog(@"glyph index 1 %lu", glyphIndex);
+	if (glyphIndex >= length) {
+		*char_offset = length;
+	} else {
+		NSUInteger chars = [layout characterIndexForGlyphAtIndex: glyphIndex];
+		if (chars >= [cocoa_text_storage length]) {
+			*char_offset = length;
+		} else {
+			*char_offset = cocoa_bytes_for_characters( string, chars );
+		}
+	}
+	if (glyphIndex > 1) glyphIndex--;
 	*actual_x = NSMaxX([layout boundingRectForGlyphRange: NSMakeRange(glyphIndex, 1)
 		inTextContainer: cocoa_text_container]);
 	return NSERROR_OK;
