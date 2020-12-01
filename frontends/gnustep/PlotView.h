@@ -5,6 +5,7 @@
 	BOOL reallyDraw;
 	BOOL isDragging;
 	NSPoint dragStart;
+	NSSize lastSize;
 }
 
 -(void)setBrowser: (void*)aBrowser;

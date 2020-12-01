@@ -276,7 +276,9 @@ static const struct plotter_table gnustep_plotters = {
 */
 -(void)drawRect: (NSRect)rect {
 	NSLog(@"Drawing plotview");
-	if (!reallyDraw) {
+	BOOL sizeChanged = rect.size.width != lastSize.width || 
+		rect.size.width != lastSize.width;
+	if (!reallyDraw && sizeChanged) {
 		[NSObject cancelPreviousPerformRequestsWithTarget: self];
 		[self performSelector: @selector(reallyTriggerDraw) withObject: nil
 			afterDelay: 0.01];
@@ -294,6 +296,7 @@ static const struct plotter_table gnustep_plotters = {
 		.y1 = NSMaxY(rect)
 	};
 	browser_window_redraw(browser, 0, 0, &clip, &ctx);
+	lastSize = rect.size;
 }
 
 -(void)reallyTriggerDraw {
