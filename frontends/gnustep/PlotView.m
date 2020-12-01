@@ -72,7 +72,7 @@ static void cocoa_plot_path_set_stroke_pattern(NSBezierPath *path, const plot_st
 	[path setLineWidth: pstyle->stroke_width > 0 ? pstyle->stroke_width : 1];
 }
 
-void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle) 
+static void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle) 
 {
 	[NSGraphicsContext saveGraphicsState];
 	[NSBezierPath clipRect: cocoa_plot_clip_rect];
@@ -143,10 +143,6 @@ static nserror plot_line(const struct redraw_context *ctx, const plot_style_t *p
 	[path lineToPoint: NSMakePoint( x1, y1 )];
 	cocoa_plot_path_set_stroke_pattern( path, pstyle );
 	
-	const bool horizontal = y0 == y1;
-	const bool vertical = x0 == x1;
-	const bool oddThickness = pstyle->stroke_width != 0 ? (pstyle->stroke_width % 2) != 0 : true;
-	
 	[cocoa_convert_colour( pstyle->stroke_colour ) set];
 	[path stroke];
 	
@@ -192,9 +188,6 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	[NSGraphicsContext saveGraphicsState];
 	[NSBezierPath clipRect: cocoa_plot_clip_rect];
 	
-	const bool tileX = flags & BITMAPF_REPEAT_X;
-	const bool tileY = flags & BITMAPF_REPEAT_Y;
-
 	NSBitmapImageRep *bmp = (id)bitmap;
 
 	NSRect rect = NSMakeRect(x, y, width, height );
@@ -224,11 +217,11 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	return NSERROR_OK;
 }
 
-NSLayoutManager *cocoa_prepare_layout_manager( const char *bytes, size_t length, const plot_font_style_t *style );
+static NSLayoutManager *cocoa_prepare_layout_manager( const char *bytes, size_t length, const plot_font_style_t *style );
 
 extern NSTextStorage *cocoa_text_storage;
 extern NSTextContainer *cocoa_text_container;
-void test_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, const plot_font_style_t *style )
+static void gnustep_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, const plot_font_style_t *style )
 { 
 	NSLayoutManager *layout = cocoa_prepare_layout_manager( bytes, length, style );
 	if (layout == nil) return;
@@ -243,7 +236,7 @@ void test_draw_string( CGFloat x, CGFloat y, const char *bytes, size_t length, c
 static nserror plot_text(const struct redraw_context *ctx, const plot_font_style_t *fstyle, int x, int y, const char *text, size_t length) {
 	[NSGraphicsContext saveGraphicsState];
 	[NSBezierPath clipRect: cocoa_plot_clip_rect];
-	test_draw_string(x, y, text, length, fstyle);
+	gnustep_draw_string(x, y, text, length, fstyle);
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
@@ -388,7 +381,6 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 }
 
 - (NSPoint) convertMousePoint: (NSEvent *)event {
-	NSPoint loc1 = [event locationInWindow];
 	NSPoint location = [self convertPoint: [event locationInWindow] fromView: nil];
 	float bscale = browser_window_get_scale(browser);
 
@@ -475,7 +467,6 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
                         break;
                 }
         }
-        [self setMarkedText: nil];
 }
 
 - (void) moveLeft: (id)sender {
