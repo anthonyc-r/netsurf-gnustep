@@ -99,7 +99,9 @@ void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle)
 
 static nserror plot_clip(const struct redraw_context *ctx, const struct rect *clip) {
 	NSLog(@"plot_clip");
-	cocoa_plot_clip_rect = NSMakeRect(clip->x0, clip->y0, clip->x1, clip->y1);
+	cocoa_plot_clip_rect = NSMakeRect(clip->x0, clip->y0, 
+		clip->x1 - clip->x0, 
+		clip->y1 - clip->y0);
 	return NSERROR_OK;
 }
 
@@ -155,8 +157,9 @@ static nserror plot_line(const struct redraw_context *ctx, const plot_style_t *p
 
 static nserror plot_rectangle(const struct redraw_context *ctx, const plot_style_t *pstyle, const struct rect *rectangle) {
 	NSLog(@"plot_rectangle");
-	NSRect nsrect = NSMakeRect(rectangle->x0, rectangle->y0, rectangle->x1, 
-		rectangle->y1);
+	NSRect nsrect = NSMakeRect(rectangle->x0, rectangle->y0, 
+		rectangle->x1 - rectangle->x0, 
+		rectangle->y1 - rectangle->y0);
 	NSBezierPath *path = [NSBezierPath bezierPathWithRect: nsrect];
 	cocoa_plot_render_path(path, pstyle);
 	
