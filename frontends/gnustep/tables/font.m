@@ -77,11 +77,9 @@ static nserror cocoa_font_position(const plot_font_style_t *style,
 	
 	NSUInteger glyphIndex = cocoa_glyph_for_location( layout, x );
 	NSUInteger chars = [layout characterIndexForGlyphAtIndex: glyphIndex];
-	
 	if (chars >= [cocoa_text_storage length]) *char_offset = length;
 	else *char_offset = cocoa_bytes_for_characters( string, chars );
-	NSLog(@"glyph index: %d", glyphIndex);
-	*actual_x = NSMaxX([layout boundingRectForGlyphRange: NSMakeRange(glyphIndex - 1, 1)
+	*actual_x = NSMaxX([layout boundingRectForGlyphRange: NSMakeRange(glyphIndex, 1)
 		inTextContainer: cocoa_text_container]);
 	return NSERROR_OK;
 }
