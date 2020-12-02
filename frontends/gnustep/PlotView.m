@@ -276,7 +276,7 @@ static const struct plotter_table gnustep_plotters = {
 */
 -(void)drawRect: (NSRect)rect {
 	NSLog(@"Drawing plotview");
-	NSSize newSize = [self frame].size;
+	NSSize newSize = [[self superview] frame].size;
 	BOOL sizeChanged = newSize.width != lastSize.width || 
 		newSize.height != lastSize.height;
 	if (!reallyDraw && sizeChanged) {

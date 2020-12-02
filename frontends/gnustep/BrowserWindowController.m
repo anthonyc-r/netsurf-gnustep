@@ -45,7 +45,24 @@
 -(void)invalidateBrowser: (NSRect)rect {
 	[plotView setNeedsDisplayInRect: rect];
 }
+-(void)updateBrowserExtent {
+	int width, height;
+	browser_window_get_extents(browser, false, &width, &height);
+	NSLog(@"set frame to size: %d, %d", width, height);
+	[plotView setFrame: NSMakeRect(0, 0, width, height)];
+}
+-(void)removeCaret {
 
+}
+-(void)newContent {
+
+}
+-(void)startThrobber {
+
+}
+-(void)stopThrobber {
+
+}
 -(BOOL)control: (NSControl*)control textShouldEndEditing: (NSText*)fieldEditor {
 	NSLog(@"textShouldEndEditing");
 

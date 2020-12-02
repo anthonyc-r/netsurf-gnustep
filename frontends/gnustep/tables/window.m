@@ -70,18 +70,23 @@ static nserror gnustep_window_event(struct gui_window *gw, enum gui_window_event
 	switch (event) {
 	case GW_EVENT_UPDATE_EXTENT:
 		NSLog(@"GW_EVENT_UPDATE_EXTENT");
+		[(id)gw updateBrowserExtent];
 		break;
 	case GW_EVENT_REMOVE_CARET:
 		NSLog(@"GW_EVENT_REMOVE_CARET");
+		[(id)gw removeCaret];
 		break;
 	case GW_EVENT_NEW_CONTENT:
 		NSLog(@"GW_EVENT_NEW_CONTENT");
+		[(id)gw newContent];
 		break;
 	case GW_EVENT_START_THROBBER:
 		NSLog(@"GW_EVENT_START_THROBBER");
+		[(id)gw startThrobber];
 		break;
 	case GW_EVENT_STOP_THROBBER:
 		NSLog(@"GW_EVENT_STOP_THROBBER");
+		[(id)gw stopThrobber];
 		break;
 	default:
 		NSLog(@"Unknown window event.");

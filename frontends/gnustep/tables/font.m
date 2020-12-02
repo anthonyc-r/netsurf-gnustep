@@ -101,6 +101,11 @@ static nserror cocoa_font_split(const plot_font_style_t *style,
 	if (layout == nil) return NSERROR_BAD_PARAMETER;
 
 	NSUInteger glyphIndex = cocoa_glyph_for_location( layout, x );
+	if (glyphIndex >= length) {
+		*char_offset = length;
+		*actual_x = cocoa_layout_width( layout );
+		return NSERROR_OK;
+	}
 	NSUInteger chars = [layout characterIndexForGlyphAtIndex: glyphIndex];
 	
 	if (chars >= [cocoa_text_storage length]) {

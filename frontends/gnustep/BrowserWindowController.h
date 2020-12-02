@@ -21,4 +21,9 @@ struct browser_window;
 -(void)setBrowserScroll: (NSPoint)scroll;
 -(void)invalidateBrowser;
 -(void)invalidateBrowser: (NSRect)rect;
+-(void)updateBrowserExtent;
+-(void)removeCaret;
+-(void)newContent;
+-(void)startThrobber;
+-(void)stopThrobber;
 @end
