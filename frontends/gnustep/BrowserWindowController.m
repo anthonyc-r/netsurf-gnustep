@@ -31,7 +31,7 @@
 }
 
 -(NSSize)getBrowserSize {
-	return [plotView frame].size;
+	return [[plotView superview] frame].size;
 }
 -(NSPoint)getBrowserScroll {
 	return [plotView visibleRect].origin;
@@ -56,19 +56,21 @@
 }
 -(void)newContent {
 	NSLog(@"New content");
-	struct nsurl *url = browser_window_access_url(browser);
-	const char *urlcstr = nsurl_access(url);
-	[urlBar setStringValue: [NSString stringWithUTF8String: urlcstr]];
 	
 }
 -(void)startThrobber {
-	struct nsurl *url = browser_window_access_url(browser);
-	const char *urlcstr = nsurl_access(url);
-	[urlBar setStringValue: [NSString stringWithUTF8String: urlcstr]];
+
 }
 -(void)stopThrobber {
 
 }
+-(void)setNavigationUrl: (NSString*)urlString {
+	[urlBar setStringValue: urlString];
+}
+-(void)setTitle: (NSString*)title {
+	[[self window] setTitle: title];
+}
+
 -(BOOL)control: (NSControl*)control textShouldEndEditing: (NSText*)fieldEditor {
 	NSLog(@"textShouldEndEditing");
 

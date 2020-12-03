@@ -4,6 +4,7 @@
 #import "netsurf/netsurf.h"
 #import "netsurf/window.h"
 #import "netsurf/types.h"
+#import "utils/nsurl.h"
 
 /********************/
 /****** Window ******/
@@ -95,6 +96,16 @@ static nserror gnustep_window_event(struct gui_window *gw, enum gui_window_event
 	return NSERROR_OK;
 }
 
+static void gnustep_window_set_title(struct gui_window *gw, const char *title) {
+	[(id)gw setTitle: [NSString stringWithUTF8String: title]];
+}
+
+static nserror gnustep_window_set_url(struct gui_window *gw, struct nsurl *url) {
+	NSString *urlStr = [NSString stringWithUTF8String: nsurl_access(url)];
+	[(id)gw setNavigationUrl: urlStr];
+	return NSERROR_OK;
+}
+
 struct gui_window_table gnustep_window_table = {
 	.create = gnustep_window_create,
 	.destroy = gnustep_window_destroy,
@@ -102,5 +113,7 @@ struct gui_window_table gnustep_window_table = {
 	.get_scroll = gnustep_window_get_scroll,
 	.set_scroll = gnustep_window_set_scroll,
 	.get_dimensions = gnustep_window_get_dimensions,
-	.event = gnustep_window_event
+	.event = gnustep_window_event,
+	.set_title = gnustep_window_set_title,
+	.set_url = gnustep_window_set_url
 };

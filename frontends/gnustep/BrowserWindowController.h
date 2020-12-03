@@ -26,4 +26,6 @@ struct browser_window;
 -(void)newContent;
 -(void)startThrobber;
 -(void)stopThrobber;
+-(void)setNavigationUrl: (NSString*)urlString;
+-(void)setTitle: (NSString*)title;
 @end
