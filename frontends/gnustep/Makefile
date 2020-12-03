@@ -82,6 +82,7 @@ install-cocoa: NetSurf.app
 NetSurf.app: NetSurf $(FRONTEND_SOURCE_DIR)/Makefile $(R_RESOURCES) NetSurf.app/Resources/Info-gnustep.plist
 	$(VQ)echo Assembling NetSurf.app bundle
 	$(Q)cp NetSurf NetSurf.app/
+	$(Q)cp $(FRONTEND_RESOURCES_DIR)/NetSurf.icns NetSurf.app
 	$(Q)mkdir -p NetSurf.app/Resources
 	$(Q)cp -pLR $(R_RESOURCES) NetSurf.app/Resources
 
