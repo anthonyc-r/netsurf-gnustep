@@ -55,10 +55,16 @@
 
 }
 -(void)newContent {
-
+	NSLog(@"New content");
+	struct nsurl *url = browser_window_access_url(browser);
+	const char *urlcstr = nsurl_access(url);
+	[urlBar setStringValue: [NSString stringWithUTF8String: urlcstr]];
+	
 }
 -(void)startThrobber {
-
+	struct nsurl *url = browser_window_access_url(browser);
+	const char *urlcstr = nsurl_access(url);
+	[urlBar setStringValue: [NSString stringWithUTF8String: urlcstr]];
 }
 -(void)stopThrobber {
 

@@ -64,11 +64,20 @@ $(shell pwd)/content/fetchers/about.c: testament
 EXETARGET := NetSurf
 
 R_RESOURCES := \
-	ca-bundle	\
 	Menu.gorm	\
 	Browser.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
+
+E_RESOURCES := \
+	adblock.css	\
+	ca-bundle	\
+	default.css	\
+	internal.css	\
+	quirks.css	\
+
+E_RESOURCES := $(addprefix resources/,$(E_RESOURCES))
+	
 
 LANGUAGES := en
 LOCALIZED_RESOURCES := Localizable.strings
@@ -85,6 +94,7 @@ NetSurf.app: NetSurf $(FRONTEND_SOURCE_DIR)/Makefile $(R_RESOURCES) NetSurf.app/
 	$(Q)cp $(FRONTEND_RESOURCES_DIR)/NetSurf.icns NetSurf.app
 	$(Q)mkdir -p NetSurf.app/Resources
 	$(Q)cp -pLR $(R_RESOURCES) NetSurf.app/Resources
+	$(Q)cp -pLR $(E_RESOURCES) NetSurf.app/
 
 NetSurf.app/Resources/Info-gnustep.plist: $(FRONTEND_RESOURCES_DIR)/NetSurf-Info.plist $(FRONTEND_SOURCE_DIR)/Makefile
 	$(VQ)echo Generating Info.plist
