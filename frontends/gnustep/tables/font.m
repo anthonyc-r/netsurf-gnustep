@@ -230,7 +230,7 @@ static NSString * const cocoa_font_families[PLOT_FONT_FAMILY_COUNT] = {
 static inline NSFont *cocoa_font_get_nsfont( const plot_font_style_t *style )
 {
 	NSFont *font = [NSFont fontWithName: cocoa_font_families[style->family]
-								   size: (CGFloat)style->size / PLOT_STYLE_SCALE];
+		size: ((CGFloat)style->size * 1.25f) / PLOT_STYLE_SCALE];
 	
 	NSFontTraitMask traits = 0;
 	if (style->flags & FONTF_ITALIC || style->flags & FONTF_OBLIQUE) traits |= NSItalicFontMask;
