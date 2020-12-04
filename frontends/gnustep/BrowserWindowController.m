@@ -17,6 +17,7 @@
 
 -(void)awakeFromNib {
 	[plotView setBrowser: browser];
+	[scrollView setLineScroll: 25];
 	NSLog(@"Browser window loaded");
 }
 

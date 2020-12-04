@@ -10,7 +10,8 @@
 	    backButton,
 	    forwardButton,
 	    urlBar,
-	    plotView
+	    plotView,
+	    scrollView
 	);
 	Super = NSWindowController;
     };
