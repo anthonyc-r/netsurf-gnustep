@@ -5,6 +5,7 @@
 #import "PlotView.h"
 #import "netsurf/browser_window.h"
 #import "utils/nsurl.h"
+#import "desktop/browser_history.h"
 
 @implementation BrowserWindowController
 
@@ -21,14 +22,27 @@
 	NSLog(@"Browser window loaded");
 }
 
--(id)back: (id)sender {
+-(void)back: (id)sender {
 	NSLog(@"Browser backward");
-
-	
+	if (browser_window_history_back_available(browser)) {
+		browser_window_history_back(browser, false);
+	}
 }
 
--(id)forward: (id)sender {
+-(void)forward: (id)sender {
 	NSLog(@"Browser forward");
+	if (browser_window_history_forward_available(browser)) {
+		browser_window_history_forward(browser, false);
+	}
+}
+
+-(void)stopOrRefresh: (id)sender {
+	int tag = [sender tag];
+	if (tag == 1 && browser_window_stop_available(browser)) {
+		browser_window_stop(browser);
+	} else if (browser_window_reload_available(browser)) {
+		browser_window_reload(browser, true);
+	}
 }
 
 -(NSSize)getBrowserSize {
@@ -60,10 +74,12 @@
 	
 }
 -(void)startThrobber {
-
+	[refreshButton setTitle: @"Stop"];
+	[refreshButton setTag: 1];
 }
 -(void)stopThrobber {
-
+	[refreshButton setTitle: @"Refresh"];
+	[refreshButton setTag: 0];
 }
 -(void)setNavigationUrl: (NSString*)urlString {
 	[urlBar setStringValue: urlString];

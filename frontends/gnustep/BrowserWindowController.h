@@ -10,11 +10,13 @@ struct browser_window;
 	struct browser_window *browser;
 	id plotView;
 	id scrollView;
+	id refreshButton;
 }
 
 -(id)initWithBrowser: (struct browser_window*)aBrowser;
--(id)back: (id)sender;
--(id)forward: (id)sender;
+-(void)back: (id)sender;
+-(void)forward: (id)sender;
+-(void)stopOrRefresh: (id)sender;
 
 // Browser control
 -(NSSize)getBrowserSize;

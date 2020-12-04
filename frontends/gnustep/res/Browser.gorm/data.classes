@@ -4,14 +4,16 @@
 	Actions = (
 	    "back:",
 	    "forward:",
-	    "navigate:"
+	    "navigate:",
+	    "stopOrRefresh:"
 	);
 	Outlets = (
 	    backButton,
 	    forwardButton,
 	    urlBar,
 	    plotView,
-	    scrollView
+	    scrollView,
+	    refreshButton
 	);
 	Super = NSWindowController;
     };
@@ -19,7 +21,8 @@
 	Actions = (
 	    "back:",
 	    "forward:",
-	    "navigate:"
+	    "navigate:",
+	    "stopOrRefresh:"
 	);
 	Super = NSObject;
     };
