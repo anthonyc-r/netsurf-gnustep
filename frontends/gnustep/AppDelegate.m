@@ -36,6 +36,7 @@ static nserror set_defaults(struct nsoption_s *defaults)
 -(void)applicationDidFinishLaunching: (NSNotification*)aNotification {
 	NSLog(@"NSApp did finish launching..");
 	[NSBundle loadNibNamed: @"Menu" owner: NSApp];
+	[self didTapNewWindow: self];
 }
 
 -(void)didTapNewWindow: (id)sender {
