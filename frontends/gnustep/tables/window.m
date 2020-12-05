@@ -5,6 +5,7 @@
 #import "netsurf/window.h"
 #import "netsurf/types.h"
 #import "utils/nsurl.h"
+#import "netsurf/mouse.h"
 
 /********************/
 /****** Window ******/
@@ -106,6 +107,17 @@ static nserror gnustep_window_set_url(struct gui_window *gw, struct nsurl *url) 
 	return NSERROR_OK;
 }
 
+static void gnustep_window_set_pointer(struct gui_window *gw, enum gui_pointer_shape shape) {
+	[(id)gw setPointerToShape: shape];
+}
+
+static void gnustep_window_place_caret(struct gui_window *gw, int x, int y, int height, const struct rect *clip) {
+	[(id)gw placeCaretAt: NSMakePoint(x, y) withHeight: height clipTo: NSMakeRect(
+		clip->x0, clip->y0,
+		clip->x1 - clip->x0,
+		clip->y1 - clip->y0)];
+}
+
 struct gui_window_table gnustep_window_table = {
 	.create = gnustep_window_create,
 	.destroy = gnustep_window_destroy,
@@ -115,5 +127,7 @@ struct gui_window_table gnustep_window_table = {
 	.get_dimensions = gnustep_window_get_dimensions,
 	.event = gnustep_window_event,
 	.set_title = gnustep_window_set_title,
-	.set_url = gnustep_window_set_url
+	.set_url = gnustep_window_set_url,
+	.place_caret = gnustep_window_place_caret,
+	.set_pointer = gnustep_window_set_pointer
 };

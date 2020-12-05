@@ -1,6 +1,8 @@
 /* All Rights reserved */
 
-#include <AppKit/AppKit.h>
+#import <AppKit/AppKit.h>
+#import "netsurf/netsurf.h"
+#import "netsurf/mouse.h"
 
 struct browser_window;
 @interface BrowserWindowController : NSWindowController<NSTextFieldDelegate> {
@@ -11,6 +13,7 @@ struct browser_window;
 	id plotView;
 	id scrollView;
 	id refreshButton;
+	enum gui_pointer_shape lastRequestedPointer;
 }
 
 -(id)initWithBrowser: (struct browser_window*)aBrowser;
@@ -25,7 +28,9 @@ struct browser_window;
 -(void)invalidateBrowser;
 -(void)invalidateBrowser: (NSRect)rect;
 -(void)updateBrowserExtent;
+-(void)placeCaretAt: (NSPoint)point withHeight: (int)height clipTo: (NSRect)clip;
 -(void)removeCaret;
+-(void)setPointerToShape: (enum gui_pointer_shape)shape;
 -(void)newContent;
 -(void)startThrobber;
 -(void)stopThrobber;

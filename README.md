@@ -24,7 +24,7 @@ Works for basic use, can navigate to, and browse websites.
 
 What still needs doing
 ----------------
-Cursor, contextual mouse pointers, tabs, iframes(for some reason), 
+Cursor, tabs, iframes(for some reason), 
 downloads, bookmarks, history, other bits and bobs probably.
 
 

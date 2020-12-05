@@ -6,12 +6,14 @@
 #import "netsurf/browser_window.h"
 #import "utils/nsurl.h"
 #import "desktop/browser_history.h"
+#import "netsurf/mouse.h"
 
 @implementation BrowserWindowController
 
 -(id)initWithBrowser: (struct browser_window*)aBrowser {
 	if ((self = [super initWithWindowNibName: @"Browser"])) {
 		browser = aBrowser;
+		lastRequestedPointer = 999;
 	}
 	return self;
 }
@@ -86,8 +88,40 @@
 	NSLog(@"set frame to size: %d, %d", width, height);
 	[plotView setFrame: NSMakeRect(0, 0, width, height)];
 }
+-(void)placeCaretAt: (NSPoint)point withHeight: (int)height clipTo: (NSRect)clip {
+	
+}
 -(void)removeCaret {
 
+}
+-(void)setPointerToShape: (enum gui_pointer_shape)shape {
+	if (shape == lastRequestedPointer)
+		return;
+	lastRequestedPointer = shape;
+	NSLog(@"set pointer to shape %d", shape);
+	switch (shape) {
+	case GUI_POINTER_POINT: [[NSCursor pointingHandCursor] set]; break;
+	case GUI_POINTER_CARET: [[NSCursor IBeamCursor] set]; break;
+	case GUI_POINTER_MENU: [[NSCursor contextualMenuCursor] set]; break;
+	case GUI_POINTER_UP: [[NSCursor resizeUpCursor] set]; break;
+	case GUI_POINTER_DOWN: [[NSCursor resizeDownCursor] set]; break;
+	case GUI_POINTER_LEFT: [[NSCursor resizeLeftCursor] set]; break;
+	case GUI_POINTER_RIGHT: [[NSCursor resizeRightCursor] set]; break;
+	case GUI_POINTER_CROSS: [[NSCursor crosshairCursor] set]; break;
+	case GUI_POINTER_NO_DROP: [[NSCursor operationNotAllowedCursor] set]; break;
+	case GUI_POINTER_NOT_ALLOWED: [[NSCursor operationNotAllowedCursor] set]; break;
+	case GUI_POINTER_MOVE: [[NSCursor closedHandCursor] set]; break;
+	case GUI_POINTER_HELP:
+	case GUI_POINTER_PROGRESS:
+	case GUI_POINTER_WAIT: 
+	case GUI_POINTER_RU: 
+	case GUI_POINTER_LD:
+	case GUI_POINTER_LU:
+	case GUI_POINTER_RD:
+	case GUI_POINTER_DEFAULT:
+	default: 
+		[[NSCursor arrowCursor] set];
+	}
 }
 -(void)newContent {
 	NSLog(@"New content");
