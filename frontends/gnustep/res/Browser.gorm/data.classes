@@ -5,7 +5,8 @@
 	    "back:",
 	    "forward:",
 	    "navigate:",
-	    "stopOrRefresh:"
+	    "stopOrRefresh:",
+	    "enterUrl:"
 	);
 	Outlets = (
 	    backButton,
@@ -22,6 +23,7 @@
 	    "back:",
 	    "forward:",
 	    "navigate:",
+	    "enterUrl:",
 	    "stopOrRefresh:"
 	);
 	Super = NSObject;

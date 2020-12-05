@@ -45,6 +45,26 @@
 	}
 }
 
+-(void)enterUrl: (id)sender {
+	nserror error;
+	struct nsurl *url;
+
+	NSString *string = [sender stringValue];
+	error = nsurl_create([string cString], &url);
+	if (error != NSERROR_OK) {
+		NSLog(@"nsurl_create error");
+		return;
+	}
+	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL,
+		NULL);
+	if (error != NSERROR_OK) {
+		NSLog(@"browser_window_navigate error");
+	} else {
+		NSLog(@"OK");
+	}	
+	nsurl_unref(url);
+}
+
 -(NSSize)getBrowserSize {
 	return [[plotView superview] frame].size;
 }
@@ -86,29 +106,6 @@
 }
 -(void)setTitle: (NSString*)title {
 	[[self window] setTitle: title];
-}
-
--(BOOL)control: (NSControl*)control textShouldEndEditing: (NSText*)fieldEditor {
-	NSLog(@"textShouldEndEditing");
-
-
-	nserror error;
-	struct nsurl *url;
-	NSString *string = [fieldEditor text];
-	error = nsurl_create([string cString], &url);
-	if (error != NSERROR_OK) {
-		NSLog(@"nsurl_create error");
-		return YES;
-	}
-	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL,
-		NULL);
-	if (error != NSERROR_OK) {
-		NSLog(@"browser_window_navigate error");
-	} else {
-		NSLog(@"OK");
-	}	
-	nsurl_unref(url);
-	return YES;
 }
 
 @end
