@@ -68,8 +68,11 @@ static void cocoa_plot_path_set_stroke_pattern(NSBezierPath *path, const plot_st
 			// ignore
 			break;
 	}
-
-	[path setLineWidth: pstyle->stroke_width > 0 ? pstyle->stroke_width : 1];
+	if (pstyle->stroke_width == 0) {
+		[path setLineWidth: 1];
+	} else {
+		[path setLineWidth: plot_style_fixed_to_double(pstyle->stroke_width)];	
+	}
 }
 
 static void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyle) 
@@ -98,7 +101,6 @@ static void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyl
 }
 
 static nserror plot_clip(const struct redraw_context *ctx, const struct rect *clip) {
-	NSLog(@"plot_clip");
 	cocoa_plot_clip_rect = NSMakeRect(clip->x0, clip->y0, 
 		clip->x1 - clip->x0, 
 		clip->y1 - clip->y0);
