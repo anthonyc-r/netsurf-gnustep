@@ -420,6 +420,14 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 	return location;
 }
 
+-(void)scrollWheel: (NSEvent*)theEvent {
+	NSPoint loc = [self convertMousePoint: theEvent];
+	int scroll = (int)[theEvent deltaY] * -25; //todo:- linescroll
+	if (!browser_window_scroll_at_point(browser, loc.x, loc.y, 0, scroll)) {
+		[[self nextResponder] scrollWheel: theEvent];
+	}
+}
+
 - (void) mouseDown: (NSEvent *)theEvent {
 	if ([theEvent modifierFlags] & NSControlKeyMask) {
 		[self popUpContextMenuForEvent: theEvent];
