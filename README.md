@@ -24,8 +24,8 @@ Works for basic use, can navigate to, and browse websites.
 
 What still needs doing
 ----------------
-Cursor, tabs, iframes(for some reason), 
-downloads, bookmarks, history, other bits and bobs probably.
+Tabs, iframes(for some reason), downloads, bookmarks, history, 
+other bits and bobs probably.
 
 
 This has only been tested on OpenBSD macppc, there's probably issues with

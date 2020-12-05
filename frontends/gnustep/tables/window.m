@@ -112,10 +112,7 @@ static void gnustep_window_set_pointer(struct gui_window *gw, enum gui_pointer_s
 }
 
 static void gnustep_window_place_caret(struct gui_window *gw, int x, int y, int height, const struct rect *clip) {
-	[(id)gw placeCaretAt: NSMakePoint(x, y) withHeight: height clipTo: NSMakeRect(
-		clip->x0, clip->y0,
-		clip->x1 - clip->x0,
-		clip->y1 - clip->y0)];
+	[(id)gw placeCaretAtX: x y: y height: height];
 }
 
 struct gui_window_table gnustep_window_table = {

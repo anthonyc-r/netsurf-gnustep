@@ -88,11 +88,11 @@
 	NSLog(@"set frame to size: %d, %d", width, height);
 	[plotView setFrame: NSMakeRect(0, 0, width, height)];
 }
--(void)placeCaretAt: (NSPoint)point withHeight: (int)height clipTo: (NSRect)clip {
-	
+-(void)placeCaretAtX: (int)x y: (int)y height: (int)height {
+	[plotView placeCaretAtX: x y: y height: height];
 }
 -(void)removeCaret {
-
+	[plotView removeCaret];
 }
 -(void)setPointerToShape: (enum gui_pointer_shape)shape {
 	if (shape == lastRequestedPointer)

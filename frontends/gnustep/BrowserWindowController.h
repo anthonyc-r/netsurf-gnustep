@@ -13,6 +13,7 @@ struct browser_window;
 	id plotView;
 	id scrollView;
 	id refreshButton;
+	id caretView;
 	enum gui_pointer_shape lastRequestedPointer;
 }
 
@@ -28,7 +29,7 @@ struct browser_window;
 -(void)invalidateBrowser;
 -(void)invalidateBrowser: (NSRect)rect;
 -(void)updateBrowserExtent;
--(void)placeCaretAt: (NSPoint)point withHeight: (int)height clipTo: (NSRect)clip;
+-(void)placeCaretAtX: (int)x y: (int)y height: (int)height;
 -(void)removeCaret;
 -(void)setPointerToShape: (enum gui_pointer_shape)shape;
 -(void)newContent;

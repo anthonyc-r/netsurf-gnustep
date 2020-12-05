@@ -258,15 +258,35 @@ static const struct plotter_table gnustep_plotters = {
 
 @implementation PlotView
 
--(id)init {
-	if ((self = [super init])) {
-		reallyDraw = NO;
-	}
-	return self;
+-(void)awakeFromNib {
+	reallyDraw = NO;
+	caretRect = NSMakeRect(0, 0, 1, 0);
+}
+
+-(BOOL)resignFirstResponder {
+	[self removeCaret];
+	return [super resignFirstResponder];
 }
 
 -(void)setBrowser: (void*)aBrowser {
 	browser = aBrowser;
+}
+
+-(void)placeCaretAtX: (int)x y: (int)y height: (int)height {
+	if (showCaret) {
+		[self setNeedsDisplayInRect: caretRect];
+	}
+	showCaret = YES;
+	caretRect.origin.x = x;
+	caretRect.origin.y = y;
+	caretRect.size.height = height;
+	NSLog(@"Caret: %@", NSStringFromRect(caretRect));
+	[self setNeedsDisplayInRect: caretRect];
+}
+
+-(void)removeCaret {
+	showCaret = NO;
+	[self setNeedsDisplayInRect: caretRect];
 }
 
 /*
@@ -297,6 +317,10 @@ static const struct plotter_table gnustep_plotters = {
 		.y1 = NSMaxY(rect)
 	};
 	browser_window_redraw(browser, 0, 0, &clip, &ctx);
+	if (showCaret && NSIntersectsRect(rect, caretRect)) {
+		[[NSColor blackColor] set];
+		[NSBezierPath fillRect: caretRect];
+	}
 	lastSize = newSize;
 }
 
