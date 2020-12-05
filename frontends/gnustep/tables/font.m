@@ -219,18 +219,10 @@ NSLayoutManager *cocoa_prepare_layout_manager( const char *bytes, size_t length,
 	return layout;
 }
 
-static NSString * const cocoa_font_families[PLOT_FONT_FAMILY_COUNT] = {
-	[PLOT_FONT_FAMILY_SERIF] = @"Times",
-	[PLOT_FONT_FAMILY_SANS_SERIF] = @"Helvetica",
-	[PLOT_FONT_FAMILY_MONOSPACE] = @"Courier",
-	[PLOT_FONT_FAMILY_CURSIVE] = @"Apple Chancery",
-	[PLOT_FONT_FAMILY_FANTASY] = @"Marker Felt"
-};
-
 static inline NSFont *cocoa_font_get_nsfont( const plot_font_style_t *style )
 {
-	NSFont *font = [NSFont fontWithName: cocoa_font_families[style->family]
-		size: ((CGFloat)style->size * 1.25f) / PLOT_STYLE_SCALE];
+	NSFont *font = [NSFont systemFontOfSize: 
+		((CGFloat)style->size * 1.25f) / PLOT_STYLE_SCALE];
 	
 	NSFontTraitMask traits = 0;
 	if (style->flags & FONTF_ITALIC || style->flags & FONTF_OBLIQUE) traits |= NSItalicFontMask;
