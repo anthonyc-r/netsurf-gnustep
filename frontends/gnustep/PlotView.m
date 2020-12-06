@@ -86,10 +86,6 @@ static void cocoa_plot_render_path(NSBezierPath *path, const plot_style_t *pstyl
 	}
 	
 	if (pstyle->stroke_type != PLOT_OP_TYPE_NONE) {
-		if (pstyle->stroke_width == 0 || pstyle->stroke_width % 2 != 0)
-			;
-			//cocoa_center_pixel( true, true );
-		
 		cocoa_plot_path_set_stroke_pattern(path,pstyle);
 		
 		[cocoa_convert_colour( pstyle->stroke_colour ) set];
@@ -108,7 +104,6 @@ static nserror plot_clip(const struct redraw_context *ctx, const struct rect *cl
 }
 
 static nserror plot_arc(const struct redraw_context *ctx, const plot_style_t *pstyle, int x, int y, int radius, int angle1, int angle2) {
-	NSLog(@"plot_arc");
 	NSBezierPath *path = [NSBezierPath bezierPath];
 	[path appendBezierPathWithArcWithCenter: NSMakePoint( x, y ) radius: radius
 		startAngle: angle1 endAngle: angle2 clockwise: NO];
@@ -119,7 +114,6 @@ static nserror plot_arc(const struct redraw_context *ctx, const plot_style_t *ps
 }
 
 static nserror plot_disc(const struct redraw_context *ctx, const plot_style_t *pstyle, int x, int y, int radius) {
-	NSLog(@"plot_disc");
 	NSBezierPath *path  = [NSBezierPath bezierPathWithOvalInRect:
 		NSMakeRect( x - radius, y-radius, 2*radius, 2*radius )];
 	
@@ -129,7 +123,6 @@ static nserror plot_disc(const struct redraw_context *ctx, const plot_style_t *p
 }
 
 static nserror plot_line(const struct redraw_context *ctx, const plot_style_t *pstyle, const struct rect *line) {
-	NSLog(@"plot_line");
 	int x0 = line->x0;
 	int y0 = line->y0;
 	int x1 = line->x1;
@@ -154,7 +147,6 @@ static nserror plot_line(const struct redraw_context *ctx, const plot_style_t *p
 }
 
 static nserror plot_rectangle(const struct redraw_context *ctx, const plot_style_t *pstyle, const struct rect *rectangle) {
-	NSLog(@"plot_rectangle");
 	NSRect nsrect = NSMakeRect(rectangle->x0, rectangle->y0, 
 		rectangle->x1 - rectangle->x0, 
 		rectangle->y1 - rectangle->y0);
@@ -165,7 +157,6 @@ static nserror plot_rectangle(const struct redraw_context *ctx, const plot_style
 }
 
 static nserror plot_polygon(const struct redraw_context *ctx, const plot_style_t *pstyle, const int *p, unsigned int n) {
-	NSLog(@"plot_polygon");
 	if (n <= 1) return NSERROR_OK;
 	
 	NSBezierPath *path = [NSBezierPath bezierPath];
@@ -181,12 +172,10 @@ static nserror plot_polygon(const struct redraw_context *ctx, const plot_style_t
 }
 
 static nserror plot_path(const struct redraw_context *ctx, const plot_style_t *pstyle, const float *p, unsigned int n, const float transform[6]) {
-	NSLog(@"plot_path");
 	return NSERROR_OK;
 }
 
 static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitmap, int x, int y, int width, int height, colour bg, bitmap_flags_t flags) {
-	NSLog(@"plot_bitmap");
 	[NSGraphicsContext saveGraphicsState];
 	[NSBezierPath clipRect: cocoa_plot_clip_rect];
 	
@@ -200,16 +189,6 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	[tf scaleXBy: 1.0 yBy: -1.0];
 	[tf translateXBy: 0 yBy: -offset];
 	[GSCurrentContext() GSSetCTM: tf];
-	if ([bmp isOpaque]) {
-		NSLog(@"Opaque!!!!!");
-	} else {
-		NSLog(@"Not opaque!!!");
-	}	
-	if ([bmp hasAlpha]) {
-		NSLog(@"hasAlpha!!!!!");
-	} else {
-		NSLog(@"Not hasAlpha!!!");
-	}
 	[[NSColor redColor] set];
 	[GSCurrentContext() setCompositingOperation: NSCompositeSourceOver];
 	[bmp drawInRect: rect];
@@ -261,6 +240,7 @@ static const struct plotter_table gnustep_plotters = {
 @implementation PlotView
 
 -(void)awakeFromNib {
+	didResize = NO;
 	reallyDraw = NO;
 	caretRect = NSMakeRect(0, 0, 1, 0);
 }
@@ -282,7 +262,6 @@ static const struct plotter_table gnustep_plotters = {
 	caretRect.origin.x = x;
 	caretRect.origin.y = y;
 	caretRect.size.height = height;
-	NSLog(@"Caret: %@", NSStringFromRect(caretRect));
 	[self setNeedsDisplayInRect: caretRect];
 }
 
@@ -297,12 +276,12 @@ static const struct plotter_table gnustep_plotters = {
 * expensive draws.
 */
 -(void)drawRect: (NSRect)rect {
-	NSLog(@"Drawing plotview");
 	NSSize newSize = [[self superview] frame].size;
 	BOOL sizeChanged = newSize.width != lastSize.width || 
 		newSize.height != lastSize.height;
 	if (!reallyDraw && sizeChanged) {
 		[NSObject cancelPreviousPerformRequestsWithTarget: self];
+		didResize = YES;
 		[self performSelector: @selector(reallyTriggerDraw) withObject: nil
 			afterDelay: 0.01];
 		return;
@@ -318,6 +297,10 @@ static const struct plotter_table gnustep_plotters = {
 		.x1 = NSMaxX(rect),
 		.y1 = NSMaxY(rect)
 	};
+	if (didResize) {
+		browser_window_schedule_reformat(browser);
+		didResize = NO;
+	}
 	browser_window_redraw(browser, 0, 0, &clip, &ctx);
 	if (showCaret && NSIntersectsRect(rect, caretRect)) {
 		[[NSColor blackColor] set];

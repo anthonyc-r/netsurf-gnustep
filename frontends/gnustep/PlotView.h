@@ -8,6 +8,7 @@
 	NSSize lastSize;
 	BOOL showCaret;
 	NSRect caretRect;
+	BOOL didResize;
 }
 
 -(void)setBrowser: (void*)aBrowser;
