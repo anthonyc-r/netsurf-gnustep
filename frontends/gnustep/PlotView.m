@@ -368,15 +368,15 @@ static const struct plotter_table gnustep_plotters = {
 
                 [popupMenu addItem: [NSMenuItem separatorItem]];
         }
-
 	[popupMenu addItemWithTitle: @"Back"
-		action: @selector(goBack:) keyEquivalent: @""];
-	[popupMenu addItemWithTitle: @"Reload"
-		action: @selector(reloadPage:) keyEquivalent: @""];
+		action: @selector(back:) keyEquivalent: @""];
 	[popupMenu addItemWithTitle:  @"Forward"
-		action: @selector(goForward:) keyEquivalent: @""];
-	[popupMenu addItemWithTitle: @"View Source"
-		action: @selector(viewSource:) keyEquivalent: @""];
+		action: @selector(forward:) keyEquivalent: @""];
+	[popupMenu addItemWithTitle: @"Stop"
+		action: @selector(stopReloading:) keyEquivalent: @""];
+	[popupMenu addItemWithTitle: @"Reload"
+		action: @selector(reload:) keyEquivalent: @""];
+
 
 	[NSMenu popUpContextMenu: popupMenu withEvent: event forView: self];
 
@@ -618,6 +618,27 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 
 - (CGFloat) pageScroll {
         return NSHeight( [[self superview] frame] ) - [[self enclosingScrollView] pageScroll];
+}
+
+-(void)back: (id)sender {
+	if (browser_window_history_back_available(browser)) {
+		browser_window_history_back(browser, false);
+	}
+}
+-(void)forward: (id)sender {
+	if (browser_window_history_forward_available(browser)) {
+		browser_window_history_forward(browser, false);
+	}
+}
+-(void)stopReloading: (id)sender {
+	if (browser_window_stop_available(browser)) {
+		browser_window_stop(browser);
+	}
+}
+-(void)reload: (id)sender {
+	if (browser_window_reload_available(browser)) {
+		browser_window_reload(browser, true);
+	}
 }
 
 

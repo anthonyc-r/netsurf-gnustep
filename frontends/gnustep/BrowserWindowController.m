@@ -26,24 +26,20 @@
 
 -(void)back: (id)sender {
 	NSLog(@"Browser backward");
-	if (browser_window_history_back_available(browser)) {
-		browser_window_history_back(browser, false);
-	}
+	[plotView back: sender];
 }
 
 -(void)forward: (id)sender {
 	NSLog(@"Browser forward");
-	if (browser_window_history_forward_available(browser)) {
-		browser_window_history_forward(browser, false);
-	}
+	[plotView forward: sender];
 }
 
 -(void)stopOrRefresh: (id)sender {
 	int tag = [sender tag];
-	if (tag == 1 && browser_window_stop_available(browser)) {
-		browser_window_stop(browser);
-	} else if (browser_window_reload_available(browser)) {
-		browser_window_reload(browser, true);
+	if (tag == 1) {
+		[plotView stopReloading: sender];
+	} else {
+		[plotView reload: sender];
 	}
 }
 
