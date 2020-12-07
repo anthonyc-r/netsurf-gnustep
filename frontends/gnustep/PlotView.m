@@ -325,9 +325,7 @@ static const struct plotter_table gnustep_plotters = {
         NSPoint point = [self convertMousePoint: event];
 
         struct browser_window_features cont;
-
         browser_window_get_features(browser, point.x, point.y, &cont);
-
         if (cont.object != NULL) {
 		id bitmap = (id)content_get_bitmap( cont.object );
 		const char *cstr = nsurl_access(hlcache_handle_get_url( cont.object ));
@@ -346,11 +344,11 @@ static const struct plotter_table gnustep_plotters = {
                [[popupMenu addItemWithTitle: @"Copy image"
 			action: @selector(cmImageCopy:)
 			keyEquivalent: @""] setRepresentedObject: bitmap];
-
-		[popupMenu addItem: [NSMenuItem separatorItem]];
-        }
-
-        if (cont.link != NULL) {
+		if (cont.link != NULL) {
+			[popupMenu addItem: [NSMenuItem separatorItem]];
+		}
+        } 
+	if (cont.link != NULL) {
                 NSString *target = [NSString stringWithUTF8String: nsurl_access(cont.link)];
 
 		[[popupMenu addItemWithTitle: @"Open link in new tab"
@@ -365,19 +363,30 @@ static const struct plotter_table gnustep_plotters = {
 		[[popupMenu addItemWithTitle: @"Copy link"
 			action: @selector(cmLinkCopy:)
 			keyEquivalent: @""] setRepresentedObject: target];
-
-                [popupMenu addItem: [NSMenuItem separatorItem]];
-        }
-	[popupMenu addItemWithTitle: @"Back"
-		action: @selector(back:) keyEquivalent: @""];
-	[popupMenu addItemWithTitle:  @"Forward"
-		action: @selector(forward:) keyEquivalent: @""];
-	[popupMenu addItemWithTitle: @"Stop"
-		action: @selector(stopReloading:) keyEquivalent: @""];
-	[popupMenu addItemWithTitle: @"Reload"
-		action: @selector(reload:) keyEquivalent: @""];
-
-
+	}
+	if (cont.link == NULL && cont.object == NULL) {
+		[popupMenu addItemWithTitle: @"Back"
+			action: @selector(back:) keyEquivalent: @""];
+		[popupMenu addItemWithTitle:  @"Forward"
+			action: @selector(forward:) keyEquivalent: @""];
+		[popupMenu addItemWithTitle: @"Stop"
+			action: @selector(stopReloading:) keyEquivalent: @""];
+		[popupMenu addItemWithTitle: @"Reload"
+			action: @selector(reload:) keyEquivalent: @""];
+               [popupMenu addItem: [NSMenuItem separatorItem]];
+		char *selection = browser_window_get_selection(browser);
+		if (selection != NULL) {
+			if (cont.form_features == CTX_FORM_TEXT) {
+				[popupMenu addItemWithTitle: @"Cut"
+					action: @selector(cut:) keyEquivalent: @""];
+			}
+			[popupMenu addItemWithTitle: @"Copy"
+				action: @selector(copy:) keyEquivalent: @""];
+			free(selection);
+		}
+		[popupMenu addItemWithTitle: @"Paste"
+			action: @selector(paste:) keyEquivalent: @""];
+	}
 	[NSMenu popUpContextMenu: popupMenu withEvent: event forView: self];
 
 	[popupMenu release];
