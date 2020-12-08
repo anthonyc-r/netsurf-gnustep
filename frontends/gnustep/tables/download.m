@@ -8,9 +8,11 @@
 /****** Download ******/
 /**********************/
 
-// Create and display a downloads window?
+// This won't really return a window ref, but a ref to a download item.
 static struct gui_download_window *gnustep_download_create(struct download_context *ctx, struct gui_window *parent) {
 	NSLog(@"gnustep_download_create");
+	// Save dialog.. then...
+	[[NSApp delegate] showDownloadsWindow];
 	return NULL;
 }
 

@@ -40,6 +40,7 @@ VERSION_MIN := $(shell sed -n '/_minor/{s/.* = \([0-9]*\).*/\1/;p;}' desktop/ver
 S_FRONTEND := \
 	AppDelegate.m	\
 	BrowserWindowController.m	\
+	DownloadsWindowController.m	\
 	PlotView.m	\
 	NetsurfCallback.m	\
 	tables/misc.m	\
@@ -66,6 +67,7 @@ EXETARGET := NetSurf
 R_RESOURCES := \
 	Menu.gorm	\
 	Browser.gorm	\
+	Downloads.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 

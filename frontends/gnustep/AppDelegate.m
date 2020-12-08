@@ -10,6 +10,7 @@
 #import "tables/tables.h"
 #import "tables/misc.h"
 #import "netsurf/browser_window.h"
+#import "DownloadsWindowController.h"
 
 /**
  * Set option defaults for (taken from the cocoa frontend)
@@ -52,6 +53,16 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	}
 	if (error != NSERROR_OK) {
 		NSLog(@"Failed to create window");
+	}
+}
+
+-(void)showDownloadsWindow {
+	NSLog(@"Showing downloads ...");
+	if (!downloadsWindowController) {
+		downloadsWindowController = [[DownloadsWindowController alloc] init];
+		[downloadsWindowController loadWindow];
+	} else {
+		[downloadsWindowController showWindow: self];
 	}
 }
 

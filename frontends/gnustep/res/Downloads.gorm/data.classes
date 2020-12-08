@@ -1,0 +1,11 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    DownloadsWindowController = {
+	Actions = (
+	);
+	Outlets = (
+	    tableView
+	);
+	Super = NSWindowController;
+    };
+}
