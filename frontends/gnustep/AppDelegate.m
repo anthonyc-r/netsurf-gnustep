@@ -66,6 +66,13 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	}
 }
 
+-(NSURL*)requestDownloadDestination {
+	NSSavePanel *savePanel = [NSOpenPanel savePanel];
+	[savePanel setDirectory: NSHomeDirectory()];
+	[savePanel runModal];
+	return [savePanel URL];
+}
+
 @end
 
 int main(int argc, char **argv) {

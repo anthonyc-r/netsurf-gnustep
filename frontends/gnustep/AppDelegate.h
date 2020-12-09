@@ -24,5 +24,6 @@ id downloadsWindowController;
 }
 
 -(void)showDownloadsWindow;
+-(NSURL*)requestDownloadDestination;
 
 @end

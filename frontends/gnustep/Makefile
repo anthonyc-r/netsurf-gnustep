@@ -41,6 +41,7 @@ S_FRONTEND := \
 	AppDelegate.m	\
 	BrowserWindowController.m	\
 	DownloadsWindowController.m	\
+	DownloadManager.m	\
 	PlotView.m	\
 	NetsurfCallback.m	\
 	tables/misc.m	\
