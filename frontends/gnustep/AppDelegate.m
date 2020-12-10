@@ -56,7 +56,7 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	}
 }
 
--(void)showDownloadsWindow {
+-(void)showDownloadsWindow: (id)sender {
 	NSLog(@"Showing downloads ...");
 	if (!downloadsWindowController) {
 		downloadsWindowController = [[DownloadsWindowController alloc] init];

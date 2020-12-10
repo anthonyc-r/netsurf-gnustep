@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
+#import "DownloadManager.h"
 
-@interface DownloadsWindowController: NSWindowController {
+@interface DownloadsWindowController: NSWindowController<NSTableViewDataSource, DownloadManagerDelegate> {
 	id tableView;
 }
 

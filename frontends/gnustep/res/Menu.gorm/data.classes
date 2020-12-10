@@ -2,7 +2,8 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     AppDelegate = {
 	Actions = (
-	    "didTapNewWindow:"
+	    "didTapNewWindow:",
+	    "showDownloadsWindow:"
 	);
 	Outlets = (
 	);
@@ -10,7 +11,8 @@
     };
     FirstResponder = {
 	Actions = (
-	    "didTapNewWindow:"
+	    "didTapNewWindow:",
+	    "showDownloadsWindow:"
 	);
 	Super = NSObject;
     };

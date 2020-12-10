@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 id downloadsWindowController;
 }
 
--(void)showDownloadsWindow;
+-(void)showDownloadsWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
 
 @end

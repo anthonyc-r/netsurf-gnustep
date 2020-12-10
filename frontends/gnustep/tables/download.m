@@ -17,7 +17,7 @@ static struct gui_download_window *gnustep_download_create(struct download_conte
 	NSInteger dataSize = download_context_get_total_length(ctx);
 	DownloadItem *download = [[DownloadManager defaultDownloadManager]
 		createDownloadForDestination: url withSizeInBytes: dataSize];
-	[[NSApp delegate] showDownloadsWindow];
+	[[NSApp delegate] showDownloadsWindow: nil];
 	return (struct gui_download_window*)download;
 }
 

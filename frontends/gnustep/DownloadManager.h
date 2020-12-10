@@ -1,6 +1,11 @@
 #import <Cocoa/Cocoa.h>
 
 @class DownloadManager;
+@class DownloadItem;
+
+@protocol DownloadManagerDelegate
+-(void)downloadManagerDidAddDownload: (DownloadManager*)aDownloadManager;
+@end
 
 @interface DownloadItem: NSObject {
 	BOOL completed;
@@ -18,13 +23,15 @@
 -(BOOL)isComplete;
 -(void)failWithMessage: (NSString*)message;
 -(NSURL*)destination;
--(double)percentCompletion;
+-(double)completionProgress;
 @end
 
 @interface DownloadManager: NSObject {
 	NSMutableArray *downloads;
+	id<DownloadManagerDelegate> delegate;
 }
 +(DownloadManager*)defaultDownloadManager;
 -(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSInteger)size;
 -(NSArray*)downloads;
+-(void)setDelegate: (id<DownloadManagerDelegate>)aDelegate;
 @end

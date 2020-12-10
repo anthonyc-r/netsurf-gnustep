@@ -65,7 +65,7 @@
 	return destination;
 }
 
--(double)percentCompletion {
+-(double)completionProgress {
 	if (written == size) {
 		return 1.0;
 	} else {
@@ -88,6 +88,7 @@
 -(id)init {
 	if (self = [super init]) {
 		downloads = [[NSMutableArray alloc] init];
+		delegate = nil;
 	}
 	return self;
 }
@@ -102,11 +103,16 @@
 		size: size];
 	[downloads addObject: item];	
 	[item release];
+	[delegate downloadManagerDidAddDownload: self];
 	return item;
 }
 
 -(NSArray*)downloads {
 	return downloads;
+}
+
+-(void)setDelegate: (id<DownloadManagerDelegate>)aDelegate {
+	delegate = aDelegate;
 }
 
 @end
