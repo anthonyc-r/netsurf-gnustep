@@ -26,7 +26,7 @@ static nserror gnustep_download_data(struct gui_download_window *dw,	const char 
 	NSLog(@"gnustep_download_data");
 
 	BOOL success = [(id)dw appendToDownload: [NSData dataWithBytesNoCopy: (void*)data
-		length: size]];
+		length: size freeWhenDone: NO]];
 	if (success) {
 		return NSERROR_OK;
 	} else {
