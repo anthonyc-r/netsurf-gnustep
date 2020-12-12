@@ -8,4 +8,11 @@
 	);
 	Super = NSWindowController;
     };
+    ProgressBarCell = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSCell;
+    };
 }

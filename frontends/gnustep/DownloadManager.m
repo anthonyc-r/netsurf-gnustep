@@ -3,12 +3,14 @@
 
 @implementation DownloadItem
 
--(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize {
+-(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSInteger)anIndex {
 	if (self = [super init]) {
 		error = nil;
+		index = anIndex;
 		written = 0;
 		completed = NO;
 		size = aSize;
+		startDate = [[NSDate date] retain];
 		[aDestination retain];
 		destination = aDestination;
 		manager = aManager;
@@ -24,6 +26,7 @@
 	[destination release];
 	[outputStream close];
 	[outputStream release];
+	[startDate release];
 	if (error) {
 		[error release];
 	}
@@ -34,6 +37,7 @@
 	NSInteger len = [data length];
 	NSInteger writtenNow = [outputStream write: [data bytes] maxLength: len];
 	written += writtenNow;
+	[[manager delegate] downloadManager: manager didUpdateItem: self];
 	return writtenNow == len;
 }
 
@@ -54,6 +58,7 @@
 -(void)complete {
 	[outputStream close];
 	completed = YES;
+	[[manager delegate] downloadManager: manager didUpdateItem: self];
 }
 
 -(BOOL)isComplete {
@@ -65,12 +70,53 @@
 	return destination;
 }
 
+-(NSString*)detailsText {
+	return [[destination pathComponents] lastObject];
+}
+
+-(NSString*)remainingText {
+	if (completed) {
+		return @"-";
+	}
+	NSInteger bytesLeft = size - written;
+	double kibLeft = (double)bytesLeft / 1024.0;
+	return [NSString stringWithFormat: @"%.2f KiB", kibLeft];
+}
+
+-(NSString*)speedText {
+	if (completed) {
+		return @"-";
+	}
+	NSTimeInterval secondsPassed = -[startDate timeIntervalSinceNow];
+	double kibPerSecond = (double)written / (secondsPassed * 1024.0);
+	return [NSString stringWithFormat: @"%.2f KiB/s", kibPerSecond];
+}
+
 -(double)completionProgress {
 	if (written == size) {
 		return 1.0;
 	} else {
 		return (double)written / size;
 	}
+}
+
+-(NSInteger)index {
+	return index;
+}
+
+-(id)copyWithZone: (NSZone*)zone {
+	DownloadItem *item = [[DownloadItem alloc] init];
+	item->completed = completed;
+	item->cancelled = cancelled;
+	item->size = size;
+	item->written = written;
+	item->index = index;
+	item->startDate = [startDate retain];
+	item->destination = [destination retain];
+	item->outputStream = [outputStream retain];
+	item->error = [error retain];
+	item->manager = manager;
+	return item;
 }
 
 @end
@@ -100,7 +146,7 @@
 
 -(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSInteger)size {
 	DownloadItem *item = [[DownloadItem alloc] initWithManager: self destination: path
-		size: size];
+		size: size index: [downloads count]];
 	[downloads addObject: item];	
 	[item release];
 	[delegate downloadManagerDidAddDownload: self];
@@ -113,6 +159,10 @@
 
 -(void)setDelegate: (id<DownloadManagerDelegate>)aDelegate {
 	delegate = aDelegate;
+}
+
+-(id)delegate {
+	return delegate;
 }
 
 @end

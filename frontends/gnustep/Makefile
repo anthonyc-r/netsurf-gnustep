@@ -44,6 +44,7 @@ S_FRONTEND := \
 	DownloadManager.m	\
 	PlotView.m	\
 	NetsurfCallback.m	\
+	ProgressBarCell.m	\
 	tables/misc.m	\
 	tables/bitmap.m	\
 	tables/clipboard.m	\
