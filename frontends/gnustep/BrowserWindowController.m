@@ -7,6 +7,7 @@
 #import "utils/nsurl.h"
 #import "desktop/browser_history.h"
 #import "netsurf/mouse.h"
+#import "desktop/search.h"
 
 @implementation BrowserWindowController
 
@@ -136,6 +137,30 @@
 }
 -(void)setTitle: (NSString*)title {
 	[[self window] setTitle: title];
+}
+
+-(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase {
+	search_flags_t flags = SEARCH_FLAG_FORWARDS;
+	if (matchCase) {
+		flags |= SEARCH_FLAG_CASE_SENSITIVE;
+	}
+	browser_window_search(browser, NULL, flags, [needle cString]);
+}
+
+-(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase {
+	search_flags_t flags = SEARCH_FLAG_BACKWARDS;
+	if (matchCase) {
+		flags |= SEARCH_FLAG_CASE_SENSITIVE;
+	}
+	browser_window_search(browser, NULL, flags, [needle cString]);
+}
+
+-(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase {
+	search_flags_t flags = SEARCH_FLAG_SHOWALL;
+	if (matchCase) {
+		flags |= SEARCH_FLAG_CASE_SENSITIVE;
+	}
+	browser_window_search(browser, NULL, flags, [needle cString]);
 }
 
 @end

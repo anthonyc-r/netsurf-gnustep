@@ -21,8 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @interface AppDelegate: NSResponder<NSApplicationDelegate> {
 @private
 id downloadsWindowController;
+id findPanelController;
 }
 
+-(void)showFindPanel: (id)sender;
 -(void)showDownloadsWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
 

@@ -11,6 +11,7 @@
 #import "tables/misc.h"
 #import "netsurf/browser_window.h"
 #import "DownloadsWindowController.h"
+#import "FindPanelController.h"
 
 /**
  * Set option defaults for (taken from the cocoa frontend)
@@ -63,6 +64,16 @@ static nserror set_defaults(struct nsoption_s *defaults)
 		[downloadsWindowController loadWindow];
 	} else {
 		[downloadsWindowController showWindow: self];
+	}
+}
+
+-(void)showFindPanel: (id)sender {
+	NSLog(@"Showing find panel ...");
+	if (!findPanelController) {
+		findPanelController = [[FindPanelController alloc] init];
+		[findPanelController loadWindow];
+	} else {
+		[findPanelController showWindow: self];
 	}
 }
 

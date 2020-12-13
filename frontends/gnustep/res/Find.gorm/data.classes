@@ -1,0 +1,30 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    FindPanelController = {
+	Actions = (
+	    "findPrevious:",
+	    "findNext:",
+	    "showAll:",
+	    "updateSearch:",
+	    "toggleMatchCase:"
+	);
+	Outlets = (
+	    previousButton,
+	    nextButton,
+	    matchCaseButton,
+	    searchField,
+	    showAllButton
+	);
+	Super = NSWindowController;
+    };
+    FirstResponder = {
+	Actions = (
+	    "findPrevious:",
+	    "findNext:",
+	    "showAll:",
+	    "updateSearch:",
+	    "toggleMatchCase:"
+	);
+	Super = NSObject;
+    };
+}

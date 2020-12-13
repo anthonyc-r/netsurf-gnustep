@@ -45,6 +45,7 @@ S_FRONTEND := \
 	PlotView.m	\
 	NetsurfCallback.m	\
 	ProgressBarCell.m	\
+	FindPanelController.m	\
 	tables/misc.m	\
 	tables/bitmap.m	\
 	tables/clipboard.m	\
@@ -70,6 +71,7 @@ R_RESOURCES := \
 	Menu.gorm	\
 	Browser.gorm	\
 	Downloads.gorm	\
+	Find.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 

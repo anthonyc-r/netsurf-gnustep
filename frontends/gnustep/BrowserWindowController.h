@@ -37,4 +37,7 @@ struct browser_window;
 -(void)stopThrobber;
 -(void)setNavigationUrl: (NSString*)urlString;
 -(void)setTitle: (NSString*)title;
+-(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase;
+-(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase;
+-(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase;
 @end

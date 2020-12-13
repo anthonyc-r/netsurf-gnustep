@@ -3,7 +3,8 @@
     AppDelegate = {
 	Actions = (
 	    "didTapNewWindow:",
-	    "showDownloadsWindow:"
+	    "showDownloadsWindow:",
+	    "showFindPanel:"
 	);
 	Outlets = (
 	);
@@ -12,7 +13,19 @@
     FirstResponder = {
 	Actions = (
 	    "didTapNewWindow:",
-	    "showDownloadsWindow:"
+	    "findNext:",
+	    "findPrevious:",
+	    "showAll:",
+	    "showDownloadsWindow:",
+	    "showFindPanel:"
+	);
+	Super = NSObject;
+    };
+    NSResponder = {
+	Actions = (
+	    "findNext:",
+	    "findPrevious:",
+	    "showAll:"
 	);
 	Super = NSObject;
     };
