@@ -13,7 +13,8 @@
 	    nextButton,
 	    matchCaseButton,
 	    searchField,
-	    showAllButton
+	    showAllButton,
+	    noResultsLabel
 	);
 	Super = NSWindowController;
     };

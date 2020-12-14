@@ -139,28 +139,28 @@
 	[[self window] setTitle: title];
 }
 
--(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase {
+-(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
 	search_flags_t flags = SEARCH_FLAG_FORWARDS;
 	if (matchCase) {
 		flags |= SEARCH_FLAG_CASE_SENSITIVE;
 	}
-	browser_window_search(browser, NULL, flags, [needle cString]);
+	browser_window_search(browser, (void*)sender, flags, [needle cString]);
 }
 
--(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase {
+-(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
 	search_flags_t flags = SEARCH_FLAG_BACKWARDS;
 	if (matchCase) {
 		flags |= SEARCH_FLAG_CASE_SENSITIVE;
 	}
-	browser_window_search(browser, NULL, flags, [needle cString]);
+	browser_window_search(browser, (void*)sender, flags, [needle cString]);
 }
 
--(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase {
+-(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
 	search_flags_t flags = SEARCH_FLAG_SHOWALL;
 	if (matchCase) {
 		flags |= SEARCH_FLAG_CASE_SENSITIVE;
 	}
-	browser_window_search(browser, NULL, flags, [needle cString]);
+	browser_window_search(browser, (void*)sender, flags, [needle cString]);
 }
 
 @end

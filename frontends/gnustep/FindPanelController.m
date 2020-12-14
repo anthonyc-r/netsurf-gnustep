@@ -12,6 +12,7 @@
 }
 
 -(void)awakeFromNib {
+	[noResultsLabel setHidden: YES];
 	[[self window] makeKeyAndOrderFront: self];
 	[self windowBecameMain: [NSNotification notificationWithName: @""
 		object: [NSApp mainWindow]]];
@@ -42,38 +43,51 @@
 
 -(void)setBrowserController: (id)aBrowserController {
 	browserController = aBrowserController;
-	BOOL enabled = browserController != nil;
-	[previousButton setEnabled: enabled];
-	[nextButton setEnabled: enabled];
-	[matchCaseButton setEnabled: enabled];
-	[showAllButton setEnabled: enabled];
+	[previousButton setEnabled: NO];
+	[nextButton setEnabled: NO];
+	[showAllButton setEnabled: NO];
 }
 
 -(void)findPrevious: (id)sender {
 	[browserController findPrevious: [searchField stringValue] 
-		matchCase: [matchCaseButton state] == NSOnState];
+		matchCase: [matchCaseButton state] == NSOnState sender: self];
 }
 
 
 -(void)findNext: (id)sender {
 	[browserController findNext: [searchField stringValue] 
-		matchCase: [matchCaseButton state] == NSOnState];
+		matchCase: [matchCaseButton state] == NSOnState sender: self];
 }
 
 
 -(void)showAll: (id)sender {
 	[browserController showAll: [searchField stringValue] 
-		matchCase: [matchCaseButton state] == NSOnState];
+		matchCase: [matchCaseButton state] == NSOnState sender: self];
 }
 
 
 -(void)updateSearch: (id)sender {
-
+	if (browserController != nil) {
+		[self findNext: sender];
+	}
 }
 
 
 -(void)toggleMatchCase: (id)sender {
 
+}
+
+-(void)setFound: (BOOL)found {
+	[noResultsLabel setHidden: found];
+	[showAllButton setEnabled: found];
+}
+
+-(void)setCanFindNext: (BOOL)canFindNext {
+	[nextButton setEnabled: canFindNext];
+}
+
+-(void)setCanFindPrevious: (BOOL)canFindPrevious {
+	[previousButton setEnabled: canFindPrevious];
 }
 
 @end
