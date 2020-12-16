@@ -3,7 +3,7 @@
 
 @implementation DownloadItem
 
--(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSInteger)anIndex {
+-(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSUInteger)anIndex {
 	if (self = [super init]) {
 		error = nil;
 		index = anIndex;
@@ -34,9 +34,13 @@
 }
 
 -(BOOL)appendToDownload: (NSData*)data {
-	NSInteger len = [data length];
-	NSInteger writtenNow = [outputStream write: [data bytes] maxLength: len];
+	NSUInteger len = [data length];
+	NSUInteger writtenNow = [outputStream write: [data bytes] maxLength: len];
 	written += writtenNow;
+	// Unless im misunderstanding download_context_get_total_length appears to return
+	// a too-small non-zero value for download size when called in 
+	// gnustep_download_create...
+	size = MAX(written, size);
 	[[manager delegate] downloadManager: manager didUpdateItem: self];
 	return writtenNow == len;
 }
@@ -78,7 +82,7 @@
 	if (completed) {
 		return @"-";
 	}
-	NSInteger bytesLeft = size - written;
+	NSUInteger bytesLeft = size - written;
 	double kibLeft = (double)bytesLeft / 1024.0;
 	return [NSString stringWithFormat: @"%.2f KiB", kibLeft];
 }
@@ -96,6 +100,7 @@
 	if (written == size) {
 		return 1.0;
 	} else {
+		NSLog(@"prog: %f", (double)written / size);
 		return (double)written / size;
 	}
 }
@@ -144,7 +149,7 @@
 	[super dealloc];
 }
 
--(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSInteger)size {
+-(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSUInteger)size {
 	DownloadItem *item = [[DownloadItem alloc] initWithManager: self destination: path
 		size: size index: [downloads count]];
 	[downloads addObject: item];	

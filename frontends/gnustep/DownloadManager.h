@@ -11,8 +11,8 @@
 @interface DownloadItem: NSObject {
 	BOOL completed;
 	BOOL cancelled;
-	NSInteger size;
-	NSInteger written;
+	NSUInteger size;
+	NSUInteger written;
 	NSInteger index;
 	NSDate *startDate;
 	NSURL *destination;
@@ -38,7 +38,7 @@
 	id<DownloadManagerDelegate> delegate;
 }
 +(DownloadManager*)defaultDownloadManager;
--(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSInteger)size;
+-(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSUInteger)size;
 -(NSArray*)downloads;
 -(id)delegate;
 -(void)setDelegate: (id<DownloadManagerDelegate>)aDelegate;

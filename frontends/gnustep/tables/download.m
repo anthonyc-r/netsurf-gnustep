@@ -9,12 +9,12 @@
 /**********************/
 /****** Download ******/
 /**********************/
-
 // This won't really return a window ref, but a ref to a download item.
 static struct gui_download_window *gnustep_download_create(struct download_context *ctx, struct gui_window *parent) {
 	NSLog(@"gnustep_download_create");
 	NSURL *url = [[NSApp delegate] requestDownloadDestination];
-	NSInteger dataSize = download_context_get_total_length(ctx);
+	// TODO: - dataSize is smaller than the actual size in some cases. Why?
+	NSUInteger dataSize = download_context_get_total_length(ctx);
 	DownloadItem *download = [[DownloadManager defaultDownloadManager]
 		createDownloadForDestination: url withSizeInBytes: dataSize];
 	[[NSApp delegate] showDownloadsWindow: nil];
@@ -24,7 +24,6 @@ static struct gui_download_window *gnustep_download_create(struct download_conte
 // ??
 static nserror gnustep_download_data(struct gui_download_window *dw,	const char *data, unsigned int size) {
 	NSLog(@"gnustep_download_data");
-
 	BOOL success = [(id)dw appendToDownload: [NSData dataWithBytesNoCopy: (void*)data
 		length: size freeWhenDone: NO]];
 	if (success) {
