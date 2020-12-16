@@ -76,7 +76,6 @@ static nserror cocoa_font_position(const plot_font_style_t *style,
         }
 	
 	NSUInteger glyphIndex = cocoa_glyph_for_location(layout, x);
-	NSLog(@"glyph index 1 %lu", glyphIndex);
 	if (glyphIndex >= length) {
 		*char_offset = length;
 	} else {
@@ -101,13 +100,14 @@ static nserror cocoa_font_split(const plot_font_style_t *style,
 	if (layout == nil) return NSERROR_BAD_PARAMETER;
 
 	NSUInteger glyphIndex = cocoa_glyph_for_location( layout, x );
-	if (glyphIndex >= length) {
+
+	if (glyphIndex >= [layout numberOfGlyphs]) {
 		*char_offset = length;
 		*actual_x = cocoa_layout_width( layout );
 		return NSERROR_OK;
 	}
 	NSUInteger chars = [layout characterIndexForGlyphAtIndex: glyphIndex];
-	
+
 	if (chars >= [cocoa_text_storage length]) {
 		*char_offset = length;
 		*actual_x = cocoa_layout_width( layout );
