@@ -24,7 +24,7 @@ Works for basic use, can navigate to, and browse websites.
 
 What still needs doing
 ----------------
-Tabs, downloads, bookmarks, history, search,
+Tabs, bookmarks, history,
 other bits and bobs probably.
 
 
