@@ -2,9 +2,11 @@
 
 @class DownloadManager;
 @class DownloadItem;
+struct download_context;
 
 @protocol DownloadManagerDelegate
 -(void)downloadManagerDidAddDownload: (DownloadManager*)aDownloadManager;
+-(void)downloadManager: (DownloadManager*)aDownloadManager didRemoveItems: (NSArray*)downloadItems;
 -(void)downloadManager: (DownloadManager*)aDownloadManager didUpdateItem: (DownloadItem*)aDownloadItem;
 @end
 
@@ -19,11 +21,14 @@
 	NSOutputStream *outputStream;
 	NSString *error;
 	DownloadManager *manager;
+	NSTimeInterval lastWrite;
+	struct download_context *ctx;
 }
 -(BOOL)appendToDownload: (NSData*)data;
 -(void)cancel;
 -(void)complete;
 -(BOOL)isComplete;
+-(BOOL)isCancelled;
 -(void)failWithMessage: (NSString*)message;
 -(NSURL*)destination;
 -(NSString*)detailsText;
@@ -38,8 +43,10 @@
 	id<DownloadManagerDelegate> delegate;
 }
 +(DownloadManager*)defaultDownloadManager;
--(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSUInteger)size;
+-(DownloadItem*)createDownloadForDestination: (NSURL*)path withContext: (struct download_context*)ctx;
 -(NSArray*)downloads;
+-(void)removeDownloadsAtIndexes: (NSIndexSet*)anIndexSet;
+-(void)cancelDownloadsAtIndexes: (NSIndexSet*)anIndexSet;
 -(id)delegate;
 -(void)setDelegate: (id<DownloadManagerDelegate>)aDelegate;
 @end

@@ -3,6 +3,9 @@
 #import "DownloadManager.h"
 #import "ProgressBarCell.h"
 
+#define TAG_MENU_REMOVE 5
+#define TAG_MENU_CANCEL 3
+
 @implementation DownloadsWindowController
 
 -(id)init {
@@ -35,7 +38,13 @@
 		objectAtIndex: rowIndex];
 	NSString *identifier = [aTableColumn identifier];
 	if ([identifier isEqual: @"progress"]) {
-		return [NSNumber numberWithDouble: [item completionProgress]];
+		if ([item isCancelled]) {
+			return @"Cancelled";
+		} else if ([item isComplete]) {
+			return @"Complete";
+		} else {
+			return [NSNumber numberWithDouble: [item completionProgress]];
+		}
 	} else if ([identifier isEqual: @"details"]) {
 		return [item detailsText];
 	} else if ([identifier isEqual: @"remaining"]) {
@@ -67,10 +76,44 @@
 	[tableView reloadData];
 }
 
+-(void)downloadManager: (DownloadManager*)aDownloadManager didRemoveItems: (NSArray*)downloadItems {
+	[tableView reloadData];
+}
+
 -(void)downloadManager: (DownloadManager*)aDownloadManager didUpdateItem: (DownloadItem*)aDownloadItem {
 	NSIndexSet *rows = [NSIndexSet indexSetWithIndex: [aDownloadItem index]];
 	NSIndexSet *columns = [NSIndexSet indexSetWithIndexesInRange: NSMakeRange(0, 4)];
 	[tableView reloadDataForRowIndexes: rows columnIndexes: columns];
+}
+
+// MARK: - Menu Stuff
+
+-(BOOL)validateMenuItem: (NSMenuItem*)aMenuItem {
+	NSInteger tag = [aMenuItem tag];
+	if (tag == TAG_MENU_REMOVE || tag == TAG_MENU_CANCEL) {
+		return [tableView numberOfSelectedRows] > 0;
+	}
+	return YES;
+}
+
+-(void)remove: (id)sender {
+	id row;
+	NSMutableIndexSet *indices = [NSMutableIndexSet indexSet];
+	NSEnumerator *selectedRows = [tableView selectedRowEnumerator];
+	while ((row = [selectedRows nextObject]) != nil) {
+		[indices addIndex: [row integerValue]];
+	}
+	[[DownloadManager defaultDownloadManager] removeDownloadsAtIndexes: indices];
+}
+
+-(void)cancel: (id)sender {
+	id row;
+	NSMutableIndexSet *indices = [NSMutableIndexSet indexSet];
+	NSEnumerator *selectedRows = [tableView selectedRowEnumerator];
+	while ((row = [selectedRows nextObject]) != nil) {
+		[indices addIndex: [row integerValue]];
+	}
+	[[DownloadManager defaultDownloadManager] cancelDownloadsAtIndexes: indices];
 }
 
 @end

@@ -1,9 +1,12 @@
 #import <Cocoa/Cocoa.h>
 #import "DownloadManager.h"
+#import "desktop/download.h"
+
+// TODO: - Verify behavior of performOnBackgroundThread on a multiprocessor system!!
 
 @implementation DownloadItem
 
--(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSUInteger)anIndex {
+-(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSUInteger)anIndex ctx: (struct download_context*)aCtx {
 	if (self = [super init]) {
 		error = nil;
 		index = anIndex;
@@ -18,6 +21,7 @@
 			append: NO];
 		[outputStream retain];
 		[outputStream open];
+		ctx = aCtx;
 	}
 	return self;
 }
@@ -30,23 +34,41 @@
 	if (error) {
 		[error release];
 	}
+	download_context_destroy(ctx);
 	[super dealloc];
 }
 
 -(BOOL)appendToDownload: (NSData*)data {
+	// NOTE: - Not sure if this really works on mp systems...
+	// Does this get queued sequentially? If not need to upkeep our own thread...
+	[self performSelectorInBackground: @selector(reallyWriteData:) withObject: data];
+	return YES;
+}
+
+-(void)reallyWriteData: (NSData*)data {
 	NSUInteger len = [data length];
 	NSUInteger writtenNow = [outputStream write: [data bytes] maxLength: len];
 	written += writtenNow;
 	// Unless im misunderstanding download_context_get_total_length appears to return
-	// a too-small non-zero value for download size when called in 
-	// gnustep_download_create...
+	// a too-small non-zero value for download size when called so...
 	size = MAX(written, size);
+	NSTimeInterval time = [startDate timeIntervalSinceNow];
+	// Only notify the manager at most once in each second.
+	if ((int)time != (int)lastWrite) {
+		[self performSelectorOnMainThread: @selector(notifyManager) withObject: nil
+			waitUntilDone: NO];
+	}
+	lastWrite = time;
+}
+-(void)notifyManager {
 	[[manager delegate] downloadManager: manager didUpdateItem: self];
-	return writtenNow == len;
 }
 
 -(void)cancel {
+	NSLog(@"cancel!!");
 	if (!completed) {
+		cancelled = YES;
+		download_context_abort(ctx);
 		[self complete];
 	}
 }
@@ -69,6 +91,9 @@
 	return completed;
 }
 
+-(BOOL)isCancelled {
+	return cancelled;
+}
 
 -(NSURL*)destination {
 	return destination;
@@ -84,7 +109,12 @@
 	}
 	NSUInteger bytesLeft = size - written;
 	double kibLeft = (double)bytesLeft / 1024.0;
-	return [NSString stringWithFormat: @"%.2f KiB", kibLeft];
+	if (kibLeft < 1024.0) {
+		return [NSString stringWithFormat: @"%.2f KiB", kibLeft];
+	} else {
+		double mibLeft = (double)kibLeft / 1024.0;
+		return [NSString stringWithFormat: @"%.2f MiB", mibLeft];
+	}
 }
 
 -(NSString*)speedText {
@@ -93,7 +123,12 @@
 	}
 	NSTimeInterval secondsPassed = -[startDate timeIntervalSinceNow];
 	double kibPerSecond = (double)written / (secondsPassed * 1024.0);
-	return [NSString stringWithFormat: @"%.2f KiB/s", kibPerSecond];
+	if (kibPerSecond < 1024.0) {
+		return [NSString stringWithFormat: @"%.2f KiB/s", kibPerSecond];
+	} else {
+		double mibPerSecond = kibPerSecond / 1024.0;
+		return [NSString stringWithFormat: @"%.2f MiB/s", mibPerSecond];
+	}
 }
 
 -(double)completionProgress {
@@ -149,9 +184,11 @@
 	[super dealloc];
 }
 
--(DownloadItem*)createDownloadForDestination: (NSURL*)path withSizeInBytes: (NSUInteger)size {
+-(DownloadItem*)createDownloadForDestination: (NSURL*)path withContext: (struct download_context*)ctx {
+	// TODO: - dataSize is smaller than the actual size in some cases. Why?
+	NSUInteger dataSize = download_context_get_total_length(ctx);
 	DownloadItem *item = [[DownloadItem alloc] initWithManager: self destination: path
-		size: size index: [downloads count]];
+		size: dataSize index: [downloads count] ctx: ctx];
 	[downloads addObject: item];	
 	[item release];
 	[delegate downloadManagerDidAddDownload: self];
@@ -168,6 +205,21 @@
 
 -(id)delegate {
 	return delegate;
+}
+
+-(void)removeDownloadsAtIndexes: (NSIndexSet*)anIndexSet {
+	NSUInteger dlCount = [downloads count];
+	if ([anIndexSet indexGreaterThanOrEqualToIndex: dlCount] == NSNotFound) {
+		NSArray *items = [downloads objectsAtIndexes: anIndexSet];
+		[downloads removeObjectsAtIndexes: anIndexSet];
+		[delegate downloadManager: self didRemoveItems: items];
+	}
+}
+
+
+-(void)cancelDownloadsAtIndexes: (NSIndexSet*)anIndexSet {
+	NSArray *items = [downloads objectsAtIndexes: anIndexSet];
+	[items makeObjectsPerformSelector: @selector(cancel)];
 }
 
 @end

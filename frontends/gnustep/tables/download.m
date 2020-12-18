@@ -13,10 +13,8 @@
 static struct gui_download_window *gnustep_download_create(struct download_context *ctx, struct gui_window *parent) {
 	NSLog(@"gnustep_download_create");
 	NSURL *url = [[NSApp delegate] requestDownloadDestination];
-	// TODO: - dataSize is smaller than the actual size in some cases. Why?
-	NSUInteger dataSize = download_context_get_total_length(ctx);
 	DownloadItem *download = [[DownloadManager defaultDownloadManager]
-		createDownloadForDestination: url withSizeInBytes: dataSize];
+		createDownloadForDestination: url withContext: ctx];
 	[[NSApp delegate] showDownloadsWindow: nil];
 	return (struct gui_download_window*)download;
 }
