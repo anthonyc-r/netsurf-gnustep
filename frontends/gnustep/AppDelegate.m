@@ -12,6 +12,7 @@
 #import "netsurf/browser_window.h"
 #import "DownloadsWindowController.h"
 #import "FindPanelController.h"
+#import "HistoryWindowController.h"
 
 /**
  * Set option defaults for (taken from the cocoa frontend)
@@ -74,6 +75,16 @@ static nserror set_defaults(struct nsoption_s *defaults)
 		[findPanelController loadWindow];
 	} else {
 		[findPanelController showWindow: self];
+	}
+}
+
+-(void)showHistoryWindowController: (id)sender {
+	NSLog(@"Showing history ...");
+	if (!historyWindowController) {
+		historyWindowController = [[HistoryWindowController alloc] init];
+		[historyWindowController loadWindow];
+	} else {
+		[historyWindowController showWindow: self];
 	}
 }
 

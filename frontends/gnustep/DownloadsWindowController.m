@@ -24,6 +24,7 @@
 
 -(void)awakeFromNib {
 	NSLog(@"Awoke from nib...");
+	[[self window] makeKeyAndOrderFront: self];
 	[[DownloadManager defaultDownloadManager] setDelegate: self];
 }
 

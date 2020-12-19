@@ -46,6 +46,7 @@ S_FRONTEND := \
 	NetsurfCallback.m	\
 	ProgressBarCell.m	\
 	FindPanelController.m	\
+	HistoryWindowController.m	\
 	tables/misc.m	\
 	tables/bitmap.m	\
 	tables/clipboard.m	\
@@ -72,6 +73,7 @@ R_RESOURCES := \
 	Browser.gorm	\
 	Downloads.gorm	\
 	Find.gorm	\
+	History.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 

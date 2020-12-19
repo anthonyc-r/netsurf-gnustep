@@ -22,10 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @private
 id downloadsWindowController;
 id findPanelController;
+id historyWindowController;
 }
 
 -(void)showFindPanel: (id)sender;
 -(void)showDownloadsWindow: (id)sender;
+-(void)showHistoryWindowController: (id)sender;
 -(NSURL*)requestDownloadDestination;
 
 @end

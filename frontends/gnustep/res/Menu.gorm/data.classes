@@ -4,7 +4,8 @@
 	Actions = (
 	    "didTapNewWindow:",
 	    "showDownloadsWindow:",
-	    "showFindPanel:"
+	    "showFindPanel:",
+	    "showHistoryWindowController:"
 	);
 	Outlets = (
 	);
@@ -15,8 +16,9 @@
 	    "didTapNewWindow:",
 	    "findNext:",
 	    "findPrevious:",
-	    "removeAll:",
+	    "showHistoryWindowController:",
 	    "remove:",
+	    "removeAll:",
 	    "showAll:",
 	    "showDownloadsWindow:",
 	    "showFindPanel:"
