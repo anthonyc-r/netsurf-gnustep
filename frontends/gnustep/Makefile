@@ -47,6 +47,8 @@ S_FRONTEND := \
 	ProgressBarCell.m	\
 	FindPanelController.m	\
 	HistoryWindowController.m	\
+	Website.m	\
+	BookmarkFolder.m	\
 	tables/misc.m	\
 	tables/bitmap.m	\
 	tables/clipboard.m	\
