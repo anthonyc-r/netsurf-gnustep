@@ -2,6 +2,7 @@
 
 @interface HistoryWindowController: NSWindowController {
 	id outlineView;
+	NSMutableDictionary *historyItems;
 }
 
 @end

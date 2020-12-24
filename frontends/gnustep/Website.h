@@ -11,7 +11,7 @@
 -(NSString*)name;
 -(NSURL*)url;
 
--(void)setVisited;
+-(void)addToHistory;
 +(NSArray*)historicWebsites;
 
 @end

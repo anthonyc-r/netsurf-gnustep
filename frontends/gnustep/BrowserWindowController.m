@@ -3,6 +3,7 @@
 #import <AppKit/AppKit.h>
 #import "BrowserWindowController.h"
 #import "PlotView.h"
+#import "Website.h"
 #import "netsurf/browser_window.h"
 #import "utils/nsurl.h"
 #import "desktop/browser_history.h"
@@ -122,7 +123,17 @@
 }
 -(void)newContent {
 	NSLog(@"New content");
-	
+	struct nsurl *url = browser_window_access_url(browser);
+	const char *title = browser_window_get_title(browser);
+	if (title == NULL) {
+		title = "";
+	}
+	NSString *name = [NSString stringWithCString: title];
+	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
+	Website *website = [[Website alloc] initWithName: name 
+		url: [NSURL URLWithString: urlStr]];
+	[website addToHistory];
+	[website release];
 }
 -(void)startThrobber {
 	[refreshButton setTitle: @"Stop"];
