@@ -2,9 +2,7 @@
 #import "DownloadsWindowController.h"
 #import "DownloadManager.h"
 #import "ProgressBarCell.h"
-
-#define TAG_MENU_REMOVE 5
-#define TAG_MENU_CANCEL 3
+#import "AppDelegate.h"
 
 @implementation DownloadsWindowController
 

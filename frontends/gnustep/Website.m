@@ -99,12 +99,21 @@ static NSMutableArray *history;
 	}
 }
 
+-(void)removeFromHistory {
+	NSLog(@"remove self from history");
+	[history removeObject: self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		HISTORY_UPDATED_NOTIFICATION object: nil];
+}
+
 -(void)addToHistory {
 	[Website initHistoryIfNeeded];
 	[lastVisited release];
 	lastVisited = [[NSDate alloc] init];
-	[history addObject: self];
+	[history insertObject: self atIndex: 0];
 	NSLog(@"Added %@ , %@ to history!", [self name], [self url]);
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		HISTORY_UPDATED_NOTIFICATION object: nil];
 }
 
 +(NSArray*)historicWebsites {

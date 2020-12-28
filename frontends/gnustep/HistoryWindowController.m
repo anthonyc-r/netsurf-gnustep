@@ -1,15 +1,15 @@
 #import <Cocoa/Cocoa.h>
 #import "HistoryWindowController.h"
 #import "Website.h"
+#import "AppDelegate.h"
 
 @implementation HistoryWindowController
 
 -(id)init {
 	if (self = [super initWithWindowNibName: @"History"]) {
-		NSArray *allHistory = [Website historicWebsites];
-		
 		historyItems = [[NSMutableDictionary alloc] init];
-		[historyItems setObject: allHistory forKey: @"recent"];
+		[historyItems setObject: [Website historicWebsites] forKey: @"recent"];
+		ignoreRefresh = NO;
 	}
 	return self;
 }
@@ -20,14 +20,81 @@
 }
 
 
+-(void)updateItems: (NSNotification*)aNotification {
+	if (!ignoreRefresh) {
+		[historyItems setObject: [Website historicWebsites] forKey: @"recent"];
+		[outlineView reloadData];
+	}
+}
+
+// NOTE: - windowWillClose only gets called the first time the window is closed. gnustep bug?
+-(BOOL)windowShouldClose: (id)sender {
+	[[NSNotificationCenter defaultCenter] removeObserver: self];
+	return YES;
+}
+
+
+-(void)registerForHistoryNotifications {
+	[[NSNotificationCenter defaultCenter] addObserver: self 
+		selector: @selector(updateItems:)
+		name: HISTORY_UPDATED_NOTIFICATION
+		object: nil];
+}
+-(void)showWindow: (id)sender {
+	[self registerForHistoryNotifications];
+	[super showWindow: sender];
+}
 -(void)awakeFromNib {
-	NSLog(@"Awoke from nib...");
 	[[self window] makeKeyAndOrderFront: self];
+	[self registerForHistoryNotifications];
 	[outlineView expandItem: [[historyItems allValues] firstObject] expandChildren: NO];
 }
 
+-(BOOL)validateMenuItem: (NSMenuItem*)aMenuItem {
+	NSInteger tag = [aMenuItem tag];
+	if (tag == TAG_MENU_REMOVE || tag == TAG_MENU_OPEN) {
+		return [outlineView numberOfSelectedRows] > 0;
+	}
+	return YES;
+}
+
 -(void)open: (id)sender {
-	NSLog(@"Open selected sites...", sender);
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	id row, item;
+	while ((row = [selected nextObject]) != NULL) {
+		item = [outlineView itemAtRow: [row integerValue]];
+		if ([item isKindOfClass: [Website class]]) {
+			[[NSApp delegate] openWebsite: item];
+			break;
+		}
+	}
+}
+
+-(void)copy: (id)sender {
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	id row, item;
+	while ((row = [selected nextObject]) != NULL) {
+		item = [outlineView itemAtRow: [row integerValue]];
+		if ([item isKindOfClass: [Website class]]) {
+			[[NSPasteboard generalPasteboard] setString: [[item url] absoluteString]
+				forType: NSStringPboardType];
+			break;
+		}
+	}
+}
+
+-(void)remove: (id)sender {
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	id row, item;
+	ignoreRefresh = YES;
+	while ((row = [selected nextObject]) != NULL) {
+		item = [outlineView itemAtRow: [row integerValue]];
+		if ([item isKindOfClass: [Website class]]) {
+			[item removeFromHistory];
+		}
+	}
+	ignoreRefresh = NO;
+	[self updateItems: nil];
 }
 
 -(id)outlineView: (NSOutlineView*)outlineView child: (NSInteger)index ofItem: (id)item {	

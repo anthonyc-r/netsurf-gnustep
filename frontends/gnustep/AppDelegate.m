@@ -95,6 +95,20 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	return [savePanel URL];
 }
 
+-(void)openWebsite: (Website*)aWebsite {
+	struct nsurl *url;
+	nserror error;
+	
+	error = nsurl_create([[[aWebsite url] absoluteString] cString], &url);
+	if (error == NSERROR_OK) {
+		error = browser_window_create(BW_CREATE_HISTORY, url, NULL, NULL, NULL);
+		nsurl_unref(url);
+	}
+	if (error != NSERROR_OK) {
+		NSLog(@"Failed to create window");
+	}
+}
+
 @end
 
 int main(int argc, char **argv) {

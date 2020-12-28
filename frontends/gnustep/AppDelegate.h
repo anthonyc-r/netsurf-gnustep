@@ -17,6 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #import <AppKit/AppKit.h>
 
 #import "NetsurfCallback.h"
+#import "Website.h"
+
+#define TAG_MENU_REMOVE 5
+#define TAG_MENU_CANCEL 3
+#define TAG_MENU_OPEN 12
 
 @interface AppDelegate: NSResponder<NSApplicationDelegate> {
 @private
@@ -29,5 +34,6 @@ id historyWindowController;
 -(void)showDownloadsWindow: (id)sender;
 -(void)showHistoryWindowController: (id)sender;
 -(NSURL*)requestDownloadDestination;
+-(void)openWebsite: (Website*)aWebsite;
 
 @end
