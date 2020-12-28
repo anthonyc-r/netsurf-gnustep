@@ -76,7 +76,7 @@ static nserror cocoa_font_position(const plot_font_style_t *style,
         }
 	
 	NSUInteger glyphIndex = cocoa_glyph_for_location(layout, x);
-	if (glyphIndex >= length) {
+	if (glyphIndex >= [layout numberOfGlyphs]) {
 		*char_offset = length;
 	} else {
 		NSUInteger chars = [layout characterIndexForGlyphAtIndex: glyphIndex];
