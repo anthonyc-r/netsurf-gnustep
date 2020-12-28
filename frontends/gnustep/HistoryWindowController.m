@@ -26,6 +26,10 @@
 	[outlineView expandItem: [[historyItems allValues] firstObject] expandChildren: NO];
 }
 
+-(void)open: (id)sender {
+	NSLog(@"Open selected sites...", sender);
+}
+
 -(id)outlineView: (NSOutlineView*)outlineView child: (NSInteger)index ofItem: (id)item {	
 	if (item == nil) {
 		return [[historyItems allValues] firstObject];

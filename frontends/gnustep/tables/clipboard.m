@@ -21,7 +21,7 @@ static void gnustep_clipboard_get(char **buffer, size_t *length) {
 	*length = len;
 	*buffer = malloc(len + 1);
 	strncpy(*buffer, cstring, len);
-	*buffer[len - 1] = '\0';
+	(*buffer)[len] = '\0';
 }
 
 // Save the provided clipboard for later retreival above
