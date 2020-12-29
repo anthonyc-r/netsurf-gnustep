@@ -1,6 +1,6 @@
-#include <AppKit/AppKit.h>
-#include "FindPanelController.h"
-#include "BrowserWindowController.h"
+#import <AppKit/AppKit.h>
+#import "FindPanelController.h"
+#import "BrowserWindowController.h"
 
 @implementation FindPanelController
 

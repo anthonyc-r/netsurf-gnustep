@@ -1,4 +1,4 @@
-#include <AppKit/AppKit.h>
+#import <AppKit/AppKit.h>
 
 @interface PlotView: NSView {
 	void *browser;

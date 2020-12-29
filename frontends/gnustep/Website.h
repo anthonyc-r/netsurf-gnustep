@@ -1,6 +1,6 @@
 #import <Cocoa/Cocoa.h>
 
-#define HISTORY_UPDATED_NOTIFICATION @"history_updated"
+#define WebsiteHistoryUpdatedNotificationName @"WebsiteHistoryUpdatedNotification"
 
 @class BookmarkFolder;
 @interface Website: NSObject {
@@ -12,6 +12,8 @@
 -(id)initWithName: (NSString*)aName url: (NSURL*)aUrl;
 -(NSString*)name;
 -(NSURL*)url;
+
+-(void)open;
 
 -(void)addToHistory;
 -(void)removeFromHistory;

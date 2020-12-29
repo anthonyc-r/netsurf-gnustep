@@ -19,9 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #import "NetsurfCallback.h"
 #import "Website.h"
 
-#define TAG_MENU_REMOVE 5
-#define TAG_MENU_CANCEL 3
-#define TAG_MENU_OPEN 12
+#define TAG_MENU_REMOVE 206
+#define TAG_MENU_CANCEL 204
+#define TAG_MENU_OPEN 103
+#define TAG_SUBMENU_HISTORY 500
 
 @interface AppDelegate: NSResponder<NSApplicationDelegate> {
 @private

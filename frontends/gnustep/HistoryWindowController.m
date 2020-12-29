@@ -37,7 +37,7 @@
 -(void)registerForHistoryNotifications {
 	[[NSNotificationCenter defaultCenter] addObserver: self 
 		selector: @selector(updateItems:)
-		name: HISTORY_UPDATED_NOTIFICATION
+		name: WebsiteHistoryUpdatedNotificationName
 		object: nil];
 }
 -(void)showWindow: (id)sender {

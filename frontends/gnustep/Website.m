@@ -33,6 +33,10 @@ static NSMutableArray *history;
 	return url;
 }
 
+-(void)open {
+	[[NSApp delegate] openWebsite: self];
+}
+
 // MARK: - History implementation
 
 +(id)websiteWithDictionary: (NSDictionary*)dictionary {
@@ -103,7 +107,7 @@ static NSMutableArray *history;
 	NSLog(@"remove self from history");
 	[history removeObject: self];
 	[[NSNotificationCenter defaultCenter] postNotificationName:
-		HISTORY_UPDATED_NOTIFICATION object: nil];
+		WebsiteHistoryUpdatedNotificationName object: nil];
 }
 
 -(void)addToHistory {
@@ -113,7 +117,7 @@ static NSMutableArray *history;
 	[history insertObject: self atIndex: 0];
 	NSLog(@"Added %@ , %@ to history!", [self name], [self url]);
 	[[NSNotificationCenter defaultCenter] postNotificationName:
-		HISTORY_UPDATED_NOTIFICATION object: nil];
+		WebsiteHistoryUpdatedNotificationName object: self];
 }
 
 +(NSArray*)historicWebsites {

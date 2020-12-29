@@ -13,6 +13,7 @@
 #import "DownloadsWindowController.h"
 #import "FindPanelController.h"
 #import "HistoryWindowController.h"
+#import "Website.h"
 
 /**
  * Set option defaults for (taken from the cocoa frontend)
@@ -39,11 +40,38 @@ static nserror set_defaults(struct nsoption_s *defaults)
 -(void)applicationDidFinishLaunching: (NSNotification*)aNotification {
 	NSLog(@"NSApp did finish launching..");
 	[NSBundle loadNibNamed: @"Menu" owner: NSApp];
-	[self didTapNewWindow: self];
+}
+
+-(void)historyUpdated: (NSNotification*)aNotification {
+	NSLog(@"history updated...");
+	NSArray *history = [Website historicWebsites];
+	NSMenu *historyMenu = [[[NSApp menu] itemWithTag: TAG_SUBMENU_HISTORY] submenu];
+	for (NSInteger i = [historyMenu numberOfItems] - 1; i > 0; i--) {
+		[historyMenu removeItemAtIndex: i];
+	} 
+	Website *website;
+	NSMenuItem *menuItem;
+	for (NSInteger i = 0; i < [history count] && i < 5; i++) {
+		website = [history objectAtIndex: i];
+		menuItem = [[[NSMenuItem alloc] initWithTitle: [website name]
+			action: @selector(open) keyEquivalent: nil] autorelease];
+		[menuItem setTarget: website];
+		[historyMenu addItem: menuItem];
+	}
+	[historyMenu update];
+}
+
+-(void)awakeFromNib {
+	NSLog(@"App awake from nib");
+	[[NSNotificationCenter defaultCenter] addObserver: self
+		selector: @selector(historyUpdated:)
+		name: WebsiteHistoryUpdatedNotificationName
+		object: nil];
+	[self historyUpdated: nil];
 }
 
 -(void)didTapNewWindow: (id)sender {
-	NSLog(@"Will create a new window");
+	NSLog(@"Will create a new window %@", self);
 	struct nsurl *url;
 	nserror error;
 
