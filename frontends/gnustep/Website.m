@@ -1,36 +1,50 @@
 #import <Cocoa/Cocoa.h>
+#import <stdio.h>
+#import <string.h>
+#import <errno.h>
+
 #import "Website.h"
+#import "AppDelegate.h"
 
-#define HISTORY_PATH @".cache/NetSurf"
+#define HISTORY_PATH @"/.cache/NetSurf"
 
-static NSMutableArray *history;
+static NSMutableArray *recentHistory;
+static NSMutableArray *olderHistory;
 
 @implementation Website
 
--(id)initWithName: (NSString*)aName url: (NSURL*)aUrl {
+-(id)initWithName: (NSString*)aName url: (NSString*)aUrl {
 	if (self = [super init]) {
-		[aName retain];
-		[aUrl retain];
-		name = aName;
-		url = aUrl;
-		lastVisited = nil;
+		int nlen = [aName length];
+		int urlen = [aUrl length];
+		data = malloc(sizeof (struct website_data) + nlen + urlen);
+		data->len_name = nlen;
+		data->len_url = urlen;
+		memcpy(data->data, [aName cString], nlen);
+		memcpy(data->data + nlen, [aUrl cString], urlen);
+	}
+	return self;
+}
+
+-(id)initWithData: (struct website_data*)someData {
+	if (self = [super init]) {
+		data = someData;
 	}
 	return self;
 }
 
 -(void)dealloc {
-	[name release];
-	[url release];
-	[lastVisited release];
+	free(data);
 	[super dealloc];
 }
 
 -(NSString*)name {
-	return name;
+	return [NSString stringWithCString: data->data length: data->len_name];
 }
 
--(NSURL*)url {
-	return url;
+-(NSString*)url {
+	return [NSString stringWithCString: data->data + data->len_name length: 
+		data->len_url];
 }
 
 -(void)open {
@@ -39,90 +53,26 @@ static NSMutableArray *history;
 
 // MARK: - History implementation
 
-+(id)websiteWithDictionary: (NSDictionary*)dictionary {
-	Website *ret = [[[Website alloc] init] autorelease];
-	if (ret != nil) {
-		ret->name = [dictionary objectForKey: @"name"];
-		[ret->name retain];
-		ret->url = [NSURL URLWithString: [dictionary objectForKey: @"url"]];
-		[ret->url retain];
-		ret->lastVisited = [NSDate dateWithTimeIntervalSince1970: [[dictionary 
-			objectForKey: @"date"] doubleValue]];
-		[ret->lastVisited retain];
-	}
-	return ret;
-}
-
--(NSDictionary*)toDictionary {
-	return [NSDictionary dictionaryWithObjectsAndKeys: name, @"name", 
-		[url absoluteString], @"url", 
-		[NSNumber numberWithDouble: [lastVisited timeIntervalSince1970]], @"date",
-		nil];
-}
-
-+(void)saveHistoryToDisk {
-	NSLog(@"Save history to disk");
-	if (history == nil) {
-		return;
-	}
-	NSError *error = nil;
-	NSDictionary *attrs = [NSDictionary dictionary];
-	BOOL ok = [[NSFileManager defaultManager] createDirectoryAtPath: [NSString
-		pathWithComponents: [NSArray arrayWithObjects: NSHomeDirectory(),
-		HISTORY_PATH, nil]] withIntermediateDirectories: YES attributes: attrs 
-		error: &error];
-	if (!ok) {
-		NSLog(@"Error creating cache dir!");
-	}
-	NSMutableArray *toSave = [NSMutableArray array];
-	for (NSUInteger i = 0; i < [history count]; i++) {
-		[toSave addObject: [[history objectAtIndex: i] toDictionary]];
-	}
-	ok = [toSave writeToFile: [NSString pathWithComponents: [NSArray 
-		arrayWithObjects: NSHomeDirectory(), HISTORY_PATH, @"history", nil]] 
-		atomically: YES];
-	if (!ok) {
-		NSLog(@"Failed to save latest history to file");
-	}
-}
-
-+(void)initHistoryIfNeeded {
-	if (history == nil) {
-		NSArray *historyDicts = [NSMutableArray arrayWithContentsOfFile: 
-			[NSString pathWithComponents: [NSArray arrayWithObjects:
-			NSHomeDirectory(), HISTORY_PATH, @"history", nil]]];
-		history = [[NSMutableArray alloc] init];
-		for (NSUInteger i = 0; i < [historyDicts count]; i++) {
-			[history addObject: [Website websiteWithDictionary: [historyDicts
-				objectAtIndex: i]]];
-		}
-		[[NSNotificationCenter defaultCenter] addObserver: [self class] 
-			selector: @selector(saveHistoryToDisk)
-			name: NSApplicationWillTerminateNotification
-			object: nil];
-	}
-}
-
--(void)removeFromHistory {
-	NSLog(@"remove self from history");
-	[history removeObject: self];
-	[[NSNotificationCenter defaultCenter] postNotificationName:
-		WebsiteHistoryUpdatedNotificationName object: nil];
-}
-
 -(void)addToHistory {
-	[Website initHistoryIfNeeded];
-	[lastVisited release];
-	lastVisited = [[NSDate alloc] init];
-	[history insertObject: self atIndex: 0];
-	NSLog(@"Added %@ , %@ to history!", [self name], [self url]);
+	static NSString *path = nil;
+	if (path == nil) {
+		NSCalendarDate *date = [NSCalendarDate calendarDate];
+		int month = [date monthOfYear];
+		int year = [date yearOfCommonEra];
+		path = [[NSString alloc] initWithFormat: @"%@/%@/history_%d_%d", 
+			NSHomeDirectory(), HISTORY_PATH, year, month];
+	}
+	NSLog(@"name: %@", [self name]);
+	NSLog(@"url: %@", [self url]);
+	FILE *f = fopen([path cString], "a");
+	if (f != NULL) {
+		int len = sizeof (struct website_data) + data->len_url + data->len_name;
+		fwrite(data, len, 1, f);
+		fclose(f);
+	}
+
 	[[NSNotificationCenter defaultCenter] postNotificationName:
 		WebsiteHistoryUpdatedNotificationName object: self];
-}
-
-+(NSArray*)historicWebsites {
-	[Website initHistoryIfNeeded];
-	return history;
 }
 
 @end

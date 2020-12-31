@@ -2,21 +2,21 @@
 
 #define WebsiteHistoryUpdatedNotificationName @"WebsiteHistoryUpdatedNotification"
 
+struct website_data {
+	int len_name;
+	int len_url;
+	char data[];
+};
+
 @class BookmarkFolder;
 @interface Website: NSObject {
-	NSString *name;
-	NSURL *url;
-	NSDate *lastVisited;
+	struct website_data *data;
 }
 
--(id)initWithName: (NSString*)aName url: (NSURL*)aUrl;
+-(id)initWithName: (NSString*)aName url: (NSString*)aUrl;
 -(NSString*)name;
--(NSURL*)url;
+-(NSString*)url;
 
 -(void)open;
-
 -(void)addToHistory;
--(void)removeFromHistory;
-+(NSArray*)historicWebsites;
-
 @end

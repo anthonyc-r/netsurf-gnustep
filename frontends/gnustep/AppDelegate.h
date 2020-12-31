@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 @interface AppDelegate: NSResponder<NSApplicationDelegate> {
 @private
+NSMutableArray *recentHistory;
 id downloadsWindowController;
 id findPanelController;
 id historyWindowController;

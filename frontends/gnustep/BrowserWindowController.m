@@ -131,7 +131,7 @@
 	NSString *name = [NSString stringWithCString: title];
 	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
 	Website *website = [[Website alloc] initWithName: name 
-		url: [NSURL URLWithString: urlStr]];
+		url: urlStr];
 	[website addToHistory];
 	[website release];
 }

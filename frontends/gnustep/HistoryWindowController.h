@@ -3,7 +3,7 @@
 @interface HistoryWindowController: NSWindowController {
 	id outlineView;
 	BOOL ignoreRefresh;
-	NSMutableDictionary *historyItems;
+	NSArray *sections;
 }
 
 @end

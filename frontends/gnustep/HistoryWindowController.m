@@ -1,28 +1,63 @@
 #import <Cocoa/Cocoa.h>
+
 #import "HistoryWindowController.h"
 #import "Website.h"
 #import "AppDelegate.h"
+#import "desktop/global_history.h"
+
+@interface Section: NSObject {
+	NSString *name;
+	NSArray *items;
+}
+@end
+@implementation Section
++(id)sectionWithName: (NSString*)aName items: (NSArray*)someItems {
+	Section *section = [[[Section alloc] init] autorelease];
+	section->name = [aName retain];
+	section->items = [someItems retain];
+	return section;
+}
+-(NSString*)name {
+	return name;
+}
+-(NSArray*)items {
+	return items;
+}
+-(void)setItems: (NSArray*)someItems {
+	[items release];
+	items = [someItems retain];
+}
+-(void)dealloc {
+	[name release];
+	[items release];
+	[super dealloc];
+}
+@end
 
 @implementation HistoryWindowController
 
 -(id)init {
 	if (self = [super initWithWindowNibName: @"History"]) {
-		historyItems = [[NSMutableDictionary alloc] init];
-		[historyItems setObject: [Website historicWebsites] forKey: @"recent"];
 		ignoreRefresh = NO;
+		sections = [[NSArray arrayWithObjects: [Section sectionWithName: @"Recent" 
+				items: [NSArray array]], [Section sectionWithName: 
+				@"More than 2 months ago..." items: [NSArray array]], nil]
+				retain];
+		[self updateItems: nil];
 	}
 	return self;
 }
 
 -(void)dealloc {
-	[historyItems release];
+	[sections release];
 	[super dealloc];
 }
 
 
 -(void)updateItems: (NSNotification*)aNotification {
 	if (!ignoreRefresh) {
-		[historyItems setObject: [Website historicWebsites] forKey: @"recent"];
+		[[sections objectAtIndex: 0] setItems: [NSArray array]];
+		[[sections objectAtIndex: 1] setItems: [NSArray array]];
 		[outlineView reloadData];
 	}
 }
@@ -47,7 +82,7 @@
 -(void)awakeFromNib {
 	[[self window] makeKeyAndOrderFront: self];
 	[self registerForHistoryNotifications];
-	[outlineView expandItem: [[historyItems allValues] firstObject] expandChildren: NO];
+	[outlineView expandItem: [sections firstObject] expandChildren: NO];
 }
 
 -(BOOL)validateMenuItem: (NSMenuItem*)aMenuItem {
@@ -99,14 +134,14 @@
 
 -(id)outlineView: (NSOutlineView*)outlineView child: (NSInteger)index ofItem: (id)item {	
 	if (item == nil) {
-		return [[historyItems allValues] firstObject];
+		return [sections objectAtIndex: index];
 	} else {
-		return [item objectAtIndex: index];
+		return [[item items] objectAtIndex: index];
 	}
 }
 
 -(BOOL)outlineView: (NSOutlineView*)outlineView isItemExpandable: (id)item {
-	if ([item isKindOfClass: [NSArray class]]) {
+	if ([item isKindOfClass: [Section class]]) {
 		return YES;
 	} else {
 		return NO;
@@ -115,20 +150,16 @@
 
 -(NSInteger)outlineView: (NSOutlineView*)outlineView numberOfChildrenOfItem: (id)item {
 	if (item == nil) {
-		return 1;
+		return [sections count];
+	} else if ([item isKindOfClass: [Section class]]) {
+		return [[item items] count];
+	} else {
+		return 0;
 	}
-	return [item count];
 }
 
 -(id)outlineView: (NSOutlineView*)outlineView objectValueForTableColumn: (NSTableColumn*)tableColumn byItem: (id)item {
-	if ([item isKindOfClass: [NSArray class]]) {
-		return @"Recent History";
-	} else if ([item isKindOfClass: [Website class]]) {
-		return [item name];
-	} else {
-		NSLog(@"clas: %@", [item class]);
-		return @"Error";
-	}
+	return [item name];
 }
 
 -(BOOL)outlineView: (NSOutlineView*)outlineView shouldSelectItem: (id)item {

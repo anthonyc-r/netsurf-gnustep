@@ -15,6 +15,8 @@
 #import "HistoryWindowController.h"
 #import "Website.h"
 
+#define MAX_RECENT_HISTORY 6
+
 /**
  * Set option defaults for (taken from the cocoa frontend)
  *
@@ -43,26 +45,26 @@ static nserror set_defaults(struct nsoption_s *defaults)
 }
 
 -(void)historyUpdated: (NSNotification*)aNotification {
-	NSLog(@"history updated...");
-	NSArray *history = [Website historicWebsites];
+	NSLog(@"history updated... %@", aNotification);
+	id object = [aNotification object];
 	NSMenu *historyMenu = [[[NSApp menu] itemWithTag: TAG_SUBMENU_HISTORY] submenu];
-	for (NSInteger i = [historyMenu numberOfItems] - 1; i > 0; i--) {
-		[historyMenu removeItemAtIndex: i];
-	} 
-	Website *website;
-	NSMenuItem *menuItem;
-	for (NSInteger i = 0; i < [history count] && i < 5; i++) {
-		website = [history objectAtIndex: i];
-		menuItem = [[[NSMenuItem alloc] initWithTitle: [website name]
+	
+	if ([object isKindOfClass: [Website class]]) {
+		[recentHistory insertObject: object atIndex: 0];
+		NSMenuItem *menuItem = [[[NSMenuItem alloc] initWithTitle: [object name]
 			action: @selector(open) keyEquivalent: nil] autorelease];
-		[menuItem setTarget: website];
-		[historyMenu addItem: menuItem];
+		[menuItem setTarget: object];
+		[historyMenu insertItem: menuItem atIndex: 1];
+		if ([recentHistory count] > MAX_RECENT_HISTORY) {
+			[recentHistory removeLastObject];
+			[historyMenu removeItemAtIndex: [historyMenu numberOfItems] - 1];
+		}
 	}
-	[historyMenu update];
 }
 
 -(void)awakeFromNib {
 	NSLog(@"App awake from nib");
+	recentHistory = [[NSMutableArray alloc] init];
 	[[NSNotificationCenter defaultCenter] addObserver: self
 		selector: @selector(historyUpdated:)
 		name: WebsiteHistoryUpdatedNotificationName
@@ -127,7 +129,7 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	struct nsurl *url;
 	nserror error;
 	
-	error = nsurl_create([[[aWebsite url] absoluteString] cString], &url);
+	error = nsurl_create([[aWebsite url] cString], &url);
 	if (error == NSERROR_OK) {
 		error = browser_window_create(BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 		nsurl_unref(url);
