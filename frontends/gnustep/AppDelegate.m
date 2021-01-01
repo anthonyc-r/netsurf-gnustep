@@ -15,7 +15,7 @@
 #import "HistoryWindowController.h"
 #import "Website.h"
 
-#define MAX_RECENT_HISTORY 6
+#define MAX_RECENT_HISTORY 10
 
 /**
  * Set option defaults for (taken from the cocoa frontend)

@@ -6,11 +6,6 @@
 #import "Website.h"
 #import "AppDelegate.h"
 
-#define HISTORY_PATH @"/.cache/NetSurf"
-
-static NSMutableArray *recentHistory;
-static NSMutableArray *olderHistory;
-
 @implementation Website
 
 -(id)initWithName: (NSString*)aName url: (NSString*)aUrl {
@@ -22,13 +17,15 @@ static NSMutableArray *olderHistory;
 		data->len_url = urlen;
 		memcpy(data->data, [aName cString], nlen);
 		memcpy(data->data + nlen, [aUrl cString], urlen);
+		fileOffset = -1;
 	}
 	return self;
 }
 
--(id)initWithData: (struct website_data*)someData {
+-(id)initWithData: (struct website_data*)someData atFileOffset: (long)aFileOffset {
 	if (self = [super init]) {
 		data = someData;
+		fileOffset = aFileOffset;
 	}
 	return self;
 }
@@ -47,6 +44,10 @@ static NSMutableArray *olderHistory;
 		data->len_url];
 }
 
+-(long)fileOffset {
+	return fileOffset;
+}
+
 -(void)open {
 	[[NSApp delegate] openWebsite: self];
 }
@@ -59,11 +60,12 @@ static NSMutableArray *olderHistory;
 		NSCalendarDate *date = [NSCalendarDate calendarDate];
 		int month = [date monthOfYear];
 		int year = [date yearOfCommonEra];
-		path = [[NSString alloc] initWithFormat: @"%@/%@/history_%d_%d", 
-			NSHomeDirectory(), HISTORY_PATH, year, month];
+		NSString *dir = [NSHomeDirectory() stringByAppendingPathComponent: 
+			HISTORY_PATH];
+		[[NSFileManager defaultManager] createDirectoryAtPath: dir attributes: nil]; 
+		path = [[NSString alloc] initWithFormat: @"%@/history_%d_%02d", dir, year,
+			 month];		
 	}
-	NSLog(@"name: %@", [self name]);
-	NSLog(@"url: %@", [self url]);
 	FILE *f = fopen([path cString], "a");
 	if (f != NULL) {
 		int len = sizeof (struct website_data) + data->len_url + data->len_name;

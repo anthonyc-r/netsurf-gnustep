@@ -55,7 +55,7 @@
 		NSLog(@"nsurl_create error");
 		return;
 	}
-	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL,
+	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_NONE, NULL, NULL,
 		NULL);
 	if (error != NSERROR_OK) {
 		NSLog(@"browser_window_navigate error");

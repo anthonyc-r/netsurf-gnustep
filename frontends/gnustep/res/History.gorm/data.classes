@@ -2,16 +2,19 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     FirstResponder = {
 	Actions = (
+	    "clearSearch:",
 	    "search:"
 	);
 	Super = NSObject;
     };
     HistoryWindowController = {
 	Actions = (
-	    "search:"
+	    "search:",
+	    "clearSearch:"
 	);
 	Outlets = (
-	    outlineView
+	    outlineView,
+	    searchBar
 	);
 	Super = NSWindowController;
     };

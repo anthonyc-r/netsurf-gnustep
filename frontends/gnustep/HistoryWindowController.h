@@ -2,8 +2,11 @@
 
 @interface HistoryWindowController: NSWindowController {
 	id outlineView;
-	BOOL ignoreRefresh;
-	NSArray *sections;
+	id searchBar;
+	NSString *searchValue;
+	NSMutableArray *sections;
 }
 
+-(void)search: (id)sender;
+-(void)clearSearch: (id)sender;
 @end
