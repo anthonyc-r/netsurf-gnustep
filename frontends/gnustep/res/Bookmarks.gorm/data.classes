@@ -1,0 +1,21 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    BookmarksWindowController = {
+	Actions = (
+	    "search:",
+	    "clearSearch:"
+	);
+	Outlets = (
+	    outlineView,
+	    searchBar
+	);
+	Super = NSWindowController;
+    };
+    FirstResponder = {
+	Actions = (
+	    "clearSearch:",
+	    "search:"
+	);
+	Super = NSObject;
+    };
+}

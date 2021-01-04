@@ -5,7 +5,8 @@
 	    "didTapNewWindow:",
 	    "showDownloadsWindow:",
 	    "showFindPanel:",
-	    "showHistoryWindowController:"
+	    "showHistoryWindow:",
+	    "showBookmarksWindow:"
 	);
 	Outlets = (
 	);
@@ -16,12 +17,13 @@
 	    "didTapNewWindow:",
 	    "findNext:",
 	    "findPrevious:",
-	    "showHistoryWindowController:",
+	    "showBookmarksWindow:",
 	    "remove:",
 	    "removeAll:",
 	    "showAll:",
 	    "showDownloadsWindow:",
-	    "showFindPanel:"
+	    "showFindPanel:",
+	    "showHistoryWindow:"
 	);
 	Super = NSObject;
     };

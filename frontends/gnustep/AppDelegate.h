@@ -30,11 +30,13 @@ NSMutableArray *recentHistory;
 id downloadsWindowController;
 id findPanelController;
 id historyWindowController;
+id bookmarksWindowController;
 }
 
 -(void)showFindPanel: (id)sender;
 -(void)showDownloadsWindow: (id)sender;
--(void)showHistoryWindowController: (id)sender;
+-(void)showHistoryWindow: (id)sender;
+-(void)showBookmarksWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
 -(void)openWebsite: (Website*)aWebsite;
 

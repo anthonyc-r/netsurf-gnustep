@@ -14,6 +14,7 @@
 #import "FindPanelController.h"
 #import "HistoryWindowController.h"
 #import "Website.h"
+#import "BookmarksWindowController.h"
 
 #define MAX_RECENT_HISTORY 10
 
@@ -108,13 +109,23 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	}
 }
 
--(void)showHistoryWindowController: (id)sender {
+-(void)showHistoryWindow: (id)sender {
 	NSLog(@"Showing history ...");
 	if (!historyWindowController) {
 		historyWindowController = [[HistoryWindowController alloc] init];
 		[historyWindowController loadWindow];
 	} else {
 		[historyWindowController showWindow: self];
+	}
+}
+
+-(void)showBookmarksWindow: (id)sender {
+	NSLog(@"Showing bookmarks...");
+	if (!bookmarksWindowController) {
+		bookmarksWindowController = [[BookmarksWindowController alloc] init];
+		[bookmarksWindowController loadWindow];
+	} else {
+		[bookmarksWindowController showWindow: self];
 	}
 }
 

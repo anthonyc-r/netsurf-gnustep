@@ -47,6 +47,7 @@ S_FRONTEND := \
 	ProgressBarCell.m	\
 	FindPanelController.m	\
 	HistoryWindowController.m	\
+	BookmarksWindowController.m	\
 	Website.m	\
 	BookmarkFolder.m	\
 	tables/misc.m	\
@@ -76,6 +77,7 @@ R_RESOURCES := \
 	Downloads.gorm	\
 	Find.gorm	\
 	History.gorm	\
+	Bookmarks.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 
