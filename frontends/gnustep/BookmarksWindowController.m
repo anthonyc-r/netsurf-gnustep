@@ -1,6 +1,6 @@
-#include <AppKit/AppKit.h>
-#include "BookmarksWindowController.h"
-#include "BookmarkFolder.h"
+#import <AppKit/AppKit.h>
+#import "BookmarksWindowController.h"
+#import "BookmarkFolder.h"
 
 @implementation BookmarksWindowController
 

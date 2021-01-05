@@ -30,6 +30,12 @@
 	return self;
 }
 
+-(id)initWithDictionary: (NSDictionary*)aDictionary {
+	NSString *aName = [aDictionary objectForKey: @"name"];
+	NSString *aUrl = [aDictionary objectForKey: @"url"];
+	return [self initWithName: aName url: aUrl];
+}
+
 -(void)dealloc {
 	free(data);
 	[super dealloc];
@@ -42,6 +48,13 @@
 -(NSString*)url {
 	return [NSString stringWithCString: data->data + data->len_name length: 
 		data->len_url];
+}
+
+-(NSDictionary*)asDictionary {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+	[dict setObject: [self name] forKey: @"name"];
+	[dict setObject: [self url] forKey: @"url"];
+	return dict;
 }
 
 -(long)fileOffset {

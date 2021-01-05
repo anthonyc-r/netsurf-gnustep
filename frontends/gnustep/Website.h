@@ -1,7 +1,7 @@
 #import <Cocoa/Cocoa.h>
 
 #define WebsiteHistoryUpdatedNotificationName @"WebsiteHistoryUpdatedNotification"
-#define HISTORY_PATH @"/.cache/NetSurf"
+#define HISTORY_PATH @"/.config/NetSurf"
 
 struct website_data {
 	int len_name;
@@ -20,9 +20,12 @@ struct website_data {
 
 -(id)initWithName: (NSString*)aName url: (NSString*)aUrl;
 -(id)initWithData: (struct website_data*)someData atFileOffset: (long)aFileOffset;
+-(id)initWithDictionary: (NSDictionary*)aDictionary;
 -(NSString*)name;
 -(NSString*)url;
 -(long)fileOffset;
+
+-(NSDictionary*)asDictionary;
 
 -(void)open;
 -(void)addToHistory;
