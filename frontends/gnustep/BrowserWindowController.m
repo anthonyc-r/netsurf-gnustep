@@ -9,6 +9,7 @@
 #import "desktop/browser_history.h"
 #import "netsurf/mouse.h"
 #import "desktop/search.h"
+#import "BookmarkFolder.h"
 
 @implementation BrowserWindowController
 
@@ -172,6 +173,20 @@
 		flags |= SEARCH_FLAG_CASE_SENSITIVE;
 	}
 	browser_window_search(browser, (void*)sender, flags, [needle cString]);
+}
+
+-(void)bookmarkPage: (id)sender {
+	struct nsurl *url = browser_window_access_url(browser);
+	const char *title = browser_window_get_title(browser);
+	if (title == NULL) {
+		title = "";
+	}
+	NSString *name = [NSString stringWithCString: title];
+	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
+	Website *website = [[Website alloc] initWithName: name 
+		url: urlStr];
+	[[BookmarkFolder unsortedBookmarkFolder] addChild: website];
+	[website release];
 }
 
 @end

@@ -13,7 +13,9 @@ static BookmarkFolder *cachedRootFolder;
 @interface BookmarkFolder(Private)
 -(NSString*)path;
 -(void)setPath: (NSString*)aPath;
+-(void)initChildrenIfNeeded;
 -(void)setChildren: (NSArray*)children;
+-(NSString*)pathNameForWebsite: (Website*)website;
 @end
 
 @implementation BookmarkFolder
@@ -38,40 +40,12 @@ static BookmarkFolder *cachedRootFolder;
 	[super dealloc];
 }
 
+-(BookmarkFolder*)parentFolder {
+	return parentFolder;
+}
+
 -(NSArray*)children {
-	if (children != nil) {
-		return children;
-	}
-	
-	NSMutableArray *newChildren = [[NSMutableArray alloc] init];
-	NSError *err = nil;
-	NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: 
-		path error: &err];
-	if (err != nil) {
-		NSLog(@"Error reading bookmarks root directory");
-		return nil;
-	}
-	NSString *fileName;
-	NSString *chPath;
-	NSDictionary *chDict;
-	id child;
-	BOOL isDir;
-	for (NSUInteger i = 0; i < [fileNames count]; i++) {
-		fileName = [fileNames objectAtIndex: i];
-		chPath = [path stringByAppendingPathComponent: fileName];
-		isDir = NO;
-		[[NSFileManager defaultManager] fileExistsAtPath: chPath 
-			isDirectory: &isDir];
-		if (isDir) {
-			child = [[BookmarkFolder alloc] initWithName: fileName parent: self];
-			[newChildren addObject: [child autorelease]];
-		} else {
-			chDict = [NSDictionary contentsOfFileAtPath: chPath];
-			child = [[Website alloc] initWithDictionary: chDict];
-			[newChildren addObject: [child autorelease]];
-		}
-	}
-	children = newChildren;
+	[self initChildrenIfNeeded];
 	return children;
 }
 
@@ -87,23 +61,44 @@ static BookmarkFolder *cachedRootFolder;
 	return [name isEqual: UNSORTED_NAME];
 }
 
--(void)deleteFolder {
-
-}
-
 -(void)addChild: (id)child {
+	[self initChildrenIfNeeded];
+	BOOL ok = NO;
 	if ([child isKindOfClass: [Website class]]) {
-
+		NSString * destPath = [path stringByAppendingPathComponent: [self
+			pathNameForWebsite: child]];
+		ok = [[child asDictionary] writeToFile: destPath atomically: YES];
 	} else if ([child isKindOfClass: [BookmarkFolder class]]) {
-
+		ok = [[NSFileManager defaultManager] createDirectoryAtPath: path
+			attributes: nil];	
+	}
+	if (ok) {
+		[children addObject: child];
+	} else {
+		NSLog(@"Failed to add child to folder");
 	}
 }
 
 -(void)removeChild: (id)child {
+	[self initChildrenIfNeeded];
+	BOOL ok = NO;
+	NSError *err;
+	NSString *destPath = nil;
 	if ([child isKindOfClass: [Website class]]) {
-
+		destPath = [path stringByAppendingPathComponent: [self pathNameForWebsite: 
+			child]];
 	} else if ([child isKindOfClass: [BookmarkFolder class]]) {
-
+		destPath = [child path];
+	}
+	if ([destPath rangeOfString: BOOKMARKS_PATH].location == NSNotFound) {
+		NSLog(@"Refusing to delete path not within NetSurf directory");
+		return;
+	}
+	ok = [[NSFileManager defaultManager] removeItemAtPath: destPath error: &err];
+	if (ok) {
+		[children removeObject: child];
+	} else {
+		NSLog(@"Failed to remove child");
 	}
 }
 
@@ -143,9 +138,48 @@ static BookmarkFolder *cachedRootFolder;
 	[path release];
 	path = [aPath retain];
 }
--(void)setChildren: (NSArray*)someChildren {
+-(void)setChildren: (NSMutableArray*)someChildren {
 	[children release];
 	children = [someChildren retain];
+}
+-(NSString*)pathNameForWebsite: (Website*)aWebsite {
+	NSUInteger hash = [[aWebsite name] hash];
+	return [[NSNumber numberWithUnsignedInt: hash] description];
+}
+-(void)initChildrenIfNeeded {
+	if (children != nil) {
+		return;
+	}
+	NSMutableArray *newChildren = [[NSMutableArray alloc] init];
+	NSError *err = nil;
+	NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: 
+		path error: &err];
+	if (err != nil) {
+		NSLog(@"Error reading bookmarks root directory");
+		children = nil;
+		return;
+	}
+	NSString *fileName;
+	NSString *chPath;
+	NSDictionary *chDict;
+	id child;
+	BOOL isDir;
+	for (NSUInteger i = 0; i < [fileNames count]; i++) {
+		fileName = [fileNames objectAtIndex: i];
+		chPath = [path stringByAppendingPathComponent: fileName];
+		isDir = NO;
+		[[NSFileManager defaultManager] fileExistsAtPath: chPath 
+			isDirectory: &isDir];
+		if (isDir) {
+			child = [[BookmarkFolder alloc] initWithName: fileName parent: self];
+			[newChildren addObject: [child autorelease]];
+		} else {
+			chDict = [NSDictionary dictionaryWithContentsOfFile: chPath];
+			child = [[Website alloc] initWithDictionary: chDict];
+			[newChildren addObject: [child autorelease]];
+		}
+	}
+	children = newChildren;
 }
 
 @end

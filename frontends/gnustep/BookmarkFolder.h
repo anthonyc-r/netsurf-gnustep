@@ -1,21 +1,21 @@
 #import <Cocoa/Cocoa.h>
 
-#define BOOKMARKS_PATH @"/.config/NetSurf"
+#define BOOKMARKS_PATH @"/.config/NetSurf/Bookmarks"
 #define UNSORTED_NAME @"Unsorted"
 
 @interface BookmarkFolder: NSObject {
 	NSString *name;
 	NSString *path;
-	NSArray *children;
+	NSMutableArray *children;
 	BookmarkFolder *parentFolder;
 }
 
 -(id)initWithName: (NSString*)aName parent: (BookmarkFolder*)aParent;
+-(BookmarkFolder*)parentFolder;
 -(NSArray*)children;
 -(NSString*)name;
 -(BOOL)isRootFolder;
 -(BOOL)isUnsortedFolder;
--(void)deleteFolder;
 -(void)addChild: (id)child;
 -(void)removeChild: (id)child;
 

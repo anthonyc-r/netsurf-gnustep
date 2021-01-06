@@ -40,5 +40,6 @@ struct browser_window;
 -(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
+-(void)bookmarkPage: (id)sender;
 
 @end

@@ -17,10 +17,11 @@
 	    "didTapNewWindow:",
 	    "findNext:",
 	    "findPrevious:",
-	    "showBookmarksWindow:",
+	    "bookmarkPage:",
 	    "remove:",
 	    "removeAll:",
 	    "showAll:",
+	    "showBookmarksWindow:",
 	    "showDownloadsWindow:",
 	    "showFindPanel:",
 	    "showHistoryWindow:"
