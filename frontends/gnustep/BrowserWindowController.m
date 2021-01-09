@@ -10,6 +10,7 @@
 #import "netsurf/mouse.h"
 #import "desktop/search.h"
 #import "BookmarkFolder.h"
+#import "CreateBookmarkPanelController.h"
 
 @implementation BrowserWindowController
 
@@ -185,7 +186,10 @@
 	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
 	Website *website = [[Website alloc] initWithName: name 
 		url: urlStr];
-	[[BookmarkFolder unsortedBookmarkFolder] addChild: website];
+	CreateBookmarkPanelController *bmController = [[CreateBookmarkPanelController alloc] 
+		initForWebsite: website];
+	[NSApp runModalForWindow: [bmController window]];
+	[bmController release];
 	[website release];
 }
 

@@ -1,0 +1,21 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    CreateBookmarkPanelController = {
+	Actions = (
+	    "didTapOkay:",
+	    "didTapCancel:"
+	);
+	Outlets = (
+	    nameField,
+	    folderButton
+	);
+	Super = NSWindowController;
+    };
+    FirstResponder = {
+	Actions = (
+	    "didTapOkay:",
+	    "didTapCancel:"
+	);
+	Super = NSObject;
+    };
+}

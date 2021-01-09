@@ -13,6 +13,7 @@
 -(id)initWithName: (NSString*)aName parent: (BookmarkFolder*)aParent;
 -(BookmarkFolder*)parentFolder;
 -(NSArray*)children;
+-(NSArray*)childFolders;
 -(NSString*)name;
 -(BOOL)isRootFolder;
 -(BOOL)isUnsortedFolder;

@@ -48,6 +48,7 @@ S_FRONTEND := \
 	FindPanelController.m	\
 	HistoryWindowController.m	\
 	BookmarksWindowController.m	\
+	CreateBookmarkPanelController.m	\
 	Website.m	\
 	BookmarkFolder.m	\
 	tables/misc.m	\
@@ -78,6 +79,7 @@ R_RESOURCES := \
 	Find.gorm	\
 	History.gorm	\
 	Bookmarks.gorm	\
+	CreateBookmark.gorm	\
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 

@@ -9,7 +9,6 @@ per website. Bookmark folders just mirror the directory structure. Child items a
 lazy-loaded when requested.
 */
 
-static BookmarkFolder *cachedRootFolder;
 @interface BookmarkFolder(Private)
 -(NSString*)path;
 -(void)setPath: (NSString*)aPath;
@@ -31,9 +30,6 @@ static BookmarkFolder *cachedRootFolder;
 }
 
 -(void)dealloc {
-	if ([self isRootFolder]) {
-		cachedRootFolder = nil;
-	}
 	[children release];
 	[name release];
 	[path release];
@@ -47,6 +43,19 @@ static BookmarkFolder *cachedRootFolder;
 -(NSArray*)children {
 	[self initChildrenIfNeeded];
 	return children;
+}
+
+-(NSArray*)childFolders {
+	NSMutableArray *folders = [NSMutableArray array];
+	NSArray *allChildren = [self children];
+	id child;
+	for (NSUInteger i = 0; i < [allChildren count]; i++) {
+		child = [allChildren objectAtIndex: i];
+		if ([child isKindOfClass: [BookmarkFolder class]]) {
+			[folders addObject: child];
+		}
+	}
+	return folders;
 }
 
 -(NSString*)name {
@@ -103,8 +112,9 @@ static BookmarkFolder *cachedRootFolder;
 }
 
 +(BookmarkFolder*)rootBookmarkFolder {
+	static BookmarkFolder *cachedRootFolder;
 	if (cachedRootFolder != nil) {
-		return [cachedRootFolder autorelease];
+		return cachedRootFolder;
 	}
 
 	NSString *rootPath = [NSHomeDirectory() stringByAppendingPathComponent: 
@@ -114,8 +124,8 @@ static BookmarkFolder *cachedRootFolder;
 	[[NSFileManager defaultManager] createDirectoryAtPath: unsortedPath attributes: nil];
 	BookmarkFolder *rootFolder = [[BookmarkFolder alloc] initWithName: @"" parent: nil];
 	[rootFolder setPath: rootPath];
-	cachedRootFolder = rootFolder;
-	return [rootFolder autorelease];
+	cachedRootFolder = [rootFolder retain];
+	return rootFolder;
 }
 
 +(BookmarkFolder*)unsortedBookmarkFolder {
