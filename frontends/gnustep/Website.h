@@ -14,16 +14,20 @@ struct website_data {
 
 @class BookmarkFolder;
 @interface Website: NSObject {
+	NSString *filename;
 	long fileOffset;
 	struct website_data *data;
 }
 
 -(id)initWithName: (NSString*)aName url: (NSString*)aUrl;
 -(id)initWithData: (struct website_data*)someData atFileOffset: (long)aFileOffset;
--(id)initWithDictionary: (NSDictionary*)aDictionary;
+-(id)initWithDictionary: (NSDictionary*)aDictionary fromFileNamed: (NSString*)aFilename;
 -(NSString*)name;
 -(NSString*)url;
+-(void)setName: (NSString*)aName;
 -(long)fileOffset;
+-(NSString*)filename;
+-(void)setFilename: (NSString*)aFilename;
 
 -(NSDictionary*)asDictionary;
 

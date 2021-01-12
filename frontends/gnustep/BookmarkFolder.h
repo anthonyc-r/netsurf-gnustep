@@ -19,7 +19,8 @@
 -(BOOL)isUnsortedFolder;
 -(void)addChild: (id)child;
 -(void)removeChild: (id)child;
-
+-(void)updateChild: (id)child;
+-(void)setName: (NSString*)aName;
 
 +(BookmarkFolder*)rootBookmarkFolder;
 +(BookmarkFolder*)unsortedBookmarkFolder;

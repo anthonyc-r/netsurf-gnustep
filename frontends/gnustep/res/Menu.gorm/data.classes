@@ -14,10 +14,11 @@
     };
     FirstResponder = {
 	Actions = (
+	    "bookmarkPage:",
 	    "didTapNewWindow:",
 	    "findNext:",
 	    "findPrevious:",
-	    "bookmarkPage:",
+	    "newFolder:",
 	    "remove:",
 	    "removeAll:",
 	    "showAll:",

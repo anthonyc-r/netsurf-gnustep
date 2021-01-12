@@ -1,6 +1,7 @@
 #import <AppKit/AppKit.h>
 #import "BookmarksWindowController.h"
 #import "BookmarkFolder.h"
+#import "Website.h"
 
 @implementation BookmarksWindowController
 
@@ -29,6 +30,10 @@
 -(void)awakeFromNib {
 	[[self window] makeKeyAndOrderFront: self];
 	[self onWindowAppeared];
+}
+
+-(void)newFolder: (id)sender {
+	NSLog(@"create new folder");
 }
 
 -(void)showWindow: (id)sender {
@@ -75,6 +80,24 @@
 		return [item name];
 	} else {
 		return @"Error";
+	}
+}
+
+-(BOOL)outlineView: (NSOutlineView*)outlineView shouldEditTableColumn: (NSTableColumn*)tableColumn item: (id)item {
+	return YES;
+}
+
+-(void)outlineView: (NSOutlineView*)outlineView willDisplayCell: (id)cell forTableColumn: (NSTableColumn*)tableColumn item: (id)item {
+	[cell setEditable: YES];
+}
+
+-(void)outlineView: (NSOutlineView*)outlineView setObjectValue: (id)object forTableColumn: (NSTableColumn*)tableColumn byItem: (id)item {
+	if ([item isKindOfClass: [Website class]]) {
+		[(Website*)item setName: object];
+		BookmarkFolder *folder = [outlineView parentForItem: item];
+		[folder updateChild: item];
+	} else if ([item isKindOfClass: [BookmarkFolder class]]) {
+		[(BookmarkFolder*)item setName: object];
 	}
 }
 

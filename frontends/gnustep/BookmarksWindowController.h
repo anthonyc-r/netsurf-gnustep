@@ -8,4 +8,5 @@
 }
 -(void)search: (id)sender;
 -(void)clearSearch: (id)sender;
+-(void)newFolder: (id)sender;
 @end

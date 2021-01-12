@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define TAG_MENU_REMOVE 206
 #define TAG_MENU_CANCEL 204
-#define TAG_MENU_OPEN 103
+#define TAG_MENU_OPEN 104
 #define TAG_SUBMENU_HISTORY 500
 
 @interface AppDelegate: NSResponder<NSApplicationDelegate> {

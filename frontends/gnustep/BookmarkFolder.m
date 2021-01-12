@@ -70,16 +70,29 @@ lazy-loaded when requested.
 	return [name isEqual: UNSORTED_NAME];
 }
 
+-(void)updateChild: (id)child {
+	if ([child isKindOfClass: [Website class]]) {
+		BOOL ok = NO;
+		NSString * destPath = [path stringByAppendingPathComponent: [self
+			pathNameForWebsite: child]];
+		ok = [[child asDictionary] writeToFile: destPath atomically: YES];
+		if (!ok) {
+			NSLog(@"Failed to resave the child");
+		}
+	}
+}
+
 -(void)addChild: (id)child {
 	[self initChildrenIfNeeded];
 	BOOL ok = NO;
 	if ([child isKindOfClass: [Website class]]) {
-		NSString * destPath = [path stringByAppendingPathComponent: [self
-			pathNameForWebsite: child]];
+		NSString *filename = [self pathNameForWebsite: child];
+		NSString *destPath = [path stringByAppendingPathComponent: filename];
 		ok = [[child asDictionary] writeToFile: destPath atomically: YES];
+		[child setFilename: filename];
 	} else if ([child isKindOfClass: [BookmarkFolder class]]) {
 		ok = [[NSFileManager defaultManager] createDirectoryAtPath: path
-			attributes: nil];	
+			attributes: nil];
 	}
 	if (ok) {
 		[children addObject: child];
@@ -111,6 +124,26 @@ lazy-loaded when requested.
 	}
 }
 
+-(void)setName: (NSString*)aName {
+	if ([aName length] < 1) {
+		return;
+	}
+	[name release];
+	name = [aName retain];
+	
+	NSString *toPath = [[path stringByDeletingLastPathComponent] 
+		stringByAppendingPathComponent: aName];
+	NSError *err = nil;
+	[[NSFileManager defaultManager] moveItemAtPath: [self path] toPath: toPath error:
+		&err];
+	if (err == nil) {
+		[path release];
+		path = [toPath retain];
+	} else {
+		NSLog(@"Error renaming directory");
+	}
+}
+
 +(BookmarkFolder*)rootBookmarkFolder {
 	static BookmarkFolder *cachedRootFolder;
 	if (cachedRootFolder != nil) {
@@ -139,6 +172,7 @@ lazy-loaded when requested.
 			return child;
 		}
 	}
+	return nil;
 }
 
 -(NSString*)path {
@@ -153,8 +187,14 @@ lazy-loaded when requested.
 	children = [someChildren retain];
 }
 -(NSString*)pathNameForWebsite: (Website*)aWebsite {
-	NSUInteger hash = [[aWebsite name] hash];
-	return [[NSNumber numberWithUnsignedInt: hash] description];
+	if ([aWebsite filename] != nil) {
+		return [aWebsite filename];
+	} else {
+		NSTimeInterval time = [[NSDate date] timeIntervalSinceReferenceDate];
+		NSNumber *num = [NSNumber numberWithDouble: time];
+		return [num stringValue];
+	}
+
 }
 -(void)initChildrenIfNeeded {
 	if (children != nil) {
@@ -185,7 +225,8 @@ lazy-loaded when requested.
 			[newChildren addObject: [child autorelease]];
 		} else {
 			chDict = [NSDictionary dictionaryWithContentsOfFile: chPath];
-			child = [[Website alloc] initWithDictionary: chDict];
+			child = [[Website alloc] initWithDictionary: chDict fromFileNamed:
+				fileName];
 			[newChildren addObject: [child autorelease]];
 		}
 	}

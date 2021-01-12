@@ -30,14 +30,18 @@
 	return self;
 }
 
--(id)initWithDictionary: (NSDictionary*)aDictionary {
+-(id)initWithDictionary: (NSDictionary*)aDictionary fromFileNamed: (NSString*)aFilename {
 	NSString *aName = [aDictionary objectForKey: @"name"];
 	NSString *aUrl = [aDictionary objectForKey: @"url"];
-	return [self initWithName: aName url: aUrl];
+	if ([self initWithName: aName url: aUrl] != nil) {
+		filename = [aFilename retain];
+	}
+	return self;
 }
 
 -(void)dealloc {
 	free(data);
+	[filename release];
 	[super dealloc];
 }
 
@@ -48,6 +52,26 @@
 -(NSString*)url {
 	return [NSString stringWithCString: data->data + data->len_name length: 
 		data->len_url];
+}
+
+-(void)setName: (NSString*)aName {
+	NSString *url = [self url];
+	int nlen = [aName length];
+	int urlen = data->len_url;
+	data = realloc(data, sizeof (struct website_data) + nlen + urlen);
+	data->len_name = nlen;
+	data->len_url = urlen;
+	memcpy(data->data, [aName cString], nlen);
+	memcpy(data->data + nlen, [url cString], urlen);
+	fileOffset = -1;
+}
+
+-(NSString*)filename {
+	return filename;
+}
+-(void)setFilename: (NSString*)aFilename {
+	[filename release];
+	filename = [aFilename retain];
 }
 
 -(NSDictionary*)asDictionary {
