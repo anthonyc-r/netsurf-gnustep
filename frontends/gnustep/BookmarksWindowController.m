@@ -2,6 +2,11 @@
 #import "BookmarksWindowController.h"
 #import "BookmarkFolder.h"
 #import "Website.h"
+#import "AppDelegate.h"
+
+@interface BookmarksWindowController (Private)
+-(void)copySelectedItems;
+@end
 
 @implementation BookmarksWindowController
 
@@ -10,6 +15,12 @@
 		// ...
 	}
 	return self;
+}
+
+-(void)dealloc {
+	[copiedItems release];
+	[topLevelFolders release];
+	[super dealloc];
 }
 
 -(BOOL)windowShouldClose: (id)sender {
@@ -32,6 +43,55 @@
 	[self onWindowAppeared];
 }
 
+-(void)cut: (id)sender {
+	isCutting = YES;
+	[self copySelectedItems];
+}
+
+-(void)copy: (id)sender {
+	isCutting = NO;
+	[self copySelectedItems];
+}
+
+-(void)paste: (id)sender {
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	NSNumber *row = [selected nextObject];
+	if (row == nil) {
+		return;
+	}
+	id item = [outlineView itemAtRow: [row integerValue]];
+	if (row == nil) {
+		return;
+	}
+	BookmarkFolder *destinationFolder = nil;
+	if ([item isKindOfClass: [Website class]]) {
+		destinationFolder = [item parentFolder];
+	} else if ([item isKindOfClass: [BookmarkFolder class]]) {
+		destinationFolder = item;
+	}
+	if (destinationFolder == nil) {
+		NSLog(@"Couldn't find destination for paste");
+		return;
+	}
+	for (NSUInteger i = 0; i < [copiedItems count]; i++) {
+		item = [copiedItems objectAtIndex: i];
+		if (isCutting) {
+			[[item parentFolder] removeChild: item];
+		}
+		[destinationFolder addChild: item];
+	}
+	
+	if (isCutting) {
+		isCutting = NO;
+		[copiedItems release];
+		copiedItems = nil;
+	}
+}
+
+-(void)remove: (id)sender {
+
+}
+
 -(void)newFolder: (id)sender {
 	NSLog(@"create new folder");
 }
@@ -48,6 +108,17 @@
 
 -(void)clearSearch: (id)sender {
   NSLog(@"Clear bookmarks search");
+}
+
+-(BOOL)validateMenuItem: (NSMenuItem*)aMenuItem {
+	NSInteger tag = [aMenuItem tag];
+	if (tag == TAG_MENU_REMOVE || tag == TAG_MENU_OPEN || tag == TAG_MENU_COPY || 
+		tag == TAG_MENU_CUT) {
+		return [outlineView numberOfSelectedRows] > 0;
+	} else if (tag == TAG_MENU_PASTE) {
+		return copiedItems != nil;
+	}
+	return YES;
 }
 
 
@@ -99,6 +170,31 @@
 	} else if ([item isKindOfClass: [BookmarkFolder class]]) {
 		[(BookmarkFolder*)item setName: object];
 	}
+}
+
+-(void)copySelectedItems {
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	NSMutableArray *copiedFolders = [NSMutableArray array];
+	NSMutableArray *toCopy = [NSMutableArray array];
+	BOOL addedToPB = NO; 
+	id row, item;
+	while ((row = [selected nextObject]) != NULL) {
+		item = [outlineView itemAtRow: [row integerValue]];
+		if (!addedToPB && [item isKindOfClass: [Website class]]) {
+			[[NSPasteboard generalPasteboard] setString: [item url]
+				forType: NSStringPboardType];
+			addedToPB = YES;
+		}
+		if ([item isKindOfClass: [BookmarkFolder class]]) {
+			[copiedFolders addObject: item];
+		}
+		if ([copiedFolders containsObject: [item parentFolder]]) {
+			break;
+		}
+		[toCopy addObject: item];
+	}
+	[copiedItems release];
+	copiedItems = [toCopy retain];
 }
 
 @end

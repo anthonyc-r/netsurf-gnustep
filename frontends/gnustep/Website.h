@@ -14,6 +14,7 @@ struct website_data {
 
 @class BookmarkFolder;
 @interface Website: NSObject {
+	BookmarkFolder *parentFolder;
 	NSString *filename;
 	long fileOffset;
 	struct website_data *data;
@@ -28,7 +29,8 @@ struct website_data {
 -(long)fileOffset;
 -(NSString*)filename;
 -(void)setFilename: (NSString*)aFilename;
-
+-(BookmarkFolder*)parentFolder;
+-(void)setParentFolder: (BookmarkFolder*)aBookmarkFolder;
 -(NSDictionary*)asDictionary;
 
 -(void)open;

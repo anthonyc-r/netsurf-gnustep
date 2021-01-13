@@ -41,6 +41,7 @@
 
 -(void)dealloc {
 	free(data);
+	[parentFolder release];
 	[filename release];
 	[super dealloc];
 }
@@ -72,6 +73,16 @@
 -(void)setFilename: (NSString*)aFilename {
 	[filename release];
 	filename = [aFilename retain];
+}
+
+// Set when init from bookmarks or added to folder
+-(BookmarkFolder*)parentFolder {
+	return parentFolder;
+}
+
+-(void)setParentFolder: (BookmarkFolder*)aBookmarkFolder {
+	[parentFolder release];
+	parentFolder = [aBookmarkFolder retain];
 }
 
 -(NSDictionary*)asDictionary {

@@ -90,6 +90,7 @@ lazy-loaded when requested.
 		NSString *destPath = [path stringByAppendingPathComponent: filename];
 		ok = [[child asDictionary] writeToFile: destPath atomically: YES];
 		[child setFilename: filename];
+		[child setParentFolder: self];
 	} else if ([child isKindOfClass: [BookmarkFolder class]]) {
 		ok = [[NSFileManager defaultManager] createDirectoryAtPath: path
 			attributes: nil];
@@ -227,6 +228,7 @@ lazy-loaded when requested.
 			chDict = [NSDictionary dictionaryWithContentsOfFile: chPath];
 			child = [[Website alloc] initWithDictionary: chDict fromFileNamed:
 				fileName];
+			[child setParentFolder: self];
 			[newChildren addObject: [child autorelease]];
 		}
 	}
