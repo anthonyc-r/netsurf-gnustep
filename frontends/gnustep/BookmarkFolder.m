@@ -73,9 +73,12 @@ lazy-loaded when requested.
 -(void)updateChild: (id)child {
 	if ([child isKindOfClass: [Website class]]) {
 		BOOL ok = NO;
-		NSString * destPath = [path stringByAppendingPathComponent: [self
-			pathNameForWebsite: child]];
-		ok = [[child asDictionary] writeToFile: destPath atomically: YES];
+		NSString *filename = [child filename];
+		if (filename != nil) {
+			NSString * destPath = [path stringByAppendingPathComponent: 
+				filename];
+			ok = [[child asDictionary] writeToFile: destPath atomically: YES];
+		}
 		if (!ok) {
 			NSLog(@"Failed to resave the child");
 		}
@@ -105,11 +108,10 @@ lazy-loaded when requested.
 -(void)removeChild: (id)child {
 	[self initChildrenIfNeeded];
 	BOOL ok = NO;
-	NSError *err;
+	NSError *err = nil;
 	NSString *destPath = nil;
-	if ([child isKindOfClass: [Website class]]) {
-		destPath = [path stringByAppendingPathComponent: [self pathNameForWebsite: 
-			child]];
+	if ([child isKindOfClass: [Website class]] && [child filename] != nil) {
+		destPath = [path stringByAppendingPathComponent: [child filename]];
 	} else if ([child isKindOfClass: [BookmarkFolder class]]) {
 		destPath = [child path];
 	}
@@ -118,7 +120,7 @@ lazy-loaded when requested.
 		return;
 	}
 	ok = [[NSFileManager defaultManager] removeItemAtPath: destPath error: &err];
-	if (ok) {
+	if (ok && err == nil) {
 		[children removeObject: child];
 	} else {
 		NSLog(@"Failed to remove child");
@@ -188,13 +190,9 @@ lazy-loaded when requested.
 	children = [someChildren retain];
 }
 -(NSString*)pathNameForWebsite: (Website*)aWebsite {
-	if ([aWebsite filename] != nil) {
-		return [aWebsite filename];
-	} else {
-		NSTimeInterval time = [[NSDate date] timeIntervalSinceReferenceDate];
-		NSNumber *num = [NSNumber numberWithDouble: time];
-		return [num stringValue];
-	}
+	NSTimeInterval time = [[NSDate date] timeIntervalSinceReferenceDate];
+	NSNumber *num = [NSNumber numberWithDouble: time];
+	return [num stringValue];
 
 }
 -(void)initChildrenIfNeeded {

@@ -5,7 +5,7 @@
 #import "AppDelegate.h"
 
 @interface BookmarksWindowController (Private)
--(void)copySelectedItems;
+-(NSArray*)selectedItems;
 @end
 
 @implementation BookmarksWindowController
@@ -45,12 +45,14 @@
 
 -(void)cut: (id)sender {
 	isCutting = YES;
-	[self copySelectedItems];
+	[copiedItems release];
+	copiedItems = [[self selectedItems] retain];
 }
 
 -(void)copy: (id)sender {
 	isCutting = NO;
-	[self copySelectedItems];
+	[copiedItems release];
+	copiedItems = [[self selectedItems] retain];
 }
 
 -(void)paste: (id)sender {
@@ -86,10 +88,18 @@
 		[copiedItems release];
 		copiedItems = nil;
 	}
+	[outlineView reloadData];
 }
 
 -(void)remove: (id)sender {
-
+	NSArray *selectedItems = [self selectedItems];
+	id item;
+	for (NSUInteger i = 0; i < [selectedItems count]; i++) {
+		item = [selectedItems objectAtIndex: i];
+		NSLog(@"Removing item %@", item);
+		[[item parentFolder] removeChild: item];
+	}
+	[outlineView reloadData];
 }
 
 -(void)newFolder: (id)sender {
@@ -171,11 +181,10 @@
 		[(BookmarkFolder*)item setName: object];
 	}
 }
-
--(void)copySelectedItems {
+-(NSArray*)selectedItems {
 	NSEnumerator *selected = [outlineView selectedRowEnumerator];
-	NSMutableArray *copiedFolders = [NSMutableArray array];
-	NSMutableArray *toCopy = [NSMutableArray array];
+	NSMutableArray *selectedFolders = [NSMutableArray array];
+	NSMutableArray *selectedItems = [NSMutableArray array];
 	BOOL addedToPB = NO; 
 	id row, item;
 	while ((row = [selected nextObject]) != NULL) {
@@ -186,15 +195,14 @@
 			addedToPB = YES;
 		}
 		if ([item isKindOfClass: [BookmarkFolder class]]) {
-			[copiedFolders addObject: item];
+			[selectedFolders addObject: item];
 		}
-		if ([copiedFolders containsObject: [item parentFolder]]) {
+		if ([selectedFolders containsObject: [item parentFolder]]) {
 			break;
 		}
-		[toCopy addObject: item];
+		[selectedItems addObject: item];
 	}
-	[copiedItems release];
-	copiedItems = [toCopy retain];
+	return selectedItems;
 }
 
 @end

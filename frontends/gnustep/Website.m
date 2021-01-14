@@ -18,6 +18,7 @@
 		memcpy(data->data, [aName cString], nlen);
 		memcpy(data->data + nlen, [aUrl cString], urlen);
 		fileOffset = -1;
+		filename = nil;
 	}
 	return self;
 }
@@ -26,6 +27,7 @@
 	if (self = [super init]) {
 		data = someData;
 		fileOffset = aFileOffset;
+		filename = nil;
 	}
 	return self;
 }
@@ -71,7 +73,7 @@
 	return filename;
 }
 -(void)setFilename: (NSString*)aFilename {
-	[filename release];
+	[filename autorelease];
 	filename = [aFilename retain];
 }
 
