@@ -11,6 +11,7 @@
 -(void)search: (id)sender;
 -(void)clearSearch: (id)sender;
 -(void)newFolder: (id)sender;
+-(void)open: (id)sender;
 -(void)cut: (id)sender;
 -(void)copy: (id)sender;
 -(void)paste: (id)sender;

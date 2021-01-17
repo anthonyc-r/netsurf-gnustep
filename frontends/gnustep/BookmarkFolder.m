@@ -22,7 +22,8 @@ lazy-loaded when requested.
 -(id)initWithName: (NSString*)aFolderName parent: (BookmarkFolder*)aParent {
 	if (self = [super init]) {
 		[aFolderName retain];
-		name = aFolderName;
+		parentFolder = [aParent retain];
+		name = [aFolderName retain];
 		children = nil;
 		path = [[[aParent path] stringByAppendingPathComponent: aFolderName] retain];
 	}
@@ -30,6 +31,7 @@ lazy-loaded when requested.
 }
 
 -(void)dealloc {
+	[parentFolder release];
 	[children release];
 	[name release];
 	[path release];
@@ -68,6 +70,48 @@ lazy-loaded when requested.
 
 -(BOOL)isUnsortedFolder {
 	return [name isEqual: UNSORTED_NAME];
+}
+
+-(void)moveChild: (id)child toOtherFolder: (BookmarkFolder*)otherFolder {
+	NSString *source = nil;
+	NSString *destination = nil;
+	NSError *err = nil;
+	BOOL ok = NO;
+	BOOL isWebsite = NO;
+	
+	NSLog(@"move child called");
+	if ([child isKindOfClass: [BookmarkFolder class]]) {
+		NSLog(@"Child is bookmark folder");
+		source = [child path];
+		NSLog(@"Got source");
+		destination = [[otherFolder path] stringByAppendingPathComponent: [child
+			name]];
+		NSLog(@"Got dest");
+	} else if ([child filename] != nil) {
+		isWebsite = YES;
+		source = [[self path] stringByAppendingPathComponent: [child filename]];
+		destination = [[otherFolder path] stringByAppendingPathComponent: [child
+			filename]];
+	}
+	if (source != nil) {
+		NSLog(@"moving from path %@ to %@", source, destination);
+		ok = [[NSFileManager defaultManager] moveItemAtPath: source toPath: 
+			destination error: &err];
+	} else {
+		NSLog(@"source is nil!!");
+	}
+	if (ok) {
+		[children removeObject: child];
+		[otherFolder->children addObject: child];
+		if ([child isKindOfClass: [BookmarkFolder class]]) {
+			[(BookmarkFolder*)child setPath: destination];
+		} else {
+			[child setParentFolder: otherFolder];
+		}
+	} else {
+		NSLog(@"Failed to move child");
+	}
+	
 }
 
 -(void)updateChild: (id)child {
@@ -158,7 +202,8 @@ lazy-loaded when requested.
 	NSString *unsortedPath = [rootPath stringByAppendingPathComponent: UNSORTED_NAME];
 	[[NSFileManager defaultManager] createDirectoryAtPath: rootPath attributes: nil];
 	[[NSFileManager defaultManager] createDirectoryAtPath: unsortedPath attributes: nil];
-	BookmarkFolder *rootFolder = [[BookmarkFolder alloc] initWithName: @"" parent: nil];
+	BookmarkFolder *rootFolder = [[BookmarkFolder alloc] initWithName: @"Bookmarks"
+		parent: nil];
 	[rootFolder setPath: rootPath];
 	cachedRootFolder = [rootFolder retain];
 	return rootFolder;

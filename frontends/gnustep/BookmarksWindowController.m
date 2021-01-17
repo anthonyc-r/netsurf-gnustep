@@ -30,11 +30,12 @@
 }
 
 -(void)onWindowAppeared {
-	topLevelFolders = [[[BookmarkFolder rootBookmarkFolder] children] retain];
+	topLevelFolders = [[NSArray alloc] initWithObjects: [BookmarkFolder
+		rootBookmarkFolder], nil];
 	[outlineView reloadData];
 	for (NSUInteger i = 0; i < [topLevelFolders count]; i++) {
 		[outlineView expandItem: [topLevelFolders objectAtIndex: i] 
-			expandChildren: NO];
+			expandChildren: YES];
 	}
 }
 
@@ -78,9 +79,12 @@
 	for (NSUInteger i = 0; i < [copiedItems count]; i++) {
 		item = [copiedItems objectAtIndex: i];
 		if (isCutting) {
-			[[item parentFolder] removeChild: item];
+			NSLog(@"Call move child on items parent: %@", [item parentFolder]);
+			[[item parentFolder] moveChild: item toOtherFolder: 
+				destinationFolder];
+		} else {
+			[destinationFolder addChild: item];
 		}
-		[destinationFolder addChild: item];
 	}
 	
 	if (isCutting) {
@@ -100,6 +104,18 @@
 		[[item parentFolder] removeChild: item];
 	}
 	[outlineView reloadData];
+}
+
+-(void)open: (id)sender {
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	id row, item;
+	while ((row = [selected nextObject]) != nil) {
+		item = [outlineView itemAtRow: [row integerValue]];
+		if ([item isKindOfClass: [Website class]]) {
+			[[NSApp delegate] openWebsite: item];
+			break;
+		}
+	}
 }
 
 -(void)newFolder: (id)sender {
@@ -195,10 +211,13 @@
 			addedToPB = YES;
 		}
 		if ([item isKindOfClass: [BookmarkFolder class]]) {
+			if ([item isRootFolder]) {
+				continue;
+			}
 			[selectedFolders addObject: item];
 		}
 		if ([selectedFolders containsObject: [item parentFolder]]) {
-			break;
+			continue;
 		}
 		[selectedItems addObject: item];
 	}

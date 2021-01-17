@@ -20,6 +20,7 @@
 -(void)addChild: (id)child;
 -(void)removeChild: (id)child;
 -(void)updateChild: (id)child;
+-(void)moveChild: (id)child toOtherFolder: (BookmarkFolder*)otherFolder;
 -(void)setName: (NSString*)aName;
 
 +(BookmarkFolder*)rootBookmarkFolder;
