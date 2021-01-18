@@ -47,6 +47,27 @@ lazy-loaded when requested.
 	return children;
 }
 
+-(NSArray*)childrenApplyingFilter: (NSString*)filter {
+	if (filter == nil || [filter length] < 1) {
+		return [self children];
+	}
+	NSMutableArray *filteredChildren = [NSMutableArray array];
+	NSEnumerator *enu = [[self children] objectEnumerator];
+	id child;
+	while ((child = [enu nextObject]) != nil) {
+		if ([child isKindOfClass: [BookmarkFolder class]]) {
+			[filteredChildren addObject: child];
+		} else {
+			NSRange range = [[child name] rangeOfString: filter options: 
+				NSCaseInsensitiveSearch];
+			if (range.location != NSNotFound) {
+				[filteredChildren addObject: child];
+			}
+		}
+	}
+	return filteredChildren;
+}
+
 -(NSArray*)childFolders {
 	NSMutableArray *folders = [NSMutableArray array];
 	NSArray *allChildren = [self children];
@@ -79,14 +100,10 @@ lazy-loaded when requested.
 	BOOL ok = NO;
 	BOOL isWebsite = NO;
 	
-	NSLog(@"move child called");
 	if ([child isKindOfClass: [BookmarkFolder class]]) {
-		NSLog(@"Child is bookmark folder");
 		source = [child path];
-		NSLog(@"Got source");
 		destination = [[otherFolder path] stringByAppendingPathComponent: [child
 			name]];
-		NSLog(@"Got dest");
 	} else if ([child filename] != nil) {
 		isWebsite = YES;
 		source = [[self path] stringByAppendingPathComponent: [child filename]];
@@ -94,11 +111,10 @@ lazy-loaded when requested.
 			filename]];
 	}
 	if (source != nil) {
-		NSLog(@"moving from path %@ to %@", source, destination);
 		ok = [[NSFileManager defaultManager] moveItemAtPath: source toPath: 
 			destination error: &err];
 	} else {
-		NSLog(@"source is nil!!");
+		NSLog(@"source is nil!");
 	}
 	if (ok) {
 		[children removeObject: child];

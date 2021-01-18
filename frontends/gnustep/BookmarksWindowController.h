@@ -7,6 +7,7 @@
 	NSArray *topLevelFolders;
 	BOOL isCutting;
 	NSArray *copiedItems;
+	NSString *filterValue;
 }
 -(void)search: (id)sender;
 -(void)clearSearch: (id)sender;

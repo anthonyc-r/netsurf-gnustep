@@ -12,7 +12,10 @@
 
 -(id)init {
 	if ((self = [super initWithWindowNibName: @"Bookmarks"])) {
-		// ...
+		filterValue = nil;
+		copiedItems = nil;
+		topLevelFolders = nil;
+		isCutting = NO;
 	}
 	return self;
 }
@@ -20,6 +23,7 @@
 -(void)dealloc {
 	[copiedItems release];
 	[topLevelFolders release];
+	[filterValue release];
 	[super dealloc];
 }
 
@@ -79,7 +83,6 @@
 	for (NSUInteger i = 0; i < [copiedItems count]; i++) {
 		item = [copiedItems objectAtIndex: i];
 		if (isCutting) {
-			NSLog(@"Call move child on items parent: %@", [item parentFolder]);
 			[[item parentFolder] moveChild: item toOtherFolder: 
 				destinationFolder];
 		} else {
@@ -100,7 +103,6 @@
 	id item;
 	for (NSUInteger i = 0; i < [selectedItems count]; i++) {
 		item = [selectedItems objectAtIndex: i];
-		NSLog(@"Removing item %@", item);
 		[[item parentFolder] removeChild: item];
 	}
 	[outlineView reloadData];
@@ -128,12 +130,17 @@
 }
 
 -(void)search: (id)sender {
-  NSLog(@"search bookmarks");
+	[filterValue release];
+	filterValue = [[sender stringValue] retain];
+	[outlineView reloadData];
 }
 
 
 -(void)clearSearch: (id)sender {
-  NSLog(@"Clear bookmarks search");
+	[filterValue release];
+	filterValue = nil;
+	[outlineView reloadData];
+	[searchBar setStringValue: nil];
 }
 
 -(BOOL)validateMenuItem: (NSMenuItem*)aMenuItem {
@@ -152,7 +159,7 @@
 	if (item == nil) {
 		return [topLevelFolders objectAtIndex: index];
 	} else if ([item isKindOfClass: [BookmarkFolder class]]) {
-		return [[item children] objectAtIndex: index];
+		return [[item childrenApplyingFilter: filterValue] objectAtIndex: index];
 	} else {
 		return nil;
 	}
@@ -166,7 +173,7 @@
 	if (item == nil) {
 		return [topLevelFolders count];
 	} else if ([item isKindOfClass: [BookmarkFolder class]]) {
-		return [[item children] count];
+		return [[item childrenApplyingFilter: filterValue] count];
 	} else {
 		return 0;
 	}
@@ -181,7 +188,11 @@
 }
 
 -(BOOL)outlineView: (NSOutlineView*)outlineView shouldEditTableColumn: (NSTableColumn*)tableColumn item: (id)item {
-	return YES;
+	if ([item isKindOfClass: [BookmarkFolder class]]) {
+		return !([item isUnsortedFolder] || [item isRootFolder]);
+	} else {
+		return YES;
+	}
 }
 
 -(void)outlineView: (NSOutlineView*)outlineView willDisplayCell: (id)cell forTableColumn: (NSTableColumn*)tableColumn item: (id)item {
@@ -189,6 +200,9 @@
 }
 
 -(void)outlineView: (NSOutlineView*)outlineView setObjectValue: (id)object forTableColumn: (NSTableColumn*)tableColumn byItem: (id)item {
+	if ([[item name] isEqual: object]) {
+		return;
+	}
 	if ([item isKindOfClass: [Website class]]) {
 		[(Website*)item setName: object];
 		BookmarkFolder *folder = [outlineView parentForItem: item];
