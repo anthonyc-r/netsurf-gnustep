@@ -4,8 +4,11 @@
 #import "Website.h"
 #import "AppDelegate.h"
 
+static NSString * const NEW_FOLDER_NAME = @"New Folder";
+
 @interface BookmarksWindowController (Private)
 -(NSArray*)selectedItems;
+-(NSString*)getNewFolderNameForParent: (BookmarkFolder*)aFolder;
 @end
 
 @implementation BookmarksWindowController
@@ -121,7 +124,24 @@
 }
 
 -(void)newFolder: (id)sender {
-	NSLog(@"create new folder");
+	NSEnumerator *selected = [outlineView selectedRowEnumerator];
+	id row = [selected nextObject];
+	id item = nil;
+	if (row != nil) {
+		item = [outlineView itemAtRow: [row integerValue]];
+		if ([item isKindOfClass: [Website class]]) {
+			item = [item parentFolder];
+		}
+	} 
+	if (item == nil) {
+		item = [BookmarkFolder rootBookmarkFolder];
+	}
+	NSString *folderName = [self getNewFolderNameForParent: item];
+	BookmarkFolder *folder = [[BookmarkFolder alloc] initWithName: folderName parent:
+		item];
+	[item addChild: folder];
+	[folder release];
+	[outlineView reloadData];
 }
 
 -(void)showWindow: (id)sender {
@@ -236,6 +256,33 @@
 		[selectedItems addObject: item];
 	}
 	return selectedItems;
+}
+
+-(NSString*)getNewFolderNameForParent: (BookmarkFolder*)aFolder {
+	NSEnumerator *existingFolders = [[aFolder childFolders] objectEnumerator];
+	BookmarkFolder *folder;
+	NSInteger highestNumber = 0;
+	NSInteger currentValue;
+	NSString *suffix;
+	BOOL hasExactName = NO;
+	while ((folder = [existingFolders nextObject]) != nil) {
+		if ([[folder name] hasPrefix: NEW_FOLDER_NAME]) {
+			suffix = [[folder name] substringFromIndex: [NEW_FOLDER_NAME
+				length]];
+			if ([suffix length] < 1) {
+				hasExactName = YES;
+				continue;
+			}
+			currentValue = [suffix integerValue];
+			highestNumber = MAX(currentValue, highestNumber);
+		}
+	}
+	if (!hasExactName) {
+		return NEW_FOLDER_NAME;
+	} else {
+		return [NSString stringWithFormat: @"%@%ld", NEW_FOLDER_NAME, 
+			highestNumber + 1]; 	
+	}
 }
 
 @end

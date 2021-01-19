@@ -3,7 +3,8 @@
     BookmarksWindowController = {
 	Actions = (
 	    "search:",
-	    "clearSearch:"
+	    "clearSearch:",
+	    "newFolder:"
 	);
 	Outlets = (
 	    outlineView,
@@ -14,6 +15,7 @@
     FirstResponder = {
 	Actions = (
 	    "clearSearch:",
+	    "newFolder:",
 	    "search:"
 	);
 	Super = NSObject;

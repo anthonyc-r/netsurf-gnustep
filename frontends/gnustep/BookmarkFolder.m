@@ -155,7 +155,8 @@ lazy-loaded when requested.
 		[child setFilename: filename];
 		[child setParentFolder: self];
 	} else if ([child isKindOfClass: [BookmarkFolder class]]) {
-		ok = [[NSFileManager defaultManager] createDirectoryAtPath: path
+		NSString *dest = [path stringByAppendingPathComponent: [child name]];
+		ok = [[NSFileManager defaultManager] createDirectoryAtPath: dest
 			attributes: nil];
 	}
 	if (ok) {
