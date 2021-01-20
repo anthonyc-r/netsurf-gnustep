@@ -127,7 +127,6 @@ lazy-loaded when requested.
 	} else {
 		NSLog(@"Failed to move child");
 	}
-	
 }
 
 -(void)updateChild: (id)child {

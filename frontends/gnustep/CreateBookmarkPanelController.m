@@ -39,6 +39,8 @@
 	BookmarkFolder *destination = [bookmarkFolders objectAtIndex: [folderButton
 		indexOfSelectedItem]];
 	[destination addChild: toSave];
+	[[NSNotificationCenter defaultCenter] postNotificationName: 
+		BookmarksUpdatedNotificationName object: self];
 	[toSave release];
 	[self close];
 }

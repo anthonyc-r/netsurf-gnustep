@@ -99,6 +99,8 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 		copiedItems = nil;
 	}
 	[outlineView reloadData];
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		BookmarksUpdatedNotificationName object: self];
 }
 
 -(void)remove: (id)sender {
@@ -109,6 +111,8 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 		[[item parentFolder] removeChild: item];
 	}
 	[outlineView reloadData];
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		BookmarksUpdatedNotificationName object: self];
 }
 
 -(void)open: (id)sender {
@@ -142,6 +146,8 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 	[item addChild: folder];
 	[folder release];
 	[outlineView reloadData];
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		BookmarksUpdatedNotificationName object: self];
 }
 
 -(void)showWindow: (id)sender {
@@ -230,6 +236,8 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 	} else if ([item isKindOfClass: [BookmarkFolder class]]) {
 		[(BookmarkFolder*)item setName: object];
 	}
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		BookmarksUpdatedNotificationName object: self];
 }
 -(NSArray*)selectedItems {
 	NSEnumerator *selected = [outlineView selectedRowEnumerator];

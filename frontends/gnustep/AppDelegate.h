@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define TAG_MENU_CUT 201
 #define TAG_MENU_PASTE 203
 #define TAG_SUBMENU_HISTORY 500
+#define TAG_SUBMENU_BOOKMARKS 900
 
 @interface AppDelegate: NSResponder<NSApplicationDelegate> {
 @private

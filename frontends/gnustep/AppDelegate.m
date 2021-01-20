@@ -14,6 +14,7 @@
 #import "FindPanelController.h"
 #import "HistoryWindowController.h"
 #import "Website.h"
+#import "BookmarkFolder.h"
 #import "BookmarksWindowController.h"
 
 #define MAX_RECENT_HISTORY 10
@@ -63,6 +64,40 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	}
 }
 
+static NSMenuItem *menuItemForItem(id item) {
+	if ([item isKindOfClass: [BookmarkFolder class]]) {
+		NSMenu *menu = [[[NSMenu alloc] initWithTitle: [item name]] autorelease];
+		NSArray *children = [item children];
+		for (NSUInteger i = 0; i < [children count]; i++) {
+			NSMenuItem *menuItem = menuItemForItem([children objectAtIndex: i]);
+			[menu addItem: menuItem];
+		}
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [item name]
+			action: nil keyEquivalent: nil];
+		[menuItem setSubmenu: menu];
+		return [menuItem autorelease];
+	} else {
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [item name]
+			action: @selector(open) keyEquivalent: nil];
+		[menuItem setTarget: item];
+		return [menuItem autorelease];
+	}
+}
+
+-(void)bookmarksUpdated: (NSNotification*)aNotification {
+	NSLog(@"Updated bookmarks...");
+	NSArray *bookmarks = [[BookmarkFolder rootBookmarkFolder] children];
+	NSMenu *bookmarksMenu = [[[NSApp menu] itemWithTag: TAG_SUBMENU_BOOKMARKS] submenu];
+	for (NSInteger i = 0; i < [bookmarksMenu numberOfItems] - 2; i++) {
+		[bookmarksMenu removeItemAtIndex: 2];
+	}
+	id item;
+	for (NSUInteger i = 0; i < [bookmarks count]; i++) {
+		item = [bookmarks objectAtIndex: i];
+		[bookmarksMenu insertItem: menuItemForItem(item) atIndex: 2 + i];
+	}
+}
+
 -(void)awakeFromNib {
 	NSLog(@"App awake from nib");
 	recentHistory = [[NSMutableArray alloc] init];
@@ -70,6 +105,11 @@ static nserror set_defaults(struct nsoption_s *defaults)
 		selector: @selector(historyUpdated:)
 		name: WebsiteHistoryUpdatedNotificationName
 		object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self
+		selector: @selector(bookmarksUpdated:)
+		name: BookmarksUpdatedNotificationName
+		object: nil];
+	[self bookmarksUpdated: nil];
 	[self historyUpdated: nil];
 }
 

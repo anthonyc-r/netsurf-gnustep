@@ -1,5 +1,12 @@
 #import <Cocoa/Cocoa.h>
 
+/*
+* This notification is actually posted in the CreateBookmarkPanel, and
+* BookmarksWindowController, Rather than calling it in the individual mutating methods
+* to avoid spamming it for bulk operations, which only the above classes know about.
+*/
+#define BookmarksUpdatedNotificationName @"BookmarksUpdatedNotification"
+
 #define BOOKMARKS_PATH @"/.config/NetSurf/Bookmarks"
 #define UNSORTED_NAME @"Unsorted"
 
