@@ -102,6 +102,11 @@
 	[[NSApp delegate] openWebsite: self];
 }
 
+-(Website*)copy {
+	Website *website = [[Website alloc] initWithName: [self name] url: [self url]];
+	[website autorelease];
+	return website;
+}
 // MARK: - History implementation
 
 -(void)addToHistory {

@@ -28,6 +28,7 @@ struct website_data {
 -(void)setName: (NSString*)aName;
 -(long)fileOffset;
 -(NSString*)filename;
+-(Website*)copy;
 -(void)setFilename: (NSString*)aFilename;
 -(BookmarkFolder*)parentFolder;
 -(void)setParentFolder: (BookmarkFolder*)aBookmarkFolder;

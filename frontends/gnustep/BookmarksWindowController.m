@@ -3,12 +3,14 @@
 #import "BookmarkFolder.h"
 #import "Website.h"
 #import "AppDelegate.h"
+#import "CreateBookmarkPanelController.h"
 
 static NSString * const NEW_FOLDER_NAME = @"New Folder";
 
 @interface BookmarksWindowController (Private)
 -(NSArray*)selectedItems;
 -(NSString*)getNewFolderNameForParent: (BookmarkFolder*)aFolder;
+-(void)bookmarksUpdated: (NSNotification*)notification;
 @end
 
 @implementation BookmarksWindowController
@@ -33,6 +35,7 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 -(BOOL)windowShouldClose: (id)sender {
 	[topLevelFolders release];
 	topLevelFolders = nil;
+	[[NSNotificationCenter defaultCenter] removeObserver: self];
 	return YES;
 }
 
@@ -44,6 +47,10 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 		[outlineView expandItem: [topLevelFolders objectAtIndex: i] 
 			expandChildren: YES];
 	}
+	[[NSNotificationCenter defaultCenter] addObserver: self
+		selector: @selector(bookmarksUpdated:)
+		name: BookmarksUpdatedNotificationName
+		object: nil];
 }
 
 -(void)awakeFromNib {
@@ -89,7 +96,7 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 			[[item parentFolder] moveChild: item toOtherFolder: 
 				destinationFolder];
 		} else {
-			[destinationFolder addChild: item];
+			[destinationFolder addCopy: item];
 		}
 	}
 	
@@ -290,6 +297,12 @@ static NSString * const NEW_FOLDER_NAME = @"New Folder";
 	} else {
 		return [NSString stringWithFormat: @"%@%ld", NEW_FOLDER_NAME, 
 			highestNumber + 1]; 	
+	}
+}
+
+-(void)bookmarksUpdated: (NSNotification*)notification {
+	if ([[notification object] isKindOfClass: [CreateBookmarkPanelController class]]) {
+		[outlineView reloadData];
 	}
 }
 

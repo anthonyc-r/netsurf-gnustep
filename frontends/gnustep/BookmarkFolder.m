@@ -93,6 +93,28 @@ lazy-loaded when requested.
 	return [name isEqual: UNSORTED_NAME];
 }
 
+-(void)addCopy: (id)item {
+	if ([item isKindOfClass: [BookmarkFolder class]]) {
+		NSString *source = [item path];
+		NSString *dest = [[self path] stringByAppendingPathComponent: [item
+			name]];
+		NSError *err = nil;
+		BOOL ok = [[NSFileManager defaultManager] copyItemAtPath: source toPath: dest
+			error: &err];
+		if (ok) {
+			BookmarkFolder *copy = [[BookmarkFolder alloc] initWithName: [item
+				name] parent: self];
+			[self initChildrenIfNeeded];
+			[children addObject: copy];
+			[copy release];
+		} else {
+			NSLog(@"Failed to add copy.");
+		}
+	} else {
+		[self addChild: [item copy]];
+	}
+}
+
 -(void)moveChild: (id)child toOtherFolder: (BookmarkFolder*)otherFolder {
 	NSString *source = nil;
 	NSString *destination = nil;
@@ -239,6 +261,21 @@ lazy-loaded when requested.
 	return nil;
 }
 
+static NSArray *foldersOfFolder(BookmarkFolder *folder) {
+	NSMutableArray *array = [NSMutableArray array];
+	NSArray *childFolders = [folder childFolders];
+	BookmarkFolder *childFolder;
+	for (NSUInteger i = 0; i < [childFolders count]; i++) {
+		childFolder = [childFolders objectAtIndex: i];
+		[array addObject: childFolder];
+		[array addObjectsFromArray: foldersOfFolder(childFolder)];
+	}
+	return array;
+}
++(NSArray*)allFolders {
+	return foldersOfFolder([BookmarkFolder rootBookmarkFolder]);
+}
+
 -(NSString*)path {
 	return path;
 }
@@ -293,5 +330,4 @@ lazy-loaded when requested.
 	}
 	children = newChildren;
 }
-
 @end

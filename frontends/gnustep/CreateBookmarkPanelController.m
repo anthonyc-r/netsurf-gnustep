@@ -8,8 +8,7 @@
 -(id)initForWebsite: (Website*)aWebsite {
 	if (self = [super initWithWindowNibName: @"CreateBookmark"]) {
 		website = [aWebsite retain];
-		bookmarkFolders = [[[BookmarkFolder rootBookmarkFolder] childFolders] 
-			retain];
+		bookmarkFolders = [[BookmarkFolder allFolders] retain];
 	}
 	return self;
 }

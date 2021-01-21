@@ -85,10 +85,10 @@ static NSMenuItem *menuItemForItem(id item) {
 }
 
 -(void)bookmarksUpdated: (NSNotification*)aNotification {
-	NSLog(@"Updated bookmarks...");
 	NSArray *bookmarks = [[BookmarkFolder rootBookmarkFolder] children];
 	NSMenu *bookmarksMenu = [[[NSApp menu] itemWithTag: TAG_SUBMENU_BOOKMARKS] submenu];
-	for (NSInteger i = 0; i < [bookmarksMenu numberOfItems] - 2; i++) {
+	NSInteger nItems = [bookmarksMenu numberOfItems];
+	for (NSInteger i = 0; i < nItems - 2; i++) {
 		[bookmarksMenu removeItemAtIndex: 2];
 	}
 	id item;

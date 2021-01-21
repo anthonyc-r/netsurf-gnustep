@@ -38,7 +38,6 @@
 
 // Create a new bitmap of width height
 static void *gnustep_bitmap_create(int width, int height, unsigned int state) {
-	NSLog(@"gnustep_bitmap_create");
 	NSBitmapImageRep *bmp = [[NSBitmapImageRep alloc]
 		initWithBitmapDataPlanes: NULL
 		pixelsWide: width
@@ -56,13 +55,11 @@ static void *gnustep_bitmap_create(int width, int height, unsigned int state) {
 
 // Destroy the specified bitmap
 static void gnustep_bitmap_destroy(void *bitmap) {
-	NSLog(@"gnustep_bitmap_destroy");
 	[(id)bitmap dealloc];
 }
 
 // Set whether it's opaque or not
 static void gnustep_bitmap_set_opaque(void *bitmap, bool opaque) {
-	NSLog(@"gnustep_bitmap_set_opaque");
 	if (opaque) {
 		[(id)bitmap setOpaque: YES];
 	} else {
@@ -72,13 +69,11 @@ static void gnustep_bitmap_set_opaque(void *bitmap, bool opaque) {
 
 // Get whether it's opaque or not
 static bool gnustep_bitmap_get_opaque(void *bitmap) {
-	NSLog(@"gnustep_bitmap_get_opaque");
 	return [(id)bitmap isOpaque];
 }
 
 // Test? whether it's opaque or not
 static bool gnustep_bitmap_test_opaque(void *bitmap) {
-	NSLog(@"gnustep_bitmap_test_opaque");
 	unsigned char *buf = [(id)bitmap bitmapData];
 
 	const size_t height = [(id)bitmap pixelsHigh];
@@ -99,49 +94,41 @@ static bool gnustep_bitmap_test_opaque(void *bitmap) {
 
 // Get the image buffer for the bitmap
 static unsigned char *gnustep_bitmap_get_buffer(void *bitmap) {
-	NSLog(@"gnustep_bitmap_get_buffer");
 	return [(id)bitmap bitmapData];
 }
 
 // Get the number of bytes per row of the bitmap
 static size_t gnustep_bitmap_get_rowstride(void *bitmap) {
-	NSLog(@"gnustep_bitmap_get_rowstride");
 	return [(id)bitmap bytesPerRow];
 }
 
 // Get its width in pixels
 static int gnustep_bitmap_get_width(void *bitmap) {
-	NSLog(@"gnustep_bitmap_get_width");
 	return [(id)bitmap pixelsWide];
 }
 
 // Get height in pixels
 static int gnustep_bitmap_get_height(void *bitmap) {
-	NSLog(@"gnustep_bitmap_get_height");
 	return [(id)bitmap pixelsHigh];
 }
 
 // Get how many byytes pet pixel
 static size_t gnustep_bitmap_get_bpp(void *bitmap) {
-	NSLog(@"gnustep_bitmap_get_bpp");
 	return [(id)bitmap bitsPerPixel] / 8;
 }
 
 // Save the bitmap to the specified path
 static bool gnustep_bitmap_save(void *bitmap, const char *path, unsigned flags) {
-	NSLog(@"gnustep_bitmap_save");
 	NSData *tiff = [(id)bitmap TIFFRepresentation];
 	return [tiff writeToFile: [NSString stringWithUTF8String: path] atomically: YES];
 }
 
 // Mark bitmap as modified
 static void gnustep_bitmap_modified(void *bitmap) {
-	NSLog(@"gnustep_bitmap_modified");
 }
 
 // Render content into the specified bitmap
 static nserror gnustep_bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content) {
-	NSLog(@"gnustep_bitmap_render");
 	return NSERROR_NOT_IMPLEMENTED;
 }
 

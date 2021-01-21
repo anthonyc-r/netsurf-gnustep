@@ -20,11 +20,11 @@ unlike the cocoa port.
 
 Current State
 ----------------
-Works pretty well, has history and download management.
+Works pretty well, has history, download management, bookmarks.
 
 What still needs doing
 ----------------
-Tabs, bookmarks, other bits and bobs probably.
+Tabs, preferences, other bits and bobs probably.
 
 
 This has only been tested on OpenBSD macppc, there's probably issues with

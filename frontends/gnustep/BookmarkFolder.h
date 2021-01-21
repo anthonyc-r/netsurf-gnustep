@@ -25,6 +25,7 @@
 -(NSString*)name;
 -(BOOL)isRootFolder;
 -(BOOL)isUnsortedFolder;
+-(void)addCopy: (id)item;
 -(void)addChild: (id)child;
 -(void)removeChild: (id)child;
 -(void)updateChild: (id)child;
@@ -33,4 +34,5 @@
 
 +(BookmarkFolder*)rootBookmarkFolder;
 +(BookmarkFolder*)unsortedBookmarkFolder;
++(NSArray*)allFolders;
 @end
