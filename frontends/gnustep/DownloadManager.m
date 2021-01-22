@@ -2,8 +2,6 @@
 #import "DownloadManager.h"
 #import "desktop/download.h"
 
-// TODO: - Verify behavior of performOnBackgroundThread on a multiprocessor system!!
-
 @implementation DownloadItem
 
 -(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSUInteger)anIndex ctx: (struct download_context*)aCtx {
@@ -22,11 +20,16 @@
 		[outputStream retain];
 		[outputStream open];
 		ctx = aCtx;
+		downloadThread = nil;
+		runThread = YES;
+		[NSThread detachNewThreadSelector: @selector(runDownloadThread) toTarget:
+			self withObject: nil];
 	}
 	return self;
 }
 
 -(void)dealloc {
+	runThread = NO;
 	[destination release];
 	[outputStream close];
 	[outputStream release];
@@ -38,10 +41,27 @@
 	[super dealloc];
 }
 
+-(void)runDownloadThread {
+	NSAutoreleasePool *pool = [NSAutoreleasePool new];
+	downloadThread = [NSThread currentThread];
+	NSRunLoop *runloop = [NSRunLoop currentRunLoop];
+	[runloop addPort: [NSPort port] forMode: NSDefaultRunLoopMode]; 
+	while (runThread) {
+		NSAutoreleasePool *pool = [NSAutoreleasePool new];
+		[runloop runMode: NSDefaultRunLoopMode beforeDate: [NSDate distantFuture]];
+		[pool release];
+	}
+	[pool release];
+}
+
 -(BOOL)appendToDownload: (NSData*)data {
-	// NOTE: - Not sure if this really works on mp systems...
-	// Does this get queued sequentially? If not need to upkeep our own thread...
-	[self performSelectorInBackground: @selector(reallyWriteData:) withObject: data];
+	if (downloadThread == nil) {
+		NSLog(@"Error: expected download thread to be initialized");
+		return NO;
+	}
+	[self performSelector: @selector(reallyWriteData:) onThread: downloadThread
+		withObject: data waitUntilDone: NO modes: [NSArray arrayWithObject:
+		NSDefaultRunLoopMode]];
 	return YES;
 }
 

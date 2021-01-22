@@ -20,6 +20,8 @@ struct download_context;
 	NSURL *destination;
 	NSOutputStream *outputStream;
 	NSString *error;
+	BOOL runThread;
+	NSThread *downloadThread;
 	DownloadManager *manager;
 	NSTimeInterval lastWrite;
 	struct download_context *ctx;
