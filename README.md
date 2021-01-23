@@ -5,18 +5,12 @@ THIS FORK
 This fork aims at getting a usable version of NetSurf running under the
 GNUstep library. I will note that there is (I think) a working update of
 the old cocoa port, checkout github/mmuman's repos for this. However,
-this port requires CoreFoundation, and CoreGraphics dependencies. While there
-are GNUstep implementations of these, they're underdeveloped, and indeed, I 
-couldn't get them to build under OpenBSD.
-
-So, this port aims at a ground-up GNUstep-specific (Perhaps it would compile 
-under MacOS, perhaps not, I don't particularly care about this platform) port,
-making liberal use of code snippets from the cocoa port where possible. For
-example large chunks of the plotter and font functions are pulled from the 
-cocoa port.
-
-This port compiles with just basic GNUstep base, gui, and back libraries 
+this port requires CoreFoundation, and CoreGraphics dependencies. This 
+port compiles with just basic GNUstep base, gui, and back libraries 
 unlike the cocoa port.
+
+![Screenshot](/screenshots/screenshot.jpeg)
+With Rik theme, client side decorations and mac-style menu.
 
 Current State
 ----------------
