@@ -172,8 +172,11 @@ static NSMenuItem *menuItemForItem(id item) {
 -(NSURL*)requestDownloadDestination {
 	NSSavePanel *savePanel = [NSOpenPanel savePanel];
 	[savePanel setDirectory: NSHomeDirectory()];
-	[savePanel runModal];
-	return [savePanel URL];
+	if ([savePanel runModal] == NSOKButton) {
+		return [savePanel URL];
+	} else {
+		return nil;
+	}
 }
 
 -(void)openWebsite: (Website*)aWebsite {

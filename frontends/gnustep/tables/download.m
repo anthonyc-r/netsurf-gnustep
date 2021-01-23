@@ -13,6 +13,8 @@
 static struct gui_download_window *gnustep_download_create(struct download_context *ctx, struct gui_window *parent) {
 	NSLog(@"gnustep_download_create");
 	NSURL *url = [[NSApp delegate] requestDownloadDestination];
+	if (url == nil)
+		return NULL;
 	DownloadItem *download = [[DownloadManager defaultDownloadManager]
 		createDownloadForDestination: url withContext: ctx];
 	[[NSApp delegate] showDownloadsWindow: nil];
