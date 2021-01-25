@@ -1,0 +1,37 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    FirstResponder = {
+	Actions = (
+	    "didEnterStartupPage:",
+	    "didPickDownloadLocation:",
+	    "didPickSearchProvider:",
+	    "didPressDownloadConfirmOverwrite:",
+	    "didPressDownloadRemoveOnComplete:",
+	    "didPressStartupUseCurrentPage:",
+	    "didPressStartupUseDefaultPage:",
+	    "didPressSearchFromUrlBar:"
+	);
+	Super = NSObject;
+    };
+    PreferencesWindowController = {
+	Actions = (
+	    "didEnterStartupPage:",
+	    "didPickDownloadLocation:",
+	    "didPickSearchProvider:",
+	    "didPressDownloadConfirmOverwrite:",
+	    "didPressDownloadRemoveOnComplete:",
+	    "didPressStartupUseCurrentPage:",
+	    "didPressStartupUseDefaultPage:",
+	    "didPressSearchFromUrlBar:"
+	);
+	Outlets = (
+	    downloadConfirmOverwriteButton,
+	    downloadLocationButton,
+	    downloadRemoveOnCompleteButton,
+	    searchFromUrlButton,
+	    searchProviderButton,
+	    startupPageField
+	);
+	Super = NSWindowController;
+    };
+}

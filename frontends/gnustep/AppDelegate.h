@@ -35,12 +35,14 @@ id downloadsWindowController;
 id findPanelController;
 id historyWindowController;
 id bookmarksWindowController;
+id preferencesWindowController;
 }
 
 -(void)showFindPanel: (id)sender;
 -(void)showDownloadsWindow: (id)sender;
 -(void)showHistoryWindow: (id)sender;
 -(void)showBookmarksWindow: (id)sender;
+-(void)showPreferencesWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
 -(void)openWebsite: (Website*)aWebsite;
 

@@ -16,6 +16,7 @@
 #import "Website.h"
 #import "BookmarkFolder.h"
 #import "BookmarksWindowController.h"
+#import "PreferencesWindowController.h"
 
 #define MAX_RECENT_HISTORY 10
 
@@ -166,6 +167,16 @@ static NSMenuItem *menuItemForItem(id item) {
 		[bookmarksWindowController loadWindow];
 	} else {
 		[bookmarksWindowController showWindow: self];
+	}
+}
+
+-(void)showPreferencesWindow: (id)sender {
+	NSLog(@"Show preferences window");
+	if (!preferencesWindowController) {
+		preferencesWindowController = [[PreferencesWindowController alloc] init];
+		[preferencesWindowController loadWindow];
+	} else {
+		[preferencesWindowController showWindow: self];	
 	}
 }
 
