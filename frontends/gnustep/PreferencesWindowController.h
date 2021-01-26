@@ -1,4 +1,4 @@
-#include <AppKit/AppKit.h>
+#import <AppKit/AppKit.h>
 
 @interface PreferencesWindowController: NSWindowController {
 	id downloadConfirmOverwriteButton;

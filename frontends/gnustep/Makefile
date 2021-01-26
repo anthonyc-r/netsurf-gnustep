@@ -52,6 +52,8 @@ S_FRONTEND := \
 	PreferencesWindowController.m	\
 	Website.m	\
 	BookmarkFolder.m	\
+	SearchProvider.m	\
+	Preferences.m	\
 	tables/misc.m	\
 	tables/bitmap.m	\
 	tables/clipboard.m	\
