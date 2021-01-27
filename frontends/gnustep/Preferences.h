@@ -22,4 +22,6 @@
 
 -(NSString*)downloadLocationPath;
 -(void)setDownloadLocationPath: (NSString*)aPath;
+
++(Preferences*)defaultPreferences;
 @end

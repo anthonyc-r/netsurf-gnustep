@@ -26,6 +26,10 @@
 	[super dealloc];
 }
 
+-(NSString*)name {
+	return name;
+}
+
 -(Website*)websiteForQuery: (NSString*)queryString {
 	NSString *url = [searchUrl stringByReplacingOccurrencesOfString: @"%s" withString:
 		[queryString stringByAddingPercentEscapesUsingEncoding: 
@@ -39,7 +43,7 @@
 }
 
 +(NSArray*)allProviders {
-	return [NSArray array];
+	return [NSArray arrayWithObject: [SearchProvider defaultSearchProvider]];
 }
 
 +(SearchProvider*)defaultSearchProvider {

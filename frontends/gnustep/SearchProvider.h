@@ -12,6 +12,8 @@
 -(Website*)websiteForQuery: (NSString*)queryString;
 -(NSDictionary*)dictionaryRepresentation;
 
+-(NSString*)name;
+
 +(NSArray*)allProviders;
 +(SearchProvider*)defaultSearchProvider;
 

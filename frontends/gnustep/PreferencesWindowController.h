@@ -7,6 +7,8 @@
 	id searchFromUrlButton;
 	id searchProviderButton;
 	id startupPageField;
+
+	NSMutableArray *downloadLocations;
 }
 -(void)didEnterStartupPage: (id)sender;
 -(void)didPickDownloadLocation: (id)sender;

@@ -43,34 +43,64 @@
 	}
 }
 -(void)setSearchFromUrlBar: (BOOL)value {
-
+	[defaults setBool: value forKey: KEY_SEARCH_FROM_URL_BAR];
 }
 
 -(SearchProvider*)searchProvider {
-	return nil;
+	NSDictionary *dict = [defaults dictionaryForKey: KEY_SEARCH_PROVIDER];
+	SearchProvider *ret;
+	if (dict != nil) {
+		ret = [[SearchProvider alloc] initWithDictionary: dict];
+		[ret autorelease];
+	} else {
+		ret = [SearchProvider defaultSearchProvider];
+	}
+	return ret;
 }
 -(void)setSearchProvider: (SearchProvider*)aProvider {
-
+	[defaults setObject: [aProvider dictionaryRepresentation] forKey: 
+		KEY_SEARCH_PROVIDER];
 }
 
 -(BOOL)removeDownloadsOnComplete {
-	return NO;
+	if ([defaults objectForKey: KEY_REMOVE_DOWNLOADS_COMPLETE] != nil) {
+		return [defaults boolForKey: KEY_REMOVE_DOWNLOADS_COMPLETE];
+	} else {
+		return NO;
+	}
 }
 -(void)setRemoveDownloadsOnComplete: (BOOL)value {
-	
+	[defaults setBool: value forKey: KEY_REMOVE_DOWNLOADS_COMPLETE];
 }
 
 -(BOOL)confirmBeforeOverwriting {
-	return NO;
+	if ([defaults objectForKey: KEY_CONFIRM_OVERWRITE] != nil) {
+		return [defaults boolForKey: KEY_CONFIRM_OVERWRITE];
+	} else {
+		return NO;
+	}
 }
 -(void)setConfirmBeforeOverwriting: (BOOL)value {
-
+	[defaults setBool: value forKey: KEY_CONFIRM_OVERWRITE];
 }
 
 -(NSString*)downloadLocationPath {
-	return nil;
+	NSString *downloadPath = [defaults stringForKey: KEY_DOWNLOAD_LOCATION];
+	if (downloadPath != nil) {
+		return downloadPath;
+	} else {
+		return [@"~/Downloads" stringByExpandingTildeInPath];
+	}
 }
 -(void)setDownloadLocationPath: (NSString*)aPath {
+	[defaults setObject: aPath forKey: KEY_DOWNLOAD_LOCATION];
+}
 
++(Preferences*)defaultPreferences {
+	static Preferences *prefs;
+	if (prefs == nil) {
+		prefs = [[Preferences alloc] init];
+	}
+	return prefs;
 }
 @end
