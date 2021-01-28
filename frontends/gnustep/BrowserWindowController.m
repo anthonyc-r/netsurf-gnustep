@@ -193,4 +193,11 @@
 	[website release];
 }
 
+
+-(NSString*)visibleUrl {
+	struct nsurl *url = browser_window_access_url(browser);
+	const char *title = browser_window_get_title(browser);
+	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
+	return urlStr;
+}
 @end

@@ -21,6 +21,7 @@ struct browser_window;
 -(void)back: (id)sender;
 -(void)forward: (id)sender;
 -(void)stopOrRefresh: (id)sender;
+-(NSString*)visibleUrl;
 
 // Browser control
 -(NSSize)getBrowserSize;

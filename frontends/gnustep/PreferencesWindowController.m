@@ -2,6 +2,7 @@
 #import "PreferencesWindowController.h"
 #import "Preferences.h"
 #import "SearchProvider.h"
+#import "AppDelegate.h"
 
 #define DL_DOWNLOADS_PATH [@"~/Downloads" stringByExpandingTildeInPath]
 #define DL_HOME_PATH [@"~/" stringByExpandingTildeInPath]
@@ -9,6 +10,7 @@
 
 @interface PreferencesWindowController (Private) 
 -(void)configureMainTab;
+-(void)reconfigureDownloadLocationButton;
 @end
 @interface DownloadLocation: NSObject {
 	NSString *name;
@@ -93,10 +95,13 @@
 		nil
 	];
 	[downloadLocations retain];
+	[self reconfigureDownloadLocationButton];
+}
 
+-(void)reconfigureDownloadLocationButton {
 	[downloadLocationButton removeAllItems];
 	NSString *path = [[Preferences defaultPreferences] downloadLocationPath];
-	selectedIndex = -1;
+	NSInteger selectedIndex = -1;
 	for (NSUInteger i = 0; i < [downloadLocations count]; i++) {
 		DownloadLocation *loc = [downloadLocations objectAtIndex: i];
 		[downloadLocationButton addItemWithTitle: [loc name]];
@@ -105,8 +110,10 @@
 		}
 	}
 	if (selectedIndex == -1) {
-		[downloadLocations addObject: [DownloadLocation downloadLocationWithName:
-			[path stringByAbbreviatingWithTildeInPath] path: path]];
+		DownloadLocation *loc = [DownloadLocation downloadLocationWithName:
+			[path lastPathComponent] path: path];
+		[downloadLocations addObject: loc];
+		[downloadLocationButton addItemWithTitle: [loc name]];
 		selectedIndex = [downloadLocations count] - 1;
 	}
 	[downloadLocationButton selectItemAtIndex: selectedIndex];
@@ -123,7 +130,21 @@
 	NSInteger idx = [sender indexOfItem: [sender selectedItem]];
 	DownloadLocation *loc = [downloadLocations objectAtIndex: idx];
 	if ([loc path] == nil) {
-		// Show file picker.
+		// "Other"... Show file picker.
+		NSOpenPanel *panel = [NSOpenPanel openPanel];
+		[panel setCanChooseFiles: NO];
+		[panel setCanChooseDirectories: YES];
+		if ([panel runModal] == NSOKButton) {
+			NSString *path = [[panel filenames] firstObject];
+		
+			loc = [DownloadLocation downloadLocationWithName: [path
+				lastPathComponent] path: path];
+			[downloadLocations addObject: loc];
+		} else {
+			loc = [downloadLocations objectAtIndex: 0];
+		}
+		[[Preferences defaultPreferences] setDownloadLocationPath: [loc path]];
+		[self reconfigureDownloadLocationButton];
 	} else {
 		[[Preferences defaultPreferences] setDownloadLocationPath: [loc path]];
 	}
@@ -132,31 +153,56 @@
 
 -(void)didPickSearchProvider: (id)sender {
 	NSLog(@"Did pick search provider");
+	NSInteger idx = [sender indexOfItem: [sender selectedItem]];
+	SearchProvider *prov = [[SearchProvider allProviders] objectAtIndex: idx];
+	[[Preferences defaultPreferences] setSearchProvider: prov];
 }
 
 
 -(void)didPressDownloadConfirmOverwrite: (id)sender {
 	NSLog(@"Did press download confirm overwrite");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setConfirmBeforeOverwriting: checked];
 }
 
 
 -(void)didPressDownloadRemoveOnComplete: (id)sender {
 	NSLog(@"Did press download remove on complete");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setRemoveDownloadsOnComplete: checked];
 }
 
 
 -(void)didPressStartupUseCurrentPage: (id)sender {
 	NSLog(@"Did press startup use current page");
+	@try {
+	AppDelegate *delegate = [NSApp delegate];
+	NSString *url = [delegate currentUrl];
+	NSLog(@"url: %@", url);
+	[[Preferences defaultPreferences] setStartupUrl: url];
+	[startupPageField setStringValue: [[Preferences defaultPreferences] startupUrl]];
+	} 
+	@catch (NSException *ex) {
+		NSLog(@"ex: %@", ex);
+	}
+	@finally {
+
+	}
+
 }
 
 
 -(void)didPressStartupUseDefaultPage: (id)sender {
 	NSLog(@"Did press startup use default page");
+	[[Preferences defaultPreferences] setStartupUrl: nil];
+	[startupPageField setStringValue: [[Preferences defaultPreferences] startupUrl]];
 }
 
 
 -(void)didPressSearchFromUrlBar: (id)sender {
 	NSLog(@"Did press search from url bar");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setSearchFromUrlBar: checked];
 }
 
 @end

@@ -45,5 +45,5 @@ id preferencesWindowController;
 -(void)showPreferencesWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
 -(void)openWebsite: (Website*)aWebsite;
-
+-(NSString*)currentUrl;
 @end

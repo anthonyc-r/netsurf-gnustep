@@ -204,6 +204,18 @@ static NSMenuItem *menuItemForItem(id item) {
 	}
 }
 
+-(NSString*)currentUrl {
+	NSArray *windows = [NSApp windows];
+	id controller;
+	for (NSUInteger i = 0; i < [windows count]; i++) {
+		controller = [[windows objectAtIndex: i] windowController];
+		if ([controller isKindOfClass: [BrowserWindowController class]]) {
+			return [controller visibleUrl];
+		}
+	}
+	return nil;
+}
+
 @end
 
 int main(int argc, char **argv) {
