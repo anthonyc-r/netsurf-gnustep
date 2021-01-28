@@ -1,6 +1,7 @@
 #import <Cocoa/Cocoa.h>
 #import "DownloadManager.h"
 #import "desktop/download.h"
+#import "Preferences.h"
 
 @implementation DownloadItem
 
@@ -105,6 +106,9 @@
 	[outputStream close];
 	completed = YES;
 	[[manager delegate] downloadManager: manager didUpdateItem: self];
+	if ([[Preferences defaultPreferences] removeDownloadsOnComplete]) {
+		[manager removeDownloadsAtIndexes: [NSIndexSet indexSetWithIndex: index]];
+	}
 }
 
 -(BOOL)isComplete {

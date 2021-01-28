@@ -77,7 +77,7 @@
 	if ([defaults objectForKey: KEY_CONFIRM_OVERWRITE] != nil) {
 		return [defaults boolForKey: KEY_CONFIRM_OVERWRITE];
 	} else {
-		return NO;
+		return YES;
 	}
 }
 -(void)setConfirmBeforeOverwriting: (BOOL)value {

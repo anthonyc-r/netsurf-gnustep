@@ -17,6 +17,7 @@
 #import "BookmarkFolder.h"
 #import "BookmarksWindowController.h"
 #import "PreferencesWindowController.h"
+#import "Preferences.h"
 
 #define MAX_RECENT_HISTORY 10
 
@@ -118,8 +119,9 @@ static NSMenuItem *menuItemForItem(id item) {
 	NSLog(@"Will create a new window %@", self);
 	struct nsurl *url;
 	nserror error;
+	NSString *startupUrl = [[Preferences defaultPreferences] startupUrl];
 
-        error = nsurl_create("https://www.startpage.com", &url);
+        error = nsurl_create([startupUrl cString], &url);
 
 	if (error == NSERROR_OK) {
 		error = browser_window_create(BW_CREATE_HISTORY, url, NULL, NULL, NULL);

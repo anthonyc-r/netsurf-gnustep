@@ -175,20 +175,10 @@
 
 -(void)didPressStartupUseCurrentPage: (id)sender {
 	NSLog(@"Did press startup use current page");
-	@try {
 	AppDelegate *delegate = [NSApp delegate];
 	NSString *url = [delegate currentUrl];
-	NSLog(@"url: %@", url);
 	[[Preferences defaultPreferences] setStartupUrl: url];
 	[startupPageField setStringValue: [[Preferences defaultPreferences] startupUrl]];
-	} 
-	@catch (NSException *ex) {
-		NSLog(@"ex: %@", ex);
-	}
-	@finally {
-
-	}
-
 }
 
 
