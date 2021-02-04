@@ -5,23 +5,28 @@
 POSTEXES += NetSurf.app
 EXETARGET := nscocoa
 
-SDK_FLAGS := $(gnustep-config --objc-flags)
-CFLAGS :=  $(SDK_FLAGS) $(CFLAGS)
+SDK_CFLAGS := $(shell gnustep-config --objc-flags)
+SDK_LDFLAGS := $(shell gnustep-config --gui-libs)
+
+CFLAGS :=  $(SDK_CFLAGS) $(CFLAGS)
 CFLAGS += -I/usr/local/include/gnustep
 CFLAGS += -Ifrontends/gnustep
-LDFLAGS :=  $(LDFLAGS)
-CXXFLAGS :=  $(SDK_FLAGS) $(CXXFLAGS)
+LDFLAGS :=  $(SDK_LDFLAGS) $(LDFLAGS)
+CXXFLAGS :=  $(SDK_CFLAGS) $(CXXFLAGS)
 
-# for timerisset()
-CFLAGS += -D_DARWIN_C_SOURCE
 CFLAGS += -g
+
+# GCC has no -fno-objc-arc
+ifeq ($(shell $(CC) -v 2>&1 | grep -c "gcc version"), 1)
+CFLAGS += -fno-objc-gc
+else
 CFLAGS += -fno-objc-arc
+endif
 
 LDFLAGS += -L/usr/lib
 LDFLAGS += -L/usr/X11/lib
 LDFLAGS += -lm -lcurl
 LDFLAGS += -lssl -lcrypto
-LDFLAGS += -lobjc2 -lgnustep-gui -lgnustep-base 
 
 CFLAGS += -Dnscocoa -D_BSD_SOURCE -D_POSIX_C_SOURCE -std=c99 -g -Os
 CFLAGS += -DFONT_SIZE_SCALE=1.0

@@ -1,2 +1,3 @@
-#!/bin/ksh
+#!/bin/sh
+export PKG_CONFIG_PATH="/opt/netsurf/lib/pkgconfig/"
 gmake TARGET=gnustep NETSURF_USE_DUKTAPE=NO NETSURF_USE_NSSVG=AUTO NETSURF_USE_ROSPRITE=AUTO 

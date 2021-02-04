@@ -319,6 +319,16 @@ static const struct plotter_table gnustep_plotters = {
 	return YES;
 }
 
+- (NSPoint) convertMousePoint: (NSEvent *)event {
+	NSPoint location = [self convertPoint: [event locationInWindow] fromView: nil];
+	float bscale = browser_window_get_scale(browser);
+
+	location.x /= bscale;
+	location.y /= bscale;
+
+	return location;
+}
+
 - (void) popUpContextMenuForEvent: (NSEvent *) event
 {
         NSMenu *popupMenu = [[NSMenu alloc] initWithTitle: @""];
@@ -400,16 +410,6 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 	if (flags & NSAlternateKeyMask) result |= BROWSER_MOUSE_MOD_2;
 
 	return result;
-}
-
-- (NSPoint) convertMousePoint: (NSEvent *)event {
-	NSPoint location = [self convertPoint: [event locationInWindow] fromView: nil];
-	float bscale = browser_window_get_scale(browser);
-
-	location.x /= bscale;
-	location.y /= bscale;
-
-	return location;
 }
 
 -(void)scrollWheel: (NSEvent*)theEvent {
@@ -511,7 +511,7 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 
 - (void) moveUp: (id)sender {
         if (browser_window_key_press( browser, NS_KEY_UP )) return;
-        [self scrollVertical: -[[self enclosingScrollView] lineScroll]];
+        [self scrollVertical: -([[self enclosingScrollView] lineScroll])];
 }
 
 - (void) moveDown: (id)sender {
@@ -531,6 +531,10 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 
 - (void) cancelOperation: (id)sender {
         browser_window_key_press( browser, NS_KEY_ESCAPE );
+}
+
+- (CGFloat) pageScroll {
+        return NSHeight( [[self superview] frame] ) - [[self enclosingScrollView] pageScroll];
 }
 
 - (void) scrollPageUp: (id)sender {
@@ -623,10 +627,6 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
         NSPoint currentPoint = [self visibleRect].origin;
         currentPoint.y += amount;
         [self scrollPoint: currentPoint];
-}
-
-- (CGFloat) pageScroll {
-        return NSHeight( [[self superview] frame] ) - [[self enclosingScrollView] pageScroll];
 }
 
 -(void)back: (id)sender {
