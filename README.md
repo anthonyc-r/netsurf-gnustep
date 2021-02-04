@@ -21,8 +21,7 @@ What still needs doing
 Tabs, preferences, other bits and bobs probably.
 
 
-This has only been tested on OpenBSD macppc, there's probably issues with
-the Makefile on other platforms.
+Tested and built on OpenBSD 6.8(macppc) + clang, and Ubuntu 20.10 + gcc.
 
 
 Props to Sven Weidauer for the original cocoa port. Original copyright notice
