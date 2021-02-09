@@ -6,7 +6,7 @@
 @implementation DownloadItem
 
 -(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSUInteger)anIndex ctx: (struct download_context*)aCtx {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		error = nil;
 		index = anIndex;
 		written = 0;
@@ -196,7 +196,7 @@
 }
 
 -(id)init {
-	if (self = [super init]) {
+	if ((self = [super init])) {
 		downloads = [[NSMutableArray alloc] init];
 		delegate = nil;
 	}
@@ -244,6 +244,12 @@
 -(void)cancelDownloadsAtIndexes: (NSIndexSet*)anIndexSet {
 	NSArray *items = [downloads objectsAtIndexes: anIndexSet];
 	[items makeObjectsPerformSelector: @selector(cancel)];
+}
+
+-(void)openDownloadAtIndex: (NSInteger)anIndex {
+	DownloadItem *item = [downloads objectAtIndex: anIndex];
+	NSString *path = [[item destination] absoluteString];
+	[[NSWorkspace sharedWorkspace] openFile: path];
 }
 
 @end

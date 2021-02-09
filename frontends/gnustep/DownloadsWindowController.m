@@ -7,7 +7,7 @@
 @implementation DownloadsWindowController
 
 -(id)init {
-	if (self = [super initWithWindowNibName: @"Downloads"]) {
+	if ((self = [super initWithWindowNibName: @"Downloads"])) {
 		//...
 	}
 	return self;
@@ -89,7 +89,7 @@
 
 -(BOOL)validateMenuItem: (NSMenuItem*)aMenuItem {
 	NSInteger tag = [aMenuItem tag];
-	if (tag == TAG_MENU_REMOVE || tag == TAG_MENU_CANCEL) {
+	if (tag == TAG_MENU_REMOVE || tag == TAG_MENU_CANCEL || tag == TAG_MENU_OPEN) {
 		return [tableView numberOfSelectedRows] > 0;
 	}
 	return YES;
@@ -113,6 +113,16 @@
 		[indices addIndex: [row integerValue]];
 	}
 	[[DownloadManager defaultDownloadManager] cancelDownloadsAtIndexes: indices];
+}
+
+-(void)open: (id)sender {
+
+	NSMutableIndexSet *indices = [NSMutableIndexSet indexSet];
+	NSEnumerator *selectedRows = [tableView selectedRowEnumerator];
+	id row = [selectedRows nextObject];
+	if (row != nil) {
+		[[DownloadManager defaultDownloadManager] openDownloadAtIndex: [row integerValue]];
+	}
 }
 
 @end

@@ -49,6 +49,7 @@ struct download_context;
 -(NSArray*)downloads;
 -(void)removeDownloadsAtIndexes: (NSIndexSet*)anIndexSet;
 -(void)cancelDownloadsAtIndexes: (NSIndexSet*)anIndexSet;
+-(void)openDownloadAtIndex: (NSInteger)index;
 -(id)delegate;
 -(void)setDelegate: (id<DownloadManagerDelegate>)aDelegate;
 @end
