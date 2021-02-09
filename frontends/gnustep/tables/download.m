@@ -1,10 +1,61 @@
 #import <Cocoa/Cocoa.h>
 
+#include <string.h>
+
 #import "netsurf/netsurf.h"
 #import "netsurf/download.h"
 #import "desktop/download.h"
+#import "utils/nsurl.h"
 #import "DownloadManager.h"
 #import "AppDelegate.h"
+#import "Preferences.h"
+
+#define CMP_HEAD(MIME,IN,EXT) if (strncmp(MIME, IN, 40) == 0) { return EXT; }
+#define CMP(MIME,IN,EXT) else if (strncmp(MIME, IN, 40) == 0) { return EXT; }
+
+static const char *getext(const char *mime) {
+	CMP_HEAD ("image/jpeg", mime, "jpeg")
+	CMP ("text/css", mime, "css")
+	CMP ("text/html", mime, "html")
+	CMP ("image/gif", mime, "gif")
+	CMP ("image/png", mime, "png")
+	CMP ("application/zip", mime, "zip")
+	CMP ("application/gzip", mime, "gz")
+	CMP ("image/webm", mime, "webm")
+	CMP ("application/pdf", mime, "pdf")
+	CMP ("audio/mpeg", mime, "mp3")
+	CMP ("audio/wav", mime, "wav")
+	CMP ("audio/webm", mime, "webm")
+	CMP ("application/octet-stream", mime, "bin")
+	CMP ("image/tiff", mime, "tiff")
+	CMP ("audio/aac", mime, "aac")
+	CMP ("audio/ogg", mime, "ogg")
+	CMP ("application/x-7z-compressed", mime, "7z")
+	CMP ("application/x-bzip", mime, "bz")
+	CMP ("application/x-bzip2", mime, "bz2")
+	CMP ("image/bmp", mime, "bmp")
+	CMP ("text/csv", mime, "csv")
+	CMP ("application/epub+zip", mime, "epub")
+	CMP ("image/vnd.microsoft.icon", mime, "ico")
+	CMP ("text/javascript", mime, "js")
+	CMP ("application/json", mime, "json")
+	CMP ("video/mpeg", mime, "mpeg")
+	CMP ("application/rtf", mime, "rtf")
+	return NULL;
+}
+
+static BOOL askwrite(NSString *filename) {
+	NSAlert *alert = [[NSAlert alloc] init];
+	NSString *informativeText = [NSString stringWithFormat:  @"A file named '%@' already exists, do you wish to overwrite it?\nThe existing file will be deleted.", filename];
+	[alert setMessageText: @"File Exists"];
+	[alert setInformativeText: informativeText];
+	[alert addButtonWithTitle: @"Overwrite"];
+	[alert addButtonWithTitle: @"Cancel"];
+	[alert setAlertStyle: NSWarningAlertStyle];
+	NSInteger result = [alert runModal];
+	[alert release];
+	return result == NSAlertFirstButtonReturn;
+}
 
 /**********************/
 /****** Download ******/
@@ -12,9 +63,45 @@
 // This won't really return a window ref, but a ref to a download item.
 static struct gui_download_window *gnustep_download_create(struct download_context *ctx, struct gui_window *parent) {
 	NSLog(@"gnustep_download_create");
-	NSURL *url = [[NSApp delegate] requestDownloadDestination];
-	if (url == nil)
+	const char *name = download_context_get_filename(ctx);
+	const char *mime = download_context_get_mime_type(ctx);
+	const char *ext = getext(mime);
+	NSString *filename;
+	if (ext != NULL) {
+		filename = [NSString stringWithFormat: @"%s.%s", name, ext];
+	} else {
+		filename = [NSString stringWithCString: name];
+	}
+	if ([filename length] < 1) {
+		NSLog(@"Filename was empty");
 		return NULL;
+	}
+	NSString *destination = [[[Preferences defaultPreferences] downloadLocationPath]
+		stringByAppendingPathComponent: filename];
+
+	NSURL *url = [NSURL URLWithString: destination];
+	if (url == nil) {
+		NSLog(@"Failed to create url with path %@", destination);
+		return NULL;
+	}
+	BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath: [url absoluteString]];
+	BOOL confirmOverwrites = [[Preferences defaultPreferences] confirmBeforeOverwriting];
+	if (confirmOverwrites) {
+		NSLog(@"Will confirm before overwriting...");
+	}
+	BOOL shouldProceed = !exists || !confirmOverwrites || askwrite(filename);
+	if (!shouldProceed) {
+		NSLog(@"Won't continue...");
+		return NULL;
+	}
+	if (exists) {
+		NSError *err = nil;
+		[[NSFileManager defaultManager] removeItemAtURL: url error: &err];
+		if (err != nil) {
+			NSLog(@"Error deleting existing file at %@", url);
+			return NULL;
+		}
+	}
 	DownloadItem *download = [[DownloadManager defaultDownloadManager]
 		createDownloadForDestination: url withContext: ctx];
 	[[NSApp delegate] showDownloadsWindow: nil];

@@ -83,7 +83,7 @@
 	[downloadRemoveOnCompleteButton setState: [[Preferences defaultPreferences] 
 		removeDownloadsOnComplete] ? NSOnState : NSOffState];
 	[downloadConfirmOverwriteButton setState: [[Preferences defaultPreferences]
-		removeDownloadsOnComplete] ? NSOnState : NSOffState];
+		confirmBeforeOverwriting] ? NSOnState : NSOffState];
 
 	downloadLocations = [NSMutableArray arrayWithObjects: 
 		[DownloadLocation downloadLocationWithName: @"Downloads" path: 
