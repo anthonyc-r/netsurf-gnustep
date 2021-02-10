@@ -55,7 +55,13 @@
 
 -(void)enterUrl: (id)sender {
 	NSString *string = [sender stringValue];
-	[self openUrlString: string];
+	if ([[Preferences defaultPreferences] searchFromUrlBar]) {
+		SearchProvider *searchProvider = [[Preferences defaultPreferences] searchProvider];
+		Website *website = [searchProvider websiteForQuery: [sender stringValue]];
+		[self openWebsite: website];
+	} else {
+		[self openUrlString: string];
+	}
 }
 
 -(void)enterSearch: (id)sender {
