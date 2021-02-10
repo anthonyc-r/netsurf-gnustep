@@ -3,6 +3,7 @@
 #import <AppKit/AppKit.h>
 #import "netsurf/netsurf.h"
 #import "netsurf/mouse.h"
+#import "Website.h"
 
 struct browser_window;
 @interface BrowserWindowController : NSWindowController<NSTextFieldDelegate> {
@@ -15,6 +16,8 @@ struct browser_window;
 	id refreshButton;
 	id caretView;
 	enum gui_pointer_shape lastRequestedPointer;
+	id searchBar;
+	id searchImage;
 }
 
 -(id)initWithBrowser: (struct browser_window*)aBrowser;
@@ -22,6 +25,8 @@ struct browser_window;
 -(void)forward: (id)sender;
 -(void)stopOrRefresh: (id)sender;
 -(NSString*)visibleUrl;
+-(void)enterSearch: (id)sender;
+-(void)openWebsite: (Website*)aWebsite;
 
 // Browser control
 -(NSSize)getBrowserSize;

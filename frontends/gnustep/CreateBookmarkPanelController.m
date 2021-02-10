@@ -6,7 +6,7 @@
 @implementation CreateBookmarkPanelController
 
 -(id)initForWebsite: (Website*)aWebsite {
-	if (self = [super initWithWindowNibName: @"CreateBookmark"]) {
+	if ((self = [super initWithWindowNibName: @"CreateBookmark"])) {
 		website = [aWebsite retain];
 		bookmarkFolders = [[BookmarkFolder allFolders] retain];
 	}

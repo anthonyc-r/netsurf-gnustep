@@ -11,6 +11,12 @@
 #import "desktop/search.h"
 #import "BookmarkFolder.h"
 #import "CreateBookmarkPanelController.h"
+#import "Preferences.h"
+#import "SearchProvider.h"
+
+@interface BrowserWindowController (Private)
+-(void)openUrlString: (NSString*)aUrlString;
+@end
 
 @implementation BrowserWindowController
 
@@ -48,23 +54,19 @@
 }
 
 -(void)enterUrl: (id)sender {
-	nserror error;
-	struct nsurl *url;
-
 	NSString *string = [sender stringValue];
-	error = nsurl_create([string cString], &url);
-	if (error != NSERROR_OK) {
-		NSLog(@"nsurl_create error");
-		return;
-	}
-	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL,
-		NULL);
-	if (error != NSERROR_OK) {
-		NSLog(@"browser_window_navigate error");
-	} else {
-		NSLog(@"OK");
-	}	
-	nsurl_unref(url);
+	[self openUrlString: string];
+}
+
+-(void)enterSearch: (id)sender {
+	NSLog(@"Searched for %@", [sender stringValue]);
+	SearchProvider *searchProvider = [[Preferences defaultPreferences] searchProvider];
+	Website *website = [searchProvider websiteForQuery: [sender stringValue]];
+	[self openWebsite: website];
+}
+
+-(void)openWebsite: (Website*)aWebsite {
+	[self openUrlString: [aWebsite url]];
 }
 
 -(NSSize)getBrowserSize {
@@ -193,11 +195,28 @@
 	[website release];
 }
 
-
 -(NSString*)visibleUrl {
 	struct nsurl *url = browser_window_access_url(browser);
-	const char *title = browser_window_get_title(browser);
 	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
 	return urlStr;
+}
+
+-(void)openUrlString: (NSString*)aUrlString {
+	nserror error;
+	struct nsurl *url;
+
+	error = nsurl_create([aUrlString cString], &url);
+	if (error != NSERROR_OK) {
+		NSLog(@"nsurl_create error");
+		return;
+	}
+	error = browser_window_navigate(browser, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL,
+		NULL);
+	if (error != NSERROR_OK) {
+		NSLog(@"browser_window_navigate error");
+	} else {
+		NSLog(@"OK");
+	}	
+	nsurl_unref(url);
 }
 @end

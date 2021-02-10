@@ -9,6 +9,7 @@
 	NSArray *bookmarkFolders;
 
 }
+-(id)initForWebsite: (Website*)aWebsite;
 -(void)didTapOkay: (id)sender;
 -(void)didTapCancel: (id)sender;
 @end

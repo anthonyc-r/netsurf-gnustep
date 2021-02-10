@@ -6,7 +6,8 @@
 	    "forward:",
 	    "navigate:",
 	    "stopOrRefresh:",
-	    "enterUrl:"
+	    "enterUrl:",
+	    "enterSearch:"
 	);
 	Outlets = (
 	    backButton,
@@ -14,16 +15,19 @@
 	    urlBar,
 	    plotView,
 	    scrollView,
-	    refreshButton
+	    refreshButton,
+	    searchImage,
+	    searchBar
 	);
 	Super = NSWindowController;
     };
     FirstResponder = {
 	Actions = (
 	    "back:",
+	    "enterUrl:",
 	    "forward:",
 	    "navigate:",
-	    "enterUrl:",
+	    "enterSearch:",
 	    "stopOrRefresh:"
 	);
 	Super = NSObject;
