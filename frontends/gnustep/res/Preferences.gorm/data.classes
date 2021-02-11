@@ -3,13 +3,20 @@
     FirstResponder = {
 	Actions = (
 	    "didEnterStartupPage:",
+	    "didPickDeveloperViews:",
 	    "didPickDownloadLocation:",
 	    "didPickSearchProvider:",
+	    "didPickTabPosition:",
+	    "didPressAlwaysShowTabBar:",
+	    "didPressBlankNewTabs:",
 	    "didPressDownloadConfirmOverwrite:",
 	    "didPressDownloadRemoveOnComplete:",
+	    "didPressSearchFromUrlBar:",
 	    "didPressStartupUseCurrentPage:",
 	    "didPressStartupUseDefaultPage:",
-	    "didPressSearchFromUrlBar:"
+	    "didPressSwitchToTabs:",
+	    "didPressUrlSuggestions:",
+	    "didPickUrlButtonsType:"
 	);
 	Super = NSObject;
     };
@@ -22,7 +29,14 @@
 	    "didPressDownloadRemoveOnComplete:",
 	    "didPressStartupUseCurrentPage:",
 	    "didPressStartupUseDefaultPage:",
-	    "didPressSearchFromUrlBar:"
+	    "didPressSearchFromUrlBar:",
+	    "didPickDeveloperViews:",
+	    "didPickTabPosition:",
+	    "didPressAlwaysShowTabBar:",
+	    "didPressBlankNewTabs:",
+	    "didPressSwitchToTabs:",
+	    "didPressUrlSuggestions:",
+	    "didPickUrlButtonsType:"
 	);
 	Outlets = (
 	    downloadConfirmOverwriteButton,
@@ -30,7 +44,14 @@
 	    downloadRemoveOnCompleteButton,
 	    searchFromUrlButton,
 	    searchProviderButton,
-	    startupPageField
+	    startupPageField,
+	    alwaysShowTabBarButton,
+	    bankNewTabsButton,
+	    developerViewsButton,
+	    urlBarButtonsTypeButton,
+	    switchToTabsButton,
+	    tabPositionButton,
+	    urlSuggestionsButton
 	);
 	Super = NSWindowController;
     };

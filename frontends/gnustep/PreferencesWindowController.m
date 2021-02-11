@@ -11,6 +11,7 @@
 @interface PreferencesWindowController (Private) 
 -(void)configureMainTab;
 -(void)reconfigureDownloadLocationButton;
+-(void)configureAppearanceTab;
 @end
 @interface DownloadLocation: NSObject {
 	NSString *name;
@@ -44,7 +45,7 @@
 @implementation PreferencesWindowController
 
 -(id)init {
-	if (self = [super initWithWindowNibName: @"Preferences"]) {
+	if ((self = [super initWithWindowNibName: @"Preferences"])) {
 		//...
 	}
 	return self;
@@ -57,6 +58,7 @@
 
 -(void)awakeFromNib {
 	[self configureMainTab];
+	[self configureAppearanceTab];
 }
 
 // MARK: - MAIN TAB
@@ -193,6 +195,39 @@
 	NSLog(@"Did press search from url bar");
 	BOOL checked = [sender state] == NSOnState;
 	[[Preferences defaultPreferences] setSearchFromUrlBar: checked];
+}
+
+// MARK: - APPEARANCE TAB
+-(void)configureAppearanceTab {
+
+}
+
+-(void)didPickDeveloperViews: (id)sender {
+	NSLog(@"didPickDeveloperViews");
+}
+
+-(void)didPickTabPosition: (id)sender {
+	NSLog(@"didPickTabPosition");
+}
+
+-(void)didPressAlwaysShowTabBar: (id)sender {
+	NSLog(@"didPressAlwaysShowTabBar");
+}
+
+-(void)didPressBlankNewTabs: (id)sender {
+	NSLog(@"didPressBlankNewTabs");
+}
+
+-(void)didPressSwitchToTabs: (id)sender {
+	NSLog(@"didPressSwitchToTabs");
+}
+
+-(void)didPressUrlSuggestions: (id)sender {
+	NSLog(@"didPressUrlSuggestions");
+}
+
+-(void)didPickUrlButtonsType: (id)sender {
+	NSLog(@"didPickUrlButtonsType");
 }
 
 @end
