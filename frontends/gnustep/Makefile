@@ -98,6 +98,7 @@ E_RESOURCES := \
 	default.css	\
 	internal.css	\
 	quirks.css	\
+	SearchEngines	\
 
 E_RESOURCES := $(addprefix resources/,$(E_RESOURCES))
 	

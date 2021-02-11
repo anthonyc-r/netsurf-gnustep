@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
 #import "Website.h"
 #import "SearchProvider.h"
+#import "stdio.h"
+#import "string.h"
 
 @interface SearchProvider (Private)
 -(BOOL)isUrl: (NSString*)possibleUrlString;
@@ -50,7 +52,34 @@
 }
 
 +(NSArray*)allProviders {
-	return [NSArray arrayWithObject: [SearchProvider defaultSearchProvider]];
+	NSMutableArray *result = [NSMutableArray arrayWithObject: [SearchProvider 
+		defaultSearchProvider]];
+	// Attempt to parse SearchEngines file found in netsurf/resources
+	NSString *path = [[NSBundle mainBundle] pathForResource: @"SearchEngines" ofType: @""];
+	if (path == nil) {
+		NSLog(@"SearchEngines file not found in main bundle.");
+		return result;
+	}
+	FILE *f = fopen([path cString], "r");
+	if (f == NULL) {
+		NSLog(@"Failed to fopen SearchEngines");
+		return result;
+	}
+	char buf[300];
+	char *name, *format;
+	SearchProvider *provider;
+	while (fgets(buf, 300, f) != NULL) {
+		name =  strtok(buf, "|");
+		(void)strtok(NULL, "|");
+		format = strtok(NULL, "|");
+		if (name != NULL && format != NULL) {
+			provider = [[SearchProvider alloc] initWithName: [NSString stringWithCString: 
+					name] searchUrl: [NSString stringWithCString: format]];
+			[result addObject: provider];
+			[provider release];
+		}
+	}
+	return result;
 }
 
 +(SearchProvider*)defaultSearchProvider {
