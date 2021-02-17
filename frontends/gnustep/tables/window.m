@@ -1,6 +1,8 @@
 #import <Cocoa/Cocoa.h>
 
+#import "AppDelegate.h"
 #import "BrowserWindowController.h"
+#import "netsurf/browser_window.h"
 #import "netsurf/netsurf.h"
 #import "netsurf/window.h"
 #import "netsurf/types.h"
@@ -16,10 +18,16 @@ static struct gui_window *gnustep_window_create(struct browser_window *bw,
 			struct gui_window *existing,
 			gui_window_create_flags flags) {
 	NSLog(@"gnustep_window_create");
-	BrowserWindowController *controller = [[BrowserWindowController alloc]
+	BrowserWindowController *controller = nil;
+	if (flags & BW_CREATE_TAB) {
+		controller = [[NSApp delegate] activeBrowserWindow];
+		[controller newTab: bw];
+	}
+	if (controller == nil) {
+		controller = [[BrowserWindowController alloc]
 		initWithBrowser: bw]; 
-		
-	[controller loadWindow];
+		[controller loadWindow];
+	}
 	return (struct gui_window*)controller;
 }
 

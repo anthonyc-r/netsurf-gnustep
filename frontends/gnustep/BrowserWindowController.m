@@ -14,8 +14,38 @@
 #import "Preferences.h"
 #import "SearchProvider.h"
 
+@interface TabContents: NSObject {
+	id scrollView;
+	id plotView;
+	struct browser_window *browser;
+}
+@end
+@implementation TabContents
+-(id)initWithScroll: (id)scroll plot: (id)plot browser: (struct browser_window *)brows {
+	if ((self = [super init])) {
+		scrollView = scroll;
+		plotView = plot;
+		browser = brows;
+	}
+	return self;
+}
+-(id)scrollView {
+	return scrollView;
+}
+-(id)plotView {
+	return plotView;
+}
+-(struct browser_window *)browser {
+	return browser;
+}
+@end
+
 @interface BrowserWindowController (Private)
 -(void)openUrlString: (NSString*)aUrlString;
+-(void)addTab: (struct browser_window*)aBrowser;
+-(void)removeTab: (struct browser_window*)aBrowser;
+-(void)reconfigureTabLayout;
+-(void)setActive: (TabContents*)tabContents;
 @end
 
 @implementation BrowserWindowController
@@ -24,14 +54,24 @@
 	if ((self = [super initWithWindowNibName: @"Browser"])) {
 		browser = aBrowser;
 		lastRequestedPointer = 999;
+		tabs = [[NSMutableArray alloc] init];
 	}
 	return self;
 }
 
+-(void)dealloc {
+	[tabs release];
+	[super dealloc];
+}
+
 -(void)awakeFromNib {
-	[plotView setBrowser: browser];
-	[scrollView setLineScroll: 25];
+	[tabView removeTabViewItem: [tabView tabViewItemAtIndex: 0]];
+	[self addTab: browser];
 	NSLog(@"Browser window loaded");
+}
+
+-(void)newTab: (struct browser_window*)aBrowser {
+	[self addTab: aBrowser];
 }
 
 -(void)back: (id)sender {
@@ -224,5 +264,61 @@
 		NSLog(@"OK");
 	}	
 	nsurl_unref(url);
+}
+
+// MARK: - TabViewDelegate
+-(void)tabView: (NSTabView*)aTabView didSelectTabViewItem: (NSTabViewItem*)aTabViewItem {
+	NSLog(@"Selected tab");
+	NSInteger idx = [aTabView indexOfTabViewItem: aTabViewItem];
+	if (idx == NSNotFound || [tabs count] <= idx) {
+		NSLog(@"Tab not found...");
+		return;
+	}
+	TabContents *tc = [tabs objectAtIndex: idx];
+	[self setActive: tc];
+}
+
+-(void)addTab: (struct browser_window*)aBrowser {
+	NSString *identity = @"tab";
+	NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: 
+		identity];
+	[tabItem setLabel: identity];
+	NSLog(@"TabView: %@", tabItem);
+	NSView *innerView = [tabItem view];
+	NSLog(@"Inner view: %@", innerView);
+	PlotView *newPlotView = [[PlotView alloc] initWithFrame: [innerView bounds]];
+	NSScrollView *newScrollView = [[NSScrollView alloc] initWithFrame: [innerView bounds]];
+	[newScrollView setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
+	[newScrollView setDocumentView: newPlotView];
+	[innerView addSubview: newScrollView];
+	
+	[newPlotView setBrowser: aBrowser];
+	[newScrollView setLineScroll: 25];
+	NSInteger num = [tabView numberOfTabViewItems];
+	[tabView insertTabViewItem: tabItem atIndex: num];
+	[tabItem release];
+	
+	TabContents *tc = [[TabContents alloc] initWithScroll: newScrollView plot:
+		newPlotView browser: aBrowser];
+	[self setActive: tc];
+	[tabs addObject: tc];
+	[tabView selectTabViewItem: tabItem];
+	[tc release];
+	[newPlotView release];
+	[newScrollView release];
+}
+
+-(void)removeTab: (struct browser_window*)aBrowser {
+
+}
+
+-(void)reconfigureTabLayout {
+
+}
+
+-(void)setActive: (TabContents*)tabContents {
+	plotView = [tabContents plotView];
+	scrollView = [tabContents scrollView];
+	browser = [tabContents browser];
 }
 @end

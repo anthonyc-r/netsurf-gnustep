@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #import "NetsurfCallback.h"
 #import "Website.h"
+#import "BrowserWindowController.h"
 
 #define TAG_MENU_REMOVE 206
 #define TAG_MENU_CANCEL 204
@@ -37,7 +38,8 @@ id historyWindowController;
 id bookmarksWindowController;
 id preferencesWindowController;
 }
-
+-(void)didTapNewWindow: (id)sender;
+-(void)didTapNewTab: (id)sender;
 -(void)showFindPanel: (id)sender;
 -(void)showDownloadsWindow: (id)sender;
 -(void)showHistoryWindow: (id)sender;
@@ -46,4 +48,5 @@ id preferencesWindowController;
 -(NSURL*)requestDownloadDestination;
 -(void)openWebsite: (Website*)aWebsite;
 -(NSString*)currentUrl;
+-(BrowserWindowController*)activeBrowserWindow;
 @end

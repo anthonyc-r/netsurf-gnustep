@@ -17,7 +17,8 @@
 	    scrollView,
 	    refreshButton,
 	    searchImage,
-	    searchBar
+	    searchBar,
+	    tabView
 	);
 	Super = NSWindowController;
     };

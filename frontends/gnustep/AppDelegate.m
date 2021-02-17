@@ -132,6 +132,24 @@ static NSMenuItem *menuItemForItem(id item) {
 	}
 }
 
+-(void)didTapNewTab: (id)sender {
+	NSLog(@"Create new tab");
+	struct nsurl *url;
+	nserror error;
+	NSString *startupUrl = [[Preferences defaultPreferences] startupUrl];
+
+        error = nsurl_create([startupUrl cString], &url);
+
+	if (error == NSERROR_OK) {
+		error = browser_window_create(BW_CREATE_HISTORY | BW_CREATE_TAB, url, 
+			NULL, NULL, NULL);
+		nsurl_unref(url);
+	}
+	if (error != NSERROR_OK) {
+		NSLog(@"Failed to create window");
+	}
+}
+
 -(void)showDownloadsWindow: (id)sender {
 	NSLog(@"Showing downloads ...");
 	if (!downloadsWindowController) {
@@ -206,17 +224,23 @@ static NSMenuItem *menuItemForItem(id item) {
 	}
 }
 
--(NSString*)currentUrl {
+-(BrowserWindowController*)activeBrowserWindow {
 	NSArray *windows = [NSApp windows];
 	id controller;
 	for (NSUInteger i = 0; i < [windows count]; i++) {
 		controller = [[windows objectAtIndex: i] windowController];
 		if ([controller isKindOfClass: [BrowserWindowController class]]) {
-			return [controller visibleUrl];
+			return controller;
 		}
 	}
 	return nil;
 }
+
+-(NSString*)currentUrl {
+	return [[self activeBrowserWindow] visibleUrl];
+}
+
+
 
 @end
 

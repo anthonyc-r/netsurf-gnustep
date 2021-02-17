@@ -10,14 +10,18 @@ struct browser_window;
 	id backButton;
 	id forwardButton;
 	id urlBar;
-	struct browser_window *browser;
-	id plotView;
-	id scrollView;
+	id tabView;
 	id refreshButton;
 	id caretView;
 	enum gui_pointer_shape lastRequestedPointer;
 	id searchBar;
 	id searchImage;
+	NSMutableArray *tabs;
+	
+	// These three are set based on the currently focused tab.
+	id scrollView;
+	id plotView;
+	struct browser_window *browser;
 }
 
 -(id)initWithBrowser: (struct browser_window*)aBrowser;
@@ -27,6 +31,7 @@ struct browser_window;
 -(NSString*)visibleUrl;
 -(void)enterSearch: (id)sender;
 -(void)openWebsite: (Website*)aWebsite;
+-(void)newTab: (struct browser_window*)aBrowser;
 
 // Browser control
 -(NSSize)getBrowserSize;
