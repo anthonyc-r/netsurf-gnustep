@@ -19,6 +19,7 @@
 
 #import <AppKit/AppKit.h>
 #import "PlotView.h"
+#import "BrowserWindowController.h"
 #import "utils/errors.h"
 #import "netsurf/plotters.h"
 #import "netsurf/browser_window.h"
@@ -652,15 +653,7 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 
 
 - (void) cmOpenURLInTab: (id)sender {
-        struct nsurl *url;
-        nserror error;
-
-        error = nsurl_create([[sender representedObject] UTF8String], &url);
-        if (error == NSERROR_OK) {
-                error = browser_window_create(BW_CREATE_HISTORY | BW_CREATE_TAB |
-			BW_CREATE_CLONE, url, NULL, browser, NULL);
-                nsurl_unref(url);
-        }
+	[[[self window] windowController] newTab: [sender representedObject]];
 }
 
 - (void) cmOpenURLInWindow: (id)sender {

@@ -17,6 +17,7 @@ struct browser_window;
 	id searchBar;
 	id searchImage;
 	NSMutableArray *tabs;
+	BOOL isClosing;
 	
 	// These three are set based on the currently focused tab.
 	id scrollView;

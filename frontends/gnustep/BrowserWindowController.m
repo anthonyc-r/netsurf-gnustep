@@ -14,6 +14,8 @@
 #import "Preferences.h"
 #import "SearchProvider.h"
 
+#define TAB_TITLE_LEN 20
+
 static id newTabTarget;
 
 @interface TabContents: NSObject {
@@ -57,6 +59,7 @@ static id newTabTarget;
 		browser = aBrowser;
 		lastRequestedPointer = 999;
 		tabs = [[NSMutableArray alloc] init];
+		isClosing = NO;
 	}
 	return self;
 }
@@ -80,8 +83,13 @@ static id newTabTarget;
 	NSLog(@"Create new tab");
 	struct nsurl *url;
 	nserror error;
-	NSString *startupUrl = [[Preferences defaultPreferences] startupUrl];
-
+	NSString *startupUrl;
+	if ([sender isKindOfClass: [NSString class]]) {
+		startupUrl = sender;
+	} else {
+		startupUrl = [[Preferences defaultPreferences] startupUrl];
+	}
+	
         error = nsurl_create([startupUrl cString], &url);
 
 	if (error == NSERROR_OK) {
@@ -92,6 +100,14 @@ static id newTabTarget;
 	}
 	if (error != NSERROR_OK) {
 		NSLog(@"Failed to create window");
+	}
+}
+
+-(void)windowWillClose: (NSNotification*)aNotification {
+	NSLog(@"Window will close...");
+	isClosing = YES;
+	for (NSUInteger i = 0; i < [tabs count]; i++) {
+		browser_window_destroy([[tabs objectAtIndex: i] browser]);
 	}
 }
 
@@ -110,6 +126,10 @@ static id newTabTarget;
 }
 -(void)netsurfWindowDestroy {
 	NSLog(@"ns destroy");
+	// If we're closing anyway, don't bother with tab cleanup.
+	if (isClosing) {
+		return;
+	}
 	NSTabViewItem *selectedTab = [tabView selectedTabViewItem];
 	NSInteger idx = [tabView indexOfTabViewItem: selectedTab];
 	if (idx == NSNotFound) {
@@ -117,8 +137,10 @@ static id newTabTarget;
 		return;
 	}
 	[tabView removeTabViewItem: selectedTab];
-	TabContents *tc = [tabs objectAtIndex: idx];
 	[tabs removeObjectAtIndex: idx];
+	if ([tabs count] < 1) {
+		[super close];
+	}
 }
 
 -(void)back: (id)sender {
@@ -184,6 +206,7 @@ static id newTabTarget;
 	[plotView setFrame: NSMakeRect(0, 0, width, height)];
 }
 -(void)placeCaretAtX: (int)x y: (int)y height: (int)height {
+	NSLog(@"Place caret... on %@", plotView);
 	[plotView placeCaretAtX: x y: y height: height];
 }
 -(void)removeCaret {
@@ -245,6 +268,12 @@ static id newTabTarget;
 }
 -(void)setTitle: (NSString*)title {
 	[[self window] setTitle: title];
+	NSTabViewItem *selectedTab = [tabView selectedTabViewItem];
+	NSString *tabTitle = title;
+	if ([tabTitle length] > TAB_TITLE_LEN) {
+		tabTitle = [title substringToIndex: TAB_TITLE_LEN];
+	}
+	[selectedTab setLabel: tabTitle];
 }
 
 -(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
@@ -326,7 +355,7 @@ static id newTabTarget;
 }
 
 -(void)addTab: (struct browser_window*)aBrowser {
-	NSString *identity = @"tab";
+	NSString *identity = @"New Tab";
 	NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: 
 		identity];
 	[tabItem setLabel: identity];
