@@ -20,8 +20,8 @@ static struct gui_window *gnustep_window_create(struct browser_window *bw,
 	NSLog(@"gnustep_window_create");
 	BrowserWindowController *controller = nil;
 	if (flags & BW_CREATE_TAB) {
-		controller = [[NSApp delegate] activeBrowserWindow];
-		[controller newTab: bw];
+		controller = [BrowserWindowController newTabTarget];
+		[controller newTabWithBrowser: bw];
 	}
 	if (controller == nil) {
 		controller = [[BrowserWindowController alloc]
@@ -34,7 +34,7 @@ static struct gui_window *gnustep_window_create(struct browser_window *bw,
 // Destroy the specified window
 static void gnustep_window_destroy(struct gui_window *gw) {
 	NSLog(@"gnustep_window_destroy");
-	[(id)gw release];
+	[(id)gw netsurfWindowDestroy];
 }
 
 // Trigger a redraw of the specified area, or the entire window if null

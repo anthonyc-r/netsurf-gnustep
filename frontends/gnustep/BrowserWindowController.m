@@ -14,6 +14,8 @@
 #import "Preferences.h"
 #import "SearchProvider.h"
 
+static id newTabTarget;
+
 @interface TabContents: NSObject {
 	id scrollView;
 	id plotView;
@@ -70,8 +72,53 @@
 	NSLog(@"Browser window loaded");
 }
 
--(void)newTab: (struct browser_window*)aBrowser {
+-(void)newTabWithBrowser: (struct browser_window*)aBrowser {
 	[self addTab: aBrowser];
+}
+
+-(void)newTab: (id)sender {
+	NSLog(@"Create new tab");
+	struct nsurl *url;
+	nserror error;
+	NSString *startupUrl = [[Preferences defaultPreferences] startupUrl];
+
+        error = nsurl_create([startupUrl cString], &url);
+
+	if (error == NSERROR_OK) {
+		newTabTarget = self;
+		error = browser_window_create(BW_CREATE_HISTORY | BW_CREATE_TAB, url, 
+			NULL, NULL, NULL);
+		nsurl_unref(url);
+	}
+	if (error != NSERROR_OK) {
+		NSLog(@"Failed to create window");
+	}
+}
+
+-(void)close: (id)sender {
+	NSLog(@"Close");
+	NSTabViewItem *selectedTab = [tabView selectedTabViewItem];
+	NSInteger idx = [tabView indexOfTabViewItem: selectedTab];
+	if (idx == NSNotFound) {
+		NSLog(@"Tab not found.");
+		return;
+	}
+	TabContents *tc = [tabs objectAtIndex: idx];
+	// This will call into netsurfWindowDestroy in the window.m callback...
+	browser_window_destroy([tc browser]);
+
+}
+-(void)netsurfWindowDestroy {
+	NSLog(@"ns destroy");
+	NSTabViewItem *selectedTab = [tabView selectedTabViewItem];
+	NSInteger idx = [tabView indexOfTabViewItem: selectedTab];
+	if (idx == NSNotFound) {
+		NSLog(@"Tab not found.");
+		return;
+	}
+	[tabView removeTabViewItem: selectedTab];
+	TabContents *tc = [tabs objectAtIndex: idx];
+	[tabs removeObjectAtIndex: idx];
 }
 
 -(void)back: (id)sender {
@@ -270,7 +317,7 @@
 -(void)tabView: (NSTabView*)aTabView didSelectTabViewItem: (NSTabViewItem*)aTabViewItem {
 	NSLog(@"Selected tab");
 	NSInteger idx = [aTabView indexOfTabViewItem: aTabViewItem];
-	if (idx == NSNotFound || [tabs count] <= idx) {
+	if (idx == NSNotFound || (NSInteger)[tabs count] <= idx) {
 		NSLog(@"Tab not found...");
 		return;
 	}
@@ -288,6 +335,8 @@
 	NSLog(@"Inner view: %@", innerView);
 	PlotView *newPlotView = [[PlotView alloc] initWithFrame: [innerView bounds]];
 	NSScrollView *newScrollView = [[NSScrollView alloc] initWithFrame: [innerView bounds]];
+	[newScrollView setHasVerticalScroller: YES];
+	[newScrollView setHasHorizontalScroller: YES];
 	[newScrollView setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
 	[newScrollView setDocumentView: newPlotView];
 	[innerView addSubview: newScrollView];
@@ -296,13 +345,14 @@
 	[newScrollView setLineScroll: 25];
 	NSInteger num = [tabView numberOfTabViewItems];
 	[tabView insertTabViewItem: tabItem atIndex: num];
-	[tabItem release];
 	
 	TabContents *tc = [[TabContents alloc] initWithScroll: newScrollView plot:
 		newPlotView browser: aBrowser];
 	[self setActive: tc];
 	[tabs addObject: tc];
 	[tabView selectTabViewItem: tabItem];
+	
+	[tabItem release];
 	[tc release];
 	[newPlotView release];
 	[newScrollView release];
@@ -320,5 +370,9 @@
 	plotView = [tabContents plotView];
 	scrollView = [tabContents scrollView];
 	browser = [tabContents browser];
+}
+
++(id)newTabTarget {
+	return newTabTarget;
 }
 @end

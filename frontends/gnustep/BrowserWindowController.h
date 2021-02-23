@@ -31,7 +31,10 @@ struct browser_window;
 -(NSString*)visibleUrl;
 -(void)enterSearch: (id)sender;
 -(void)openWebsite: (Website*)aWebsite;
--(void)newTab: (struct browser_window*)aBrowser;
+-(void)newTab: (id)sender;
+-(void)newTabWithBrowser: (struct browser_window*)aBrowser;
+-(void)close: (id)sender;
+-(void)netsurfWindowDestroy;
 
 // Browser control
 -(NSSize)getBrowserSize;
@@ -53,4 +56,6 @@ struct browser_window;
 -(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)bookmarkPage: (id)sender;
 
+
++(id)newTabTarget;
 @end

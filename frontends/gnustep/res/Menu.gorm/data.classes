@@ -7,8 +7,7 @@
 	    "showFindPanel:",
 	    "showHistoryWindow:",
 	    "showBookmarksWindow:",
-	    "showPreferencesWindow:",
-	    "didTapNewTab:"
+	    "showPreferencesWindow:"
 	);
 	Outlets = (
 	);
@@ -20,7 +19,7 @@
 	    "didTapNewWindow:",
 	    "findNext:",
 	    "findPrevious:",
-	    "didTapNewTab:",
+	    "newTab:",
 	    "newFolder:",
 	    "remove:",
 	    "removeAll:",

@@ -39,7 +39,6 @@ id bookmarksWindowController;
 id preferencesWindowController;
 }
 -(void)didTapNewWindow: (id)sender;
--(void)didTapNewTab: (id)sender;
 -(void)showFindPanel: (id)sender;
 -(void)showDownloadsWindow: (id)sender;
 -(void)showHistoryWindow: (id)sender;
