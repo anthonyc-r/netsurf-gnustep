@@ -22,14 +22,16 @@ static id newTabTarget;
 	id scrollView;
 	id plotView;
 	struct browser_window *browser;
+	id tabItem;
 }
 @end
 @implementation TabContents
--(id)initWithScroll: (id)scroll plot: (id)plot browser: (struct browser_window *)brows {
+-(id)initWithScroll: (id)scroll plot: (id)plot browser: (struct browser_window *)brows tabItem: (NSTabViewItem*)aTabItem {
 	if ((self = [super init])) {
 		scrollView = scroll;
 		plotView = plot;
 		browser = brows;
+		tabItem = aTabItem;
 	}
 	return self;
 }
@@ -42,14 +44,18 @@ static id newTabTarget;
 -(struct browser_window *)browser {
 	return browser;
 }
+-(id)tabItem {
+	return tabItem;
+}
 @end
 
 @interface BrowserWindowController (Private)
 -(void)openUrlString: (NSString*)aUrlString;
--(void)addTab: (struct browser_window*)aBrowser;
+-(id)addTab: (struct browser_window*)aBrowser;
 -(void)removeTab: (struct browser_window*)aBrowser;
 -(void)reconfigureTabLayout;
 -(void)setActive: (TabContents*)tabContents;
+-(Website*)currentWebsiteForTab: (id)tab;
 @end
 
 @implementation BrowserWindowController
@@ -75,8 +81,8 @@ static id newTabTarget;
 	NSLog(@"Browser window loaded");
 }
 
--(void)newTabWithBrowser: (struct browser_window*)aBrowser {
-	[self addTab: aBrowser];
+-(id)newTabWithBrowser: (struct browser_window*)aBrowser {
+	return [self addTab: aBrowser];
 }
 
 -(void)newTab: (id)sender {
@@ -124,23 +130,28 @@ static id newTabTarget;
 	browser_window_destroy([tc browser]);
 
 }
--(void)netsurfWindowDestroy {
+-(void)netsurfWindowDestroyForTab: (id)tab {
 	NSLog(@"ns destroy");
 	// If we're closing anyway, don't bother with tab cleanup.
 	if (isClosing) {
 		return;
 	}
-	NSTabViewItem *selectedTab = [tabView selectedTabViewItem];
-	NSInteger idx = [tabView indexOfTabViewItem: selectedTab];
+	NSInteger idx = [tabView indexOfTabViewItem: [tab tabItem]];
 	if (idx == NSNotFound) {
 		NSLog(@"Tab not found.");
 		return;
 	}
-	[tabView removeTabViewItem: selectedTab];
+	[tabView removeTabViewItem: [tab tabItem]];
 	[tabs removeObjectAtIndex: idx];
 	if ([tabs count] < 1) {
 		[super close];
 	}
+}
+
+// The identifier for the first tab created. Used by window.m after creation.
+// This is actually a TabContents object, for easy access to the required objects.
+-(id)initialTabId {
+	return [tabs objectAtIndex: 0];
 }
 
 -(void)back: (id)sender {
@@ -184,33 +195,33 @@ static id newTabTarget;
 	[self openUrlString: [aWebsite url]];
 }
 
--(NSSize)getBrowserSize {
-	return [[plotView superview] frame].size;
+-(NSSize)getBrowserSizeForTab: (id)tab {
+	return [[[tab plotView] superview] frame].size;
 }
--(NSPoint)getBrowserScroll {
-	return [plotView visibleRect].origin;
+-(NSPoint)getBrowserScrollForTab: (id)tab {
+	return [[tab plotView] visibleRect].origin;
 }
--(void)setBrowserScroll: (NSPoint)scroll {
-	[plotView scrollPoint: scroll];
+-(void)setBrowserScroll: (NSPoint)scroll forTab: (id)tab {
+	[[tab plotView] scrollPoint: scroll];
 }
--(void)invalidateBrowser {
-	[plotView setNeedsDisplay: YES];
+-(void)invalidateBrowserForTab: (id)tab {
+	[[tab plotView] setNeedsDisplay: YES];
 }
--(void)invalidateBrowser: (NSRect)rect {
-	[plotView setNeedsDisplayInRect: rect];
+-(void)invalidateBrowser: (NSRect)rect forTab: (id)tab {
+	[[tab plotView] setNeedsDisplayInRect: rect];
 }
--(void)updateBrowserExtent {
+-(void)updateBrowserExtentForTab: (id)tab {
 	int width, height;
-	browser_window_get_extents(browser, false, &width, &height);
+	browser_window_get_extents([tab browser], false, &width, &height);
 	NSLog(@"set frame to size: %d, %d", width, height);
-	[plotView setFrame: NSMakeRect(0, 0, width, height)];
+	[[tab plotView] setFrame: NSMakeRect(0, 0, width, height)];
 }
--(void)placeCaretAtX: (int)x y: (int)y height: (int)height {
+-(void)placeCaretAtX: (int)x y: (int)y height: (int)height inTab: (id)tab {
 	NSLog(@"Place caret... on %@", plotView);
-	[plotView placeCaretAtX: x y: y height: height];
+	[[tab plotView] placeCaretAtX: x y: y height: height];
 }
--(void)removeCaret {
-	[plotView removeCaret];
+-(void)removeCaretInTab: (id)tab {
+	[[tab plotView] removeCaret];
 }
 -(void)setPointerToShape: (enum gui_pointer_shape)shape {
 	if (shape == lastRequestedPointer)
@@ -241,19 +252,10 @@ static id newTabTarget;
 		[[NSCursor arrowCursor] set];
 	}
 }
--(void)newContent {
+-(void)newContentForTab: (id)tab {
 	NSLog(@"New content");
-	struct nsurl *url = browser_window_access_url(browser);
-	const char *title = browser_window_get_title(browser);
-	if (title == NULL) {
-		title = "";
-	}
-	NSString *name = [NSString stringWithCString: title];
-	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
-	Website *website = [[Website alloc] initWithName: name 
-		url: urlStr];
+	Website *website = [self currentWebsiteForTab: activeTab];
 	[website addToHistory];
-	[website release];
 }
 -(void)startThrobber {
 	[refreshButton setTitle: @"Stop"];
@@ -263,17 +265,16 @@ static id newTabTarget;
 	[refreshButton setTitle: @"Refresh"];
 	[refreshButton setTag: 0];
 }
--(void)setNavigationUrl: (NSString*)urlString {
+-(void)setNavigationUrl: (NSString*)urlString forTab: (id)tab {
 	[urlBar setStringValue: urlString];
 }
--(void)setTitle: (NSString*)title {
+-(void)setTitle: (NSString*)title forTab: (id)tab {
 	[[self window] setTitle: title];
-	NSTabViewItem *selectedTab = [tabView selectedTabViewItem];
 	NSString *tabTitle = title;
 	if ([tabTitle length] > TAB_TITLE_LEN) {
 		tabTitle = [title substringToIndex: TAB_TITLE_LEN];
 	}
-	[selectedTab setLabel: tabTitle];
+	[[tab tabItem] setLabel: tabTitle];
 }
 
 -(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
@@ -301,26 +302,15 @@ static id newTabTarget;
 }
 
 -(void)bookmarkPage: (id)sender {
-	struct nsurl *url = browser_window_access_url(browser);
-	const char *title = browser_window_get_title(browser);
-	if (title == NULL) {
-		title = "";
-	}
-	NSString *name = [NSString stringWithCString: title];
-	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
-	Website *website = [[Website alloc] initWithName: name 
-		url: urlStr];
+	Website *website = [self currentWebsiteForTab: activeTab];
 	CreateBookmarkPanelController *bmController = [[CreateBookmarkPanelController alloc] 
 		initForWebsite: website];
 	[NSApp runModalForWindow: [bmController window]];
 	[bmController release];
-	[website release];
 }
 
 -(NSString*)visibleUrl {
-	struct nsurl *url = browser_window_access_url(browser);
-	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
-	return urlStr;
+	return [[self currentWebsiteForTab: activeTab] url];
 }
 
 -(void)openUrlString: (NSString*)aUrlString {
@@ -354,7 +344,7 @@ static id newTabTarget;
 	[self setActive: tc];
 }
 
--(void)addTab: (struct browser_window*)aBrowser {
+-(id)addTab: (struct browser_window*)aBrowser {
 	NSString *identity = @"New Tab";
 	NSTabViewItem *tabItem = [[NSTabViewItem alloc] initWithIdentifier: 
 		identity];
@@ -376,7 +366,7 @@ static id newTabTarget;
 	[tabView insertTabViewItem: tabItem atIndex: num];
 	
 	TabContents *tc = [[TabContents alloc] initWithScroll: newScrollView plot:
-		newPlotView browser: aBrowser];
+		newPlotView browser: aBrowser tabItem: tabItem];
 	[self setActive: tc];
 	[tabs addObject: tc];
 	[tabView selectTabViewItem: tabItem];
@@ -385,6 +375,7 @@ static id newTabTarget;
 	[tc release];
 	[newPlotView release];
 	[newScrollView release];
+	return tc;
 }
 
 -(void)removeTab: (struct browser_window*)aBrowser {
@@ -399,6 +390,20 @@ static id newTabTarget;
 	plotView = [tabContents plotView];
 	scrollView = [tabContents scrollView];
 	browser = [tabContents browser];
+	activeTab = tabContents;
+}
+
+-(Website*)currentWebsiteForTab: (id)tab {
+	struct nsurl *url = browser_window_access_url(browser);
+	const char *title = browser_window_get_title(browser);
+	if (title == NULL) {
+		title = "";
+	}
+	NSString *name = [NSString stringWithCString: title];
+	NSString *urlStr = [NSString stringWithCString: nsurl_access(url)];
+	Website *website = [[Website alloc] initWithName: name 
+		url: urlStr];
+	return [website autorelease];
 }
 
 +(id)newTabTarget {

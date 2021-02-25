@@ -18,6 +18,7 @@ struct browser_window;
 	id searchImage;
 	NSMutableArray *tabs;
 	BOOL isClosing;
+	id activeTab;
 	
 	// These three are set based on the currently focused tab.
 	id scrollView;
@@ -33,25 +34,28 @@ struct browser_window;
 -(void)enterSearch: (id)sender;
 -(void)openWebsite: (Website*)aWebsite;
 -(void)newTab: (id)sender;
--(void)newTabWithBrowser: (struct browser_window*)aBrowser;
+// Returns a tab identifier that must be provided to some of the below messages.
+-(id)newTabWithBrowser: (struct browser_window*)aBrowser;
 -(void)close: (id)sender;
--(void)netsurfWindowDestroy;
+-(id)initialTabId;
 
 // Browser control
--(NSSize)getBrowserSize;
--(NSPoint)getBrowserScroll;
--(void)setBrowserScroll: (NSPoint)scroll;
--(void)invalidateBrowser;
--(void)invalidateBrowser: (NSRect)rect;
--(void)updateBrowserExtent;
--(void)placeCaretAtX: (int)x y: (int)y height: (int)height;
--(void)removeCaret;
+-(NSSize)getBrowserSizeForTab: (id)tab;
+-(NSPoint)getBrowserScrollForTab: (id)tab;
+-(void)setBrowserScroll: (NSPoint)scroll forTab: (id)tab;
+-(void)invalidateBrowserForTab: (id)tab;
+-(void)invalidateBrowser: (NSRect)rect forTab: (id)tab;
+-(void)updateBrowserExtentForTab: (id)tab;
+-(void)placeCaretAtX: (int)x y: (int)y height: (int)height inTab: (id)tab;
+-(void)removeCaretInTab: (id)tab;
 -(void)setPointerToShape: (enum gui_pointer_shape)shape;
--(void)newContent;
+-(void)newContentForTab: (id)tab;
+-(void)setNavigationUrl: (NSString*)urlString forTab: (id)tab;
+-(void)setTitle: (NSString*)title forTab: (id)tab;
+-(void)netsurfWindowDestroyForTab: (id)tab;
+
 -(void)startThrobber;
 -(void)stopThrobber;
--(void)setNavigationUrl: (NSString*)urlString;
--(void)setTitle: (NSString*)title;
 -(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
