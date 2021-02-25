@@ -234,12 +234,14 @@ lazy-loaded when requested.
 	if (cachedRootFolder != nil) {
 		return cachedRootFolder;
 	}
-
+	NSError *err;
 	NSString *rootPath = [NSHomeDirectory() stringByAppendingPathComponent: 
 		BOOKMARKS_PATH];
 	NSString *unsortedPath = [rootPath stringByAppendingPathComponent: UNSORTED_NAME];
-	[[NSFileManager defaultManager] createDirectoryAtPath: rootPath attributes: nil];
-	[[NSFileManager defaultManager] createDirectoryAtPath: unsortedPath attributes: nil];
+	[[NSFileManager defaultManager] createDirectoryAtPath: rootPath 
+		withIntermediateDirectories: YES attributes: nil error: &err];
+	[[NSFileManager defaultManager] createDirectoryAtPath: unsortedPath 
+		withIntermediateDirectories: YES attributes: nil error: &err];
 	BookmarkFolder *rootFolder = [[BookmarkFolder alloc] initWithName: @"Bookmarks"
 		parent: nil];
 	[rootFolder setPath: rootPath];

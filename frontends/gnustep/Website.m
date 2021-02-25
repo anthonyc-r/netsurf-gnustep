@@ -117,7 +117,9 @@
 		int year = [date yearOfCommonEra];
 		NSString *dir = [NSHomeDirectory() stringByAppendingPathComponent: 
 			HISTORY_PATH];
-		[[NSFileManager defaultManager] createDirectoryAtPath: dir attributes: nil]; 
+		NSError *err;
+		[[NSFileManager defaultManager] createDirectoryAtPath: dir 
+			withIntermediateDirectories: YES attributes: nil error: &err]; 
 		path = [[NSString alloc] initWithFormat: @"%@/history_%d_%02d", dir, year,
 			 month];		
 	}
