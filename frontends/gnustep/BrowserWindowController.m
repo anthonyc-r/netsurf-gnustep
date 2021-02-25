@@ -391,6 +391,9 @@ static id newTabTarget;
 	scrollView = [tabContents scrollView];
 	browser = [tabContents browser];
 	activeTab = tabContents;
+	Website *website = [self currentWebsiteForTab: activeTab];
+	[urlBar setStringValue: [website url]];
+	[[self window] setTitle: [website name]];
 }
 
 -(Website*)currentWebsiteForTab: (id)tab {
