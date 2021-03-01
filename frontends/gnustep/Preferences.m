@@ -9,6 +9,14 @@
 #define KEY_CONFIRM_OVERWRITE @"confirm_overwrite"
 #define KEY_DOWNLOAD_LOCATION @"download_location"
 
+#define KEY_ALWAYS_SHOW_TABS @"always_show_tabs"
+
+@interface Preferences (Private) 
+
+-(void)notifyPreferenceUpdated: (PreferenceType)type;
+
+@end
+
 @implementation Preferences
 
 -(id)init {
@@ -96,11 +104,34 @@
 	[defaults setObject: aPath forKey: KEY_DOWNLOAD_LOCATION];
 }
 
+-(BOOL)alwaysShowTabs {
+	if ([defaults objectForKey: KEY_ALWAYS_SHOW_TABS] != nil) {
+		return [defaults boolForKey: KEY_ALWAYS_SHOW_TABS];
+	} else {
+		return NO;
+	}
+}
+
+-(void)setAlwaysShowTabs: (BOOL)value {
+	[defaults setBool: value forKey: KEY_ALWAYS_SHOW_TABS];
+	[self notifyPreferenceUpdated: PreferenceTypeAlwaysShowTabs];
+}
+
+
 +(Preferences*)defaultPreferences {
 	static Preferences *prefs;
 	if (prefs == nil) {
 		prefs = [[Preferences alloc] init];
 	}
 	return prefs;
+}
+
+-(void)notifyPreferenceUpdated: (PreferenceType)type {
+	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+		[NSNumber numberWithInteger: type], @"type",
+		nil
+	];
+	[[NSNotificationCenter defaultCenter] postNotificationName:
+		PreferencesUpdatedNotificationName object: dict];
 }
 @end

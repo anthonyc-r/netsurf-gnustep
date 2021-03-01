@@ -199,7 +199,8 @@
 
 // MARK: - APPEARANCE TAB
 -(void)configureAppearanceTab {
-
+	[alwaysShowTabBarButton setState: [[Preferences defaultPreferences] alwaysShowTabs] ?
+		NSOnState : NSOffState];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
@@ -212,6 +213,8 @@
 
 -(void)didPressAlwaysShowTabBar: (id)sender {
 	NSLog(@"didPressAlwaysShowTabBar");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setAlwaysShowTabs: checked];
 }
 
 -(void)didPressBlankNewTabs: (id)sender {

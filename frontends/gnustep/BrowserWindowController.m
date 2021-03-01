@@ -15,6 +15,10 @@
 #import "SearchProvider.h"
 
 #define TAB_TITLE_LEN 20
+// Everything above the browser. Used to calculate the tabview's height.
+#define TOP_CONTENT_HEIGHT 74
+// Any way to get this programatically?
+#define TAB_ITEM_HEIGHT 13
 
 static id newTabTarget;
 
@@ -52,10 +56,11 @@ static id newTabTarget;
 @interface BrowserWindowController (Private)
 -(void)openUrlString: (NSString*)aUrlString;
 -(id)addTab: (struct browser_window*)aBrowser;
--(void)removeTab: (struct browser_window*)aBrowser;
 -(void)reconfigureTabLayout;
 -(void)setActive: (TabContents*)tabContents;
 -(Website*)currentWebsiteForTab: (id)tab;
+-(void)updateTabsVisibility;
+-(void)onPreferencesUpdated: (id)sender;
 @end
 
 @implementation BrowserWindowController
@@ -78,6 +83,10 @@ static id newTabTarget;
 -(void)awakeFromNib {
 	[tabView removeTabViewItem: [tabView tabViewItemAtIndex: 0]];
 	[self addTab: browser];
+	[[NSNotificationCenter defaultCenter] addObserver: self
+		selector: @selector(onPreferencesUpdated:)
+		name: PreferencesUpdatedNotificationName
+		object: nil];
 	NSLog(@"Browser window loaded");
 }
 
@@ -115,6 +124,7 @@ static id newTabTarget;
 	for (NSUInteger i = 0; i < [tabs count]; i++) {
 		browser_window_destroy([[tabs objectAtIndex: i] browser]);
 	}
+	[[NSNotificationCenter defaultCenter] removeObserver: self];
 }
 
 -(void)close: (id)sender {
@@ -145,6 +155,8 @@ static id newTabTarget;
 	[tabs removeObjectAtIndex: idx];
 	if ([tabs count] < 1) {
 		[super close];
+	} else {
+		[self updateTabsVisibility];
 	}
 }
 
@@ -375,11 +387,13 @@ static id newTabTarget;
 	[tc release];
 	[newPlotView release];
 	[newScrollView release];
+	@try {
+	[self updateTabsVisibility];
+	}
+	@catch (NSException *e) {
+		NSLog(@"%@", e);
+	}
 	return tc;
-}
-
--(void)removeTab: (struct browser_window*)aBrowser {
-
 }
 
 -(void)reconfigureTabLayout {
@@ -407,6 +421,29 @@ static id newTabTarget;
 	Website *website = [[Website alloc] initWithName: name 
 		url: urlStr];
 	return [website autorelease];
+}
+
+-(void)updateTabsVisibility {
+	BOOL hideTabs = [tabs count] < 2 && ![[Preferences defaultPreferences] 
+		alwaysShowTabs];
+	NSRect rect = [tabView frame];
+	rect.size.height = [[self window] frame].size.height - TOP_CONTENT_HEIGHT;
+	if (hideTabs) {
+		[tabView setTabViewType: NSNoTabsNoBorder];
+	} else {
+		[tabView setTabViewType: NSTopTabsBezelBorder];
+	}
+	[tabView setFrame: rect];
+	// Work around a graphical glitch where the tab view doesn't properly readjust itself
+	[tabView selectTabViewItem: [activeTab tabItem]];
+}
+
+-(void)onPreferencesUpdated: (id)sender {
+	id dict = [sender object];
+	PreferenceType type = (PreferenceType)[[dict objectForKey: @"type"] integerValue];
+	if (type == PreferenceTypeAlwaysShowTabs) {
+		[self updateTabsVisibility];
+	}
 }
 
 +(id)newTabTarget {

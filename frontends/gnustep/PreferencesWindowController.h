@@ -9,13 +9,13 @@
 	id searchProviderButton;
 	id startupPageField;
 // APPEARANCE
-  id alwaysShowTabBarButton;
-  id bankNewTabsButton;
-  id developerViewsButton;
-  id urlBarButtonsTypeButton;
-  id switchToTabsButton;
-  id tabPositionButton;
-  id urlSuggestionsButton;
+	id alwaysShowTabBarButton;
+	id bankNewTabsButton;
+	id developerViewsButton;
+	id urlBarButtonsTypeButton;
+	id switchToTabsButton;
+	id tabPositionButton;
+	id urlSuggestionsButton;
 
 	NSMutableArray *downloadLocations;
 }

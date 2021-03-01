@@ -14,6 +14,12 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 	TabLocationLeft
 };
 
+// Certain preferences will notify that they have been updated using this key.
+#define PreferencesUpdatedNotificationName @"PreferencesUpdatedNotification"
+typedef NS_ENUM(NSInteger, PreferenceType) {
+	PreferenceTypeAlwaysShowTabs = 0
+};
+
 @interface Preferences: NSObject {
 	NSUserDefaults *defaults;
 }
@@ -36,6 +42,8 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 -(NSString*)downloadLocationPath;
 -(void)setDownloadLocationPath: (NSString*)aPath;
 
+-(BOOL)alwaysShowTabs;
+-(void)setAlwaysShowTabs: (BOOL)value;
 
 
 +(Preferences*)defaultPreferences;
