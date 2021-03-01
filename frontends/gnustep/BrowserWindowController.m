@@ -153,6 +153,9 @@ static id newTabTarget;
 	}
 	[tabView removeTabViewItem: [tab tabItem]];
 	[tabs removeObjectAtIndex: idx];
+	if (activeTab == tab) {
+		activeTab = nil;
+	}
 	if ([tabs count] < 1) {
 		[super close];
 	} else {
