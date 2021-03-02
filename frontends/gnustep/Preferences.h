@@ -45,6 +45,8 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 -(BOOL)alwaysShowTabs;
 -(void)setAlwaysShowTabs: (BOOL)value;
 
+-(BOOL)switchTabImmediately;
+-(void)setSwitchTabImmediaty: (BOOL)value;
 
 +(Preferences*)defaultPreferences;
 @end

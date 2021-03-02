@@ -8,6 +8,7 @@
 #define KEY_REMOVE_DOWNLOADS_COMPLETE @"remove_downloads_complete"
 #define KEY_CONFIRM_OVERWRITE @"confirm_overwrite"
 #define KEY_DOWNLOAD_LOCATION @"download_location"
+#define KEY_SWITCH_TAB_IMMEDIATELY @"switch_tab_immediately"
 
 #define KEY_ALWAYS_SHOW_TABS @"always_show_tabs"
 
@@ -115,6 +116,18 @@
 -(void)setAlwaysShowTabs: (BOOL)value {
 	[defaults setBool: value forKey: KEY_ALWAYS_SHOW_TABS];
 	[self notifyPreferenceUpdated: PreferenceTypeAlwaysShowTabs];
+}
+
+-(BOOL)switchTabImmediately {
+	if ([defaults objectForKey: KEY_SWITCH_TAB_IMMEDIATELY] != nil) {
+		return [defaults boolForKey: KEY_SWITCH_TAB_IMMEDIATELY];
+	} else {
+		return NO;
+	}
+}
+
+-(void)setSwitchTabImmediately: (BOOL)value {
+	[defaults setBool: value forKey: KEY_SWITCH_TAB_IMMEDIATELY];
 }
 
 

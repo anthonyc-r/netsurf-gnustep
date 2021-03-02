@@ -201,6 +201,8 @@
 -(void)configureAppearanceTab {
 	[alwaysShowTabBarButton setState: [[Preferences defaultPreferences] alwaysShowTabs] ?
 		NSOnState : NSOffState];
+	[switchToTabsButton setState: [[Preferences defaultPreferences] switchTabImmediately]
+		? NSOnState : NSOffState];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
@@ -223,6 +225,8 @@
 
 -(void)didPressSwitchToTabs: (id)sender {
 	NSLog(@"didPressSwitchToTabs");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setSwitchTabImmediately: checked];
 }
 
 -(void)didPressUrlSuggestions: (id)sender {

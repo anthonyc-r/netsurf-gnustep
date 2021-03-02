@@ -284,12 +284,15 @@ static id newTabTarget;
 	[urlBar setStringValue: urlString];
 }
 -(void)setTitle: (NSString*)title forTab: (id)tab {
+	NSLog(@"Set title to %@", title);
 	[[self window] setTitle: title];
 	NSString *tabTitle = title;
 	if ([tabTitle length] > TAB_TITLE_LEN) {
 		tabTitle = [title substringToIndex: TAB_TITLE_LEN];
 	}
 	[[tab tabItem] setLabel: tabTitle];
+	// Label doesn't get updated automatically.
+	[tabView setNeedsDisplayInRect: [tabView bounds]];
 }
 
 -(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
@@ -378,24 +381,23 @@ static id newTabTarget;
 	[newPlotView setBrowser: aBrowser];
 	[newScrollView setLineScroll: 25];
 	NSInteger num = [tabView numberOfTabViewItems];
+	NSTabViewItem *previouslySelected = [tabView selectedTabViewItem];
 	[tabView insertTabViewItem: tabItem atIndex: num];
 	
 	TabContents *tc = [[TabContents alloc] initWithScroll: newScrollView plot:
 		newPlotView browser: aBrowser tabItem: tabItem];
 	[self setActive: tc];
 	[tabs addObject: tc];
-	[tabView selectTabViewItem: tabItem];
+	if (![[Preferences defaultPreferences] switchTabImmediately]) {
+		[tabView selectTabViewItem: previouslySelected];
+	}
+	
 	
 	[tabItem release];
 	[tc release];
 	[newPlotView release];
 	[newScrollView release];
-	@try {
 	[self updateTabsVisibility];
-	}
-	@catch (NSException *e) {
-		NSLog(@"%@", e);
-	}
 	return tc;
 }
 
