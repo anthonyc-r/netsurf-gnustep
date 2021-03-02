@@ -370,8 +370,19 @@ static id newTabTarget;
 	NSLog(@"TabView: %@", tabItem);
 	NSView *innerView = [tabItem view];
 	NSLog(@"Inner view: %@", innerView);
-	PlotView *newPlotView = [[PlotView alloc] initWithFrame: [innerView bounds]];
-	NSScrollView *newScrollView = [[NSScrollView alloc] initWithFrame: [innerView bounds]];
+	
+	// Come up with a good initial frame.
+	NSRect bounds;
+	NSTabViewItem *currentTabView = [tabView selectedTabViewItem];
+	if (currentTabView != nil) {
+		bounds = [[currentTabView view] bounds];
+		[innerView setFrame: bounds];
+	} else {
+		bounds = [innerView bounds];
+	}
+	
+	PlotView *newPlotView = [[PlotView alloc] initWithFrame: bounds];
+	NSScrollView *newScrollView = [[NSScrollView alloc] initWithFrame: bounds];
 	[newScrollView setHasVerticalScroller: YES];
 	[newScrollView setHasHorizontalScroller: YES];
 	[newScrollView setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
