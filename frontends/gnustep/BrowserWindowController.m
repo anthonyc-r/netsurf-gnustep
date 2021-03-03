@@ -19,6 +19,7 @@
 #define TOP_CONTENT_HEIGHT 74
 // Any way to get this programatically?
 #define TAB_ITEM_HEIGHT 13
+#define VERTICAL_TAB_WIDTH 100
 
 static id newTabTarget;
 
@@ -453,12 +454,35 @@ static id newTabTarget;
 		alwaysShowTabs];
 	TabLocation location = [[Preferences defaultPreferences] tabLocation];
 	NSRect rect = [tabView frame];
+	rect.origin.x = 0;
+	rect.origin.y = 0;
 	rect.size.height = [[self window] frame].size.height - TOP_CONTENT_HEIGHT;
+	rect.size.width = [[self window] frame].size.width;
 	if (hideTabs) {
 		[tabView setTabViewType: NSNoTabsNoBorder];
-	} else {
-		[tabView setTabViewType: location == TabLocationTop ? NSTopTabsBezelBorder
-			: NSBottomTabsBezelBorder];
+		[tabView setFrame: rect];
+		[tabView selectTabViewItem: [activeTab tabItem]];
+		return;
+	}
+	switch (location) {
+	case TabLocationTop:
+		[tabView setTabViewType: NSTopTabsBezelBorder];
+		break;
+	case TabLocationBottom:
+		[tabView setTabViewType: NSBottomTabsBezelBorder];
+		break;
+	case TabLocationLeft:
+		[tabView setTabViewType: NSNoTabsNoBorder];
+		rect.size.width -= VERTICAL_TAB_WIDTH;
+		rect.origin.x = VERTICAL_TAB_WIDTH;
+		break;
+	case TabLocationRight:
+		[tabView setTabViewType: NSNoTabsNoBorder];
+		rect.size.width -= VERTICAL_TAB_WIDTH;
+		break;
+	default:
+		NSLog(@"Invalid tab location");
+		break;
 	}
 	[tabView setFrame: rect];
 	// Work around a graphical glitch where the tab view doesn't properly readjust itself
