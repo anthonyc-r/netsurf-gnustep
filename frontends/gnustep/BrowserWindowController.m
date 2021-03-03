@@ -451,12 +451,14 @@ static id newTabTarget;
 -(void)updateTabsVisibility {
 	BOOL hideTabs = [tabs count] < 2 && ![[Preferences defaultPreferences] 
 		alwaysShowTabs];
+	TabLocation location = [[Preferences defaultPreferences] tabLocation];
 	NSRect rect = [tabView frame];
 	rect.size.height = [[self window] frame].size.height - TOP_CONTENT_HEIGHT;
 	if (hideTabs) {
 		[tabView setTabViewType: NSNoTabsNoBorder];
 	} else {
-		[tabView setTabViewType: NSTopTabsBezelBorder];
+		[tabView setTabViewType: location == TabLocationTop ? NSTopTabsBezelBorder
+			: NSBottomTabsBezelBorder];
 	}
 	[tabView setFrame: rect];
 	// Work around a graphical glitch where the tab view doesn't properly readjust itself
@@ -466,7 +468,7 @@ static id newTabTarget;
 -(void)onPreferencesUpdated: (id)sender {
 	id dict = [sender object];
 	PreferenceType type = (PreferenceType)[[dict objectForKey: @"type"] integerValue];
-	if (type == PreferenceTypeAlwaysShowTabs) {
+	if (type == PreferenceTypeAlwaysShowTabs || type == PreferenceTypeTabLocation) {
 		[self updateTabsVisibility];
 	}
 }

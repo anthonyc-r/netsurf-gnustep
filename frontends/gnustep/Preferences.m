@@ -11,6 +11,7 @@
 #define KEY_SWITCH_TAB_IMMEDIATELY @"switch_tab_immediately"
 #define KEY_BLANK_NEW_TABS @"blank_new_tabs"
 #define KEY_ALWAYS_SHOW_TABS @"always_show_tabs"
+#define KEY_TAB_LOCATION @"tab_location"
 
 @interface Preferences (Private) 
 
@@ -141,6 +142,19 @@
 
 -(void)setBlankNewTabs: (BOOL)value {
 	[defaults setBool: value forKey: KEY_BLANK_NEW_TABS];
+}
+
+-(TabLocation)tabLocation {
+	if ([defaults objectForKey: KEY_TAB_LOCATION] != nil) {
+		return (TabLocation)[defaults integerForKey: KEY_TAB_LOCATION];
+	} else {
+		return TabLocationTop;
+	}
+}
+
+-(void)setTabLocation: (TabLocation)value {
+	[defaults setInteger: (NSInteger)value forKey: KEY_TAB_LOCATION];
+	[self notifyPreferenceUpdated: PreferenceTypeTabLocation];
 }
 
 +(Preferences*)defaultPreferences {

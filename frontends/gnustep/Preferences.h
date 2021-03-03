@@ -17,7 +17,8 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 // Certain preferences will notify that they have been updated using this key.
 #define PreferencesUpdatedNotificationName @"PreferencesUpdatedNotification"
 typedef NS_ENUM(NSInteger, PreferenceType) {
-	PreferenceTypeAlwaysShowTabs = 0
+	PreferenceTypeAlwaysShowTabs = 0,
+	PreferenceTypeTabLocation
 };
 
 @interface Preferences: NSObject {
@@ -50,6 +51,9 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 
 -(BOOL)blankNewTabs;
 -(void)setBlankNewTabs: (BOOL)value;
+
+-(TabLocation)tabLocation;
+-(void)setTabLocation: (TabLocation)value;
 
 +(Preferences*)defaultPreferences;
 @end

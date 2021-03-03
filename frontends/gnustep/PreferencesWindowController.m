@@ -205,6 +205,8 @@
 		? NSOnState : NSOffState];
 	[bankNewTabsButton setState: [[Preferences defaultPreferences] blankNewTabs] ? 
 		NSOnState : NSOffState];
+	TabLocation location = [[Preferences defaultPreferences] tabLocation];
+	[tabPositionButton selectItemAtIndex: (NSInteger)location];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
@@ -213,6 +215,8 @@
 
 -(void)didPickTabPosition: (id)sender {
 	NSLog(@"didPickTabPosition");
+	TabLocation location = (TabLocation)[sender indexOfItem: [sender selectedItem]];
+	[[Preferences defaultPreferences] setTabLocation: location];
 }
 
 -(void)didPressAlwaysShowTabBar: (id)sender {
