@@ -101,8 +101,10 @@ static id newTabTarget;
 	NSString *startupUrl;
 	if ([sender isKindOfClass: [NSString class]]) {
 		startupUrl = sender;
-	} else {
+	} else if (![[Preferences defaultPreferences] blankNewTabs]) {
 		startupUrl = [[Preferences defaultPreferences] startupUrl];
+	} else {
+		startupUrl = @"about:blank";
 	}
 	
         error = nsurl_create([startupUrl cString], &url);
@@ -281,12 +283,19 @@ static id newTabTarget;
 	[refreshButton setTag: 0];
 }
 -(void)setNavigationUrl: (NSString*)urlString forTab: (id)tab {
-	[urlBar setStringValue: urlString];
+	if (tab == activeTab) {
+		[urlBar setStringValue: urlString];
+	}
 }
 -(void)setTitle: (NSString*)title forTab: (id)tab {
 	NSLog(@"Set title to %@", title);
-	[[self window] setTitle: title];
+	if (tab == activeTab) {
+		[[self window] setTitle: title];
+	}
 	NSString *tabTitle = title;
+	if ([tabTitle isEqual: @"about:blank"]) {
+		tabTitle = @"New tab";
+	}
 	if ([tabTitle length] > TAB_TITLE_LEN) {
 		tabTitle = [title substringToIndex: TAB_TITLE_LEN];
 	}

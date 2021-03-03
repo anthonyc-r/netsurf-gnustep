@@ -203,6 +203,8 @@
 		NSOnState : NSOffState];
 	[switchToTabsButton setState: [[Preferences defaultPreferences] switchTabImmediately]
 		? NSOnState : NSOffState];
+	[bankNewTabsButton setState: [[Preferences defaultPreferences] blankNewTabs] ? 
+		NSOnState : NSOffState];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
@@ -221,6 +223,8 @@
 
 -(void)didPressBlankNewTabs: (id)sender {
 	NSLog(@"didPressBlankNewTabs");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setBlankNewTabs: checked];
 }
 
 -(void)didPressSwitchToTabs: (id)sender {

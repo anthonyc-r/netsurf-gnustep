@@ -9,7 +9,7 @@
 #define KEY_CONFIRM_OVERWRITE @"confirm_overwrite"
 #define KEY_DOWNLOAD_LOCATION @"download_location"
 #define KEY_SWITCH_TAB_IMMEDIATELY @"switch_tab_immediately"
-
+#define KEY_BLANK_NEW_TABS @"blank_new_tabs"
 #define KEY_ALWAYS_SHOW_TABS @"always_show_tabs"
 
 @interface Preferences (Private) 
@@ -130,6 +130,18 @@
 	[defaults setBool: value forKey: KEY_SWITCH_TAB_IMMEDIATELY];
 }
 
+-(BOOL)blankNewTabs {
+	if ([defaults objectForKey: KEY_BLANK_NEW_TABS] != nil) {
+		return [defaults boolForKey: KEY_BLANK_NEW_TABS];
+	} else {
+		return NO;
+	}
+}
+
+
+-(void)setBlankNewTabs: (BOOL)value {
+	[defaults setBool: value forKey: KEY_BLANK_NEW_TABS];
+}
 
 +(Preferences*)defaultPreferences {
 	static Preferences *prefs;
