@@ -19,6 +19,7 @@ struct browser_window;
 	NSMutableArray *tabs;
 	BOOL isClosing;
 	id activeTab;
+	id verticalTabsView;
 	
 	// These three are set based on the currently focused tab.
 	id scrollView;

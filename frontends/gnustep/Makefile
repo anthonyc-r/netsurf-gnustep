@@ -55,6 +55,7 @@ S_FRONTEND := \
 	BookmarksWindowController.m	\
 	CreateBookmarkPanelController.m	\
 	PreferencesWindowController.m	\
+	VerticalTabsView.m	\
 	Website.m	\
 	BookmarkFolder.m	\
 	SearchProvider.m	\

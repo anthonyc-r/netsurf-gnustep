@@ -13,6 +13,7 @@
 #import "CreateBookmarkPanelController.h"
 #import "Preferences.h"
 #import "SearchProvider.h"
+#import "VerticalTabsView.h"
 
 #define TAB_TITLE_LEN 20
 // Everything above the browser. Used to calculate the tabview's height.
@@ -23,7 +24,7 @@
 
 static id newTabTarget;
 
-@interface TabContents: NSObject {
+@interface TabContents: NSObject<VerticalTabsViewItem> {
 	id scrollView;
 	id plotView;
 	struct browser_window *browser;
@@ -51,6 +52,9 @@ static id newTabTarget;
 }
 -(id)tabItem {
 	return tabItem;
+}
+-(NSString*)label {
+	return [tabItem label];
 }
 @end
 
@@ -472,6 +476,13 @@ static id newTabTarget;
 		[tabView setTabViewType: NSBottomTabsBezelBorder];
 		break;
 	case TabLocationLeft:
+		verticalTabsView = [[VerticalTabsView alloc] initWithTabs: tabs];
+		NSRect vtabsFrame = rect;
+		vtabsFrame.size.width = VERTICAL_TAB_WIDTH;
+		[verticalTabsView setFrame: vtabsFrame];
+		[[[self window] contentView] addSubview: verticalTabsView];
+		NSLog(@"tabs: %@", verticalTabsView);
+		[verticalTabsView reloadTabs];
 		[tabView setTabViewType: NSNoTabsNoBorder];
 		rect.size.width -= VERTICAL_TAB_WIDTH;
 		rect.origin.x = VERTICAL_TAB_WIDTH;
