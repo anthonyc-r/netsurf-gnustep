@@ -17,7 +17,7 @@
 
 #define TAB_TITLE_LEN 20
 // Everything above the browser. Used to calculate the tabview's height.
-#define TOP_CONTENT_HEIGHT 74
+#define TOP_CONTENT_HEIGHT 45
 // Any way to get this programatically?
 #define TAB_ITEM_HEIGHT 13
 #define VERTICAL_TAB_WIDTH 100
@@ -460,8 +460,9 @@ static id newTabTarget;
 	NSRect rect = [tabView frame];
 	rect.origin.x = 0;
 	rect.origin.y = 0;
-	rect.size.height = [[self window] frame].size.height - TOP_CONTENT_HEIGHT;
-	rect.size.width = [[self window] frame].size.width;
+	rect.size.height = [[[self window] contentView] frame].size.height -
+		TOP_CONTENT_HEIGHT;
+	rect.size.width = [[[self window] contentView] frame].size.width;
 	if (hideTabs) {
 		[tabView setTabViewType: NSNoTabsNoBorder];
 		[tabView setFrame: rect];

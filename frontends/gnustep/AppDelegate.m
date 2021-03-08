@@ -113,6 +113,7 @@ static NSMenuItem *menuItemForItem(id item) {
 		object: nil];
 	[self bookmarksUpdated: nil];
 	[self historyUpdated: nil];
+	[self didTapNewWindow: nil];
 }
 
 -(void)didTapNewWindow: (id)sender {
