@@ -32,7 +32,15 @@
 }
 
 -(void)setSelectedTab: (id<VerticalTabsViewItem>)aTab {
-	
+	NSUInteger idx = [tabItems indexOfObject: aTab];
+	if (idx != NSNotFound) {
+		[tableView selectRowIndexes: [NSIndexSet indexSetWithIndex: idx]
+			byExtendingSelection: NO];
+	}
+}
+
+-(void)setDelegate: (id<VerticalTabsViewDelegate>)aDelegate {
+	delegate = aDelegate;
 }
 
 -(NSInteger)numberOfRowsInTableView: (NSTableView*)aTableView {
@@ -49,6 +57,10 @@
 
 -(void)tableViewSelectionDidChange: (NSTableView*)aTableView {
 	NSLog(@"Selection changed");
+	NSInteger idx = [tableView selectedRow];
+	if (idx > -1) {
+		[delegate verticalTabsView: self didSelectTab: [tabItems objectAtIndex: idx]];
+	}
 }
 
 @end

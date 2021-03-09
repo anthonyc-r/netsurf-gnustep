@@ -76,6 +76,7 @@ static id newTabTarget;
 		lastRequestedPointer = 999;
 		tabs = [[NSMutableArray alloc] init];
 		isClosing = NO;
+		currentTabLocation = TabLocationNone;
 	}
 	return self;
 }
@@ -160,6 +161,7 @@ static id newTabTarget;
 	}
 	[tabView removeTabViewItem: [tab tabItem]];
 	[tabs removeObjectAtIndex: idx];
+	[verticalTabsView reloadTabs];
 	if (activeTab == tab) {
 		activeTab = nil;
 	}
@@ -307,6 +309,7 @@ static id newTabTarget;
 	[[tab tabItem] setLabel: tabTitle];
 	// Label doesn't get updated automatically.
 	[tabView setNeedsDisplayInRect: [tabView bounds]];
+	[verticalTabsView reloadTabs];
 }
 
 -(void)findNext: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender {
@@ -364,6 +367,11 @@ static id newTabTarget;
 	nsurl_unref(url);
 }
 
+// MARK: - VerticalTabViewDelegate
+-(void)verticalTabsView: (VerticalTabsView*)verticalTabsView didSelectTab: (id<VerticalTabsViewItem>)aTab {
+	[tabView selectTabViewItem: [aTab tabItem]];
+}
+
 // MARK: - TabViewDelegate
 -(void)tabView: (NSTabView*)aTabView didSelectTabViewItem: (NSTabViewItem*)aTabViewItem {
 	NSLog(@"Selected tab");
@@ -411,10 +419,13 @@ static id newTabTarget;
 	
 	TabContents *tc = [[TabContents alloc] initWithScroll: newScrollView plot:
 		newPlotView browser: aBrowser tabItem: tabItem];
-	[self setActive: tc];
 	[tabs addObject: tc];
+	[verticalTabsView reloadTabs];
+	[self setActive: tc];
 	if (![[Preferences defaultPreferences] switchTabImmediately]) {
 		[tabView selectTabViewItem: previouslySelected];
+	} else {
+		[tabView selectTabViewItem: tabItem];
 	}
 	
 	
@@ -438,6 +449,7 @@ static id newTabTarget;
 	Website *website = [self currentWebsiteForTab: activeTab];
 	[urlBar setStringValue: [website url]];
 	[[self window] setTitle: [website name]];
+	[verticalTabsView setSelectedTab: activeTab];
 }
 
 -(Website*)currentWebsiteForTab: (id)tab {
@@ -464,41 +476,58 @@ static id newTabTarget;
 		TOP_CONTENT_HEIGHT;
 	rect.size.width = [[[self window] contentView] frame].size.width;
 	if (hideTabs) {
+		[verticalTabsView removeFromSuperview];
+		verticalTabsView = nil;
 		[tabView setTabViewType: NSNoTabsNoBorder];
 		[tabView setFrame: rect];
 		[tabView selectTabViewItem: [activeTab tabItem]];
+		currentTabLocation = TabLocationNone;
 		return;
 	}
-	switch (location) {
-	case TabLocationTop:
-		[tabView setTabViewType: NSTopTabsBezelBorder];
-		break;
-	case TabLocationBottom:
-		[tabView setTabViewType: NSBottomTabsBezelBorder];
-		break;
-	case TabLocationLeft:
-		verticalTabsView = [[VerticalTabsView alloc] initWithTabs: tabs];
+
+	if (currentTabLocation == location) {
+		// No change.
+		return;
+	}
+	
+	if (location == TabLocationTop || location == TabLocationBottom) {
+		// Non vertical tabs!
+		[verticalTabsView removeFromSuperview];
+		verticalTabsView = nil;
+		[tabView setTabViewType: location == TabLocationTop ? 
+			NSTopTabsBezelBorder : NSBottomTabsBezelBorder];
+	} else {
+		// Vertical tabs!
 		NSRect vtabsFrame = rect;
+		NSUInteger resizingMask;
 		vtabsFrame.size.width = VERTICAL_TAB_WIDTH;
+		if (location == TabLocationLeft) {
+			resizingMask = NSViewHeightSizable | NSViewMaxXMargin;
+			rect.size.width -= VERTICAL_TAB_WIDTH;
+			rect.origin.x = VERTICAL_TAB_WIDTH;
+		} else {
+			resizingMask = NSViewHeightSizable | NSViewMinXMargin;
+			vtabsFrame.origin.x = rect.size.width - VERTICAL_TAB_WIDTH;
+	  		rect.size.width -= VERTICAL_TAB_WIDTH;
+	  		rect.origin.x = 0;
+		}
+		if (verticalTabsView == nil) {
+			verticalTabsView = [[VerticalTabsView alloc] initWithTabs: tabs];
+			[verticalTabsView setDelegate: self];
+			[verticalTabsView autorelease];
+		}
+		[verticalTabsView setAutoresizingMask: resizingMask];
 		[verticalTabsView setFrame: vtabsFrame];
 		[[[self window] contentView] addSubview: verticalTabsView];
 		NSLog(@"tabs: %@", verticalTabsView);
 		[verticalTabsView reloadTabs];
 		[tabView setTabViewType: NSNoTabsNoBorder];
-		rect.size.width -= VERTICAL_TAB_WIDTH;
-		rect.origin.x = VERTICAL_TAB_WIDTH;
-		break;
-	case TabLocationRight:
-		[tabView setTabViewType: NSNoTabsNoBorder];
-		rect.size.width -= VERTICAL_TAB_WIDTH;
-		break;
-	default:
-		NSLog(@"Invalid tab location");
-		break;
 	}
+
 	[tabView setFrame: rect];
 	// Work around a graphical glitch where the tab view doesn't properly readjust itself
 	[tabView selectTabViewItem: [activeTab tabItem]];
+	currentTabLocation = location;
 }
 
 -(void)onPreferencesUpdated: (id)sender {

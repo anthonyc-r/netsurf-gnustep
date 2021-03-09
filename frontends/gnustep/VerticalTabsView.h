@@ -19,4 +19,5 @@
 -(id)initWithTabs: (NSArray *)someTabItems;
 -(void)reloadTabs;
 -(void)setSelectedTab: (id<VerticalTabsViewItem>)aTab;
+-(void)setDelegate: (id<VerticalTabsViewDelegate>)aDelegate;
 @end

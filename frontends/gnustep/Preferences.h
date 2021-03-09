@@ -11,7 +11,8 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 	TabLocationTop = 0,
 	TabLocationRight,
 	TabLocationBottom,
-	TabLocationLeft
+	TabLocationLeft,
+	TabLocationNone
 };
 
 // Certain preferences will notify that they have been updated using this key.

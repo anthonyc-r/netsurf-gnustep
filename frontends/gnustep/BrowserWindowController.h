@@ -4,9 +4,11 @@
 #import "netsurf/netsurf.h"
 #import "netsurf/mouse.h"
 #import "Website.h"
+#import "Preferences.h"
+#import "VerticalTabsView.h"
 
 struct browser_window;
-@interface BrowserWindowController : NSWindowController<NSTextFieldDelegate> {
+@interface BrowserWindowController : NSWindowController<NSTextFieldDelegate, VerticalTabsViewDelegate> {
 	id backButton;
 	id forwardButton;
 	id urlBar;
@@ -20,6 +22,8 @@ struct browser_window;
 	BOOL isClosing;
 	id activeTab;
 	id verticalTabsView;
+	TabLocation currentTabLocation;
+	
 	
 	// These three are set based on the currently focused tab.
 	id scrollView;
