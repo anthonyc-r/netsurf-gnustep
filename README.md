@@ -14,11 +14,11 @@ With Rik theme, client side decorations and mac-style menu.
 
 Current State
 ----------------
-Works pretty well, has history, download management, bookmarks.
+Works pretty well, has tabs (including vertical), history, download management, bookmarks.
 
 What still needs doing
 ----------------
-Tabs, preferences, other bits and bobs probably.
+Preferences (currently partially done - WIP), other bits and bobs probably.
 
 
 Tested and built on OpenBSD 6.8(macppc) + clang, and Ubuntu 20.10 + gcc.
