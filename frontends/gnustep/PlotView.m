@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#import <stdio.h>
 #import <AppKit/AppKit.h>
 #import "PlotView.h"
 #import "BrowserWindowController.h"
@@ -29,6 +30,7 @@
 #import "netsurf/content.h"
 #import "utils/nsoption.h"
 #import "utils/messages.h"
+#import "netsurf/content_type.h"
 
 #define colour_red_component( c )		(((c) >>  0) & 0xFF)
 #define colour_green_component( c )		(((c) >>  8) & 0xFF)
@@ -238,6 +240,10 @@ static const struct plotter_table gnustep_plotters = {
 	.option_knockout = true
 };
 
+@interface PlotView(Private)
+-(NSMenu*)developerOptionsMenu;
+@end
+
 @implementation PlotView
 
 -(void)awakeFromNib {
@@ -384,7 +390,7 @@ static const struct plotter_table gnustep_plotters = {
 			action: @selector(stopReloading:) keyEquivalent: @""];
 		[popupMenu addItemWithTitle: @"Reload"
 			action: @selector(reload:) keyEquivalent: @""];
-               [popupMenu addItem: [NSMenuItem separatorItem]];
+                [popupMenu addItem: [NSMenuItem separatorItem]];
 		char *selection = browser_window_get_selection(browser);
 		if (selection != NULL) {
 			if (cont.form_features == CTX_FORM_TEXT) {
@@ -397,10 +403,29 @@ static const struct plotter_table gnustep_plotters = {
 		}
 		[popupMenu addItemWithTitle: @"Paste"
 			action: @selector(paste:) keyEquivalent: @""];
+		[popupMenu addItem: [NSMenuItem separatorItem]];
+		id<NSMenuItem> item = [popupMenu addItemWithTitle: @"Developer" 
+			action: nil keyEquivalent: @""];
+		[popupMenu setSubmenu: [self developerOptionsMenu] forItem: item];
 	}
 	[NSMenu popUpContextMenu: popupMenu withEvent: event forView: self];
 
 	[popupMenu release];
+}
+
+-(NSMenu*)developerOptionsMenu {
+        NSMenu *menu = [[NSMenu alloc] initWithTitle: @""];
+	[menu autorelease];
+	[menu addItemWithTitle: @"Page Source" action: @selector(pageSource:)
+		keyEquivalent: @""];
+	[menu addItemWithTitle: @"Toggle Debug Rendering" action:
+		@selector(debugRendering:) keyEquivalent: @""];
+	[menu addItemWithTitle: @"Debug Box Tree" action: @selector(debugBoxTree:)
+		keyEquivalent: @""];
+	[menu addItemWithTitle: @"Debug DOM Tree" action: @selector(debugDomTree:)
+		keyEquivalent: @""];
+	
+	return menu;
 }
 
 static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
@@ -691,5 +716,53 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
         [pb setString: [sender representedObject] forType: NSStringPboardType];
 }
 
+-(void)pageSource: (id)sender {
+	NSLog(@"Show page source");
+}
+
+-(void)debugRendering: (id)sender {
+	NSLog(@"Toggle debug rendering");
+	browser_window_debug(browser, CONTENT_DEBUG_RENDER);
+	[self setNeedsDisplay: YES];
+}
+
+-(void)debugBoxTree: (id)sender {
+	NSLog(@"debug box tree");
+	char *fname = tempnam("/tmp", "netsurf_boxtree");
+	if (fname == NULL) {
+		NSLog(@"tmpnam error");
+		return;
+	}
+	FILE *f = fopen(fname, "w+");
+	if (f == NULL) {
+		NSLog(@"fopen error");
+		return;
+	}
+	nserror err = browser_window_debug_dump(browser, f, CONTENT_DEBUG_RENDER);
+	if (err != NSERROR_OK) {
+		NSLog(@"browser_window_debug_dump error");
+	}
+	fclose(f);
+	
+}
+
+-(void)debugDomTree: (id)sender {
+	NSLog(@"debug box tree");
+	char *fname = tempnam("/tmp", "netsurf_domtree");
+	if (fname == NULL) {
+		NSLog(@"tmpnam error");
+		return;
+	}
+	FILE *f = fopen(fname, "w+");
+	if (f == NULL) {
+		NSLog(@"fopen error");
+		return;
+	}
+	nserror err = browser_window_debug_dump(browser, f, CONTENT_DEBUG_DOM);
+	if (err != NSERROR_OK) {
+		NSLog(@"browser_window_debug_dump error");
+	}
+	fclose(f);
+}
 
 @end
