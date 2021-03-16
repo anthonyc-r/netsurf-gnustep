@@ -12,6 +12,7 @@
 #define KEY_BLANK_NEW_TABS @"blank_new_tabs"
 #define KEY_ALWAYS_SHOW_TABS @"always_show_tabs"
 #define KEY_TAB_LOCATION @"tab_location"
+#define KEY_DEVELOPER_VIEW_LOCATION @"developer_view_location"
 
 @interface Preferences (Private) 
 
@@ -155,6 +156,20 @@
 -(void)setTabLocation: (TabLocation)value {
 	[defaults setInteger: (NSInteger)value forKey: KEY_TAB_LOCATION];
 	[self notifyPreferenceUpdated: PreferenceTypeTabLocation];
+}
+
+-(ViewLocation)developerViewLocation {
+	if ([defaults objectForKey: KEY_DEVELOPER_VIEW_LOCATION] != nil) {
+		return (ViewLocation)[defaults integerForKey:
+			KEY_DEVELOPER_VIEW_LOCATION];
+	} else {
+		return ViewLocationWindow;
+	}
+}
+
+-(void)setDeveloperViewLocation: (ViewLocation)value {
+	[defaults setInteger: (NSInteger)value forKey:
+		KEY_DEVELOPER_VIEW_LOCATION];
 }
 
 +(Preferences*)defaultPreferences {

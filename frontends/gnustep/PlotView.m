@@ -716,9 +716,6 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
         [pb setString: [sender representedObject] forType: NSStringPboardType];
 }
 
--(void)pageSource: (id)sender {
-	NSLog(@"Show page source");
-}
 
 -(void)debugRendering: (id)sender {
 	NSLog(@"Toggle debug rendering");
@@ -726,29 +723,59 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 	[self setNeedsDisplay: YES];
 }
 
--(void)debugBoxTree: (id)sender {
-	NSLog(@"debug box tree");
-	char *fname = tempnam("/tmp", "netsurf_boxtree");
+-(void)openDump: (NSString*)path {
+	NSLog(@"open result at %@", path);
+	[[NSApp delegate] openDeveloperFileAtPath: path];
+}
+
+-(NSString*)dumpContentType: (enum content_debug)type {
+	char *fname = tempnam("/tmp", "netsurf");
 	if (fname == NULL) {
 		NSLog(@"tmpnam error");
-		return;
+		return nil;
 	}
 	FILE *f = fopen(fname, "w+");
 	if (f == NULL) {
 		NSLog(@"fopen error");
-		return;
+		return nil;
 	}
-	nserror err = browser_window_debug_dump(browser, f, CONTENT_DEBUG_RENDER);
+	nserror err = browser_window_debug_dump(browser, f, type);
 	if (err != NSERROR_OK) {
 		NSLog(@"browser_window_debug_dump error");
 	}
 	fclose(f);
+	return [NSString stringWithCString: fname];
+}
+
+-(void)debugBoxTree: (id)sender {
+	NSLog(@"debug box tree");
+	[self openDump: [self dumpContentType: CONTENT_DEBUG_RENDER]];
 	
 }
 
 -(void)debugDomTree: (id)sender {
 	NSLog(@"debug box tree");
-	char *fname = tempnam("/tmp", "netsurf_domtree");
+	[self openDump: [self dumpContentType: CONTENT_DEBUG_DOM]];
+}
+
+-(void)pageSource: (id)sender {
+	NSLog(@"Show page source");
+	struct hlcache_handle *hlcontent = browser_window_get_content(browser);
+	if (hlcontent == NULL) {
+		NSLog(@"get_content error");
+		return;
+	}
+	if (content_get_type(hlcontent) != CONTENT_HTML) {
+		NSLog(@"content type not html");
+		return;
+	}
+	size_t sz;
+	const uint8_t *data = content_get_source_data(hlcontent, &sz);
+	if (data == NULL) {
+		NSLog(@"get source data failed");
+		return;
+	}
+	char *fname = tempnam("/tmp", "netsurf");
 	if (fname == NULL) {
 		NSLog(@"tmpnam error");
 		return;
@@ -758,11 +785,13 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 		NSLog(@"fopen error");
 		return;
 	}
-	nserror err = browser_window_debug_dump(browser, f, CONTENT_DEBUG_DOM);
-	if (err != NSERROR_OK) {
-		NSLog(@"browser_window_debug_dump error");
+	size_t written;
+	if ((written = fwrite(data, sz, 1, f)) != 1) {
+		NSLog(@"fwrite error");
 	}
 	fclose(f);
+	[self openDump: [NSString stringWithCString: fname]];
 }
+
 
 @end

@@ -223,7 +223,24 @@ static NSMenuItem *menuItemForItem(id item) {
 	return [[self activeBrowserWindow] visibleUrl];
 }
 
-
+-(void)openDeveloperFileAtPath: (NSString*)path {
+	NSString *app; 
+	
+	switch ([[Preferences defaultPreferences] developerViewLocation]) {
+	case ViewLocationTab:
+	case ViewLocationWindow:
+	case ViewLocationEditor:
+		app = [[NSWorkspace sharedWorkspace] getBestAppInRole: @"Viewer"
+			forExtension: @"txt"];
+		if (app == nil) {
+			NSLog(@"No app found to show content");
+		} else {
+			[[NSWorkspace sharedWorkspace] openFile: path withApplication: app];
+		}
+	default:
+		break;
+	}
+}
 
 @end
 

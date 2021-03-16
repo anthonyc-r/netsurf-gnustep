@@ -207,10 +207,14 @@
 		NSOnState : NSOffState];
 	TabLocation location = [[Preferences defaultPreferences] tabLocation];
 	[tabPositionButton selectItemAtIndex: (NSInteger)location];
+	ViewLocation viewLocation = [[Preferences defaultPreferences] developerViewLocation];
+	[developerViewsButton selectItemAtIndex: (NSInteger)viewLocation];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
 	NSLog(@"didPickDeveloperViews");
+	ViewLocation location = (ViewLocation)[sender indexOfItem: [sender selectedItem]];
+	[[Preferences defaultPreferences] setDeveloperViewLocation: location];
 }
 
 -(void)didPickTabPosition: (id)sender {

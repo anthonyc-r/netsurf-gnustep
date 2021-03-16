@@ -46,6 +46,7 @@ id preferencesWindowController;
 -(void)showPreferencesWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
 -(void)openWebsite: (Website*)aWebsite;
+-(void)openDeveloperFileAtPath: (NSString*)path;
 -(NSString*)currentUrl;
 -(BrowserWindowController*)activeBrowserWindow;
 @end

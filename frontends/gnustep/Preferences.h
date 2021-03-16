@@ -56,5 +56,8 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 -(TabLocation)tabLocation;
 -(void)setTabLocation: (TabLocation)value;
 
+-(ViewLocation)developerViewLocation;
+-(void)setDeveloperViewLocation: (ViewLocation)value;
+
 +(Preferences*)defaultPreferences;
 @end
