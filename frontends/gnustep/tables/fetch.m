@@ -30,6 +30,8 @@ static const char *gnustep_fetch_filetype(const char *unix_path) {
 		return "image/gif";
 	} else if (strncmp(ext, "png", 3) == 0) {
 		return "image/png";
+	} else if (strncmp(ext, "txt", 3) == 0) {
+		return "text/plain";
 	} else {
 		return "text/html";
 	}

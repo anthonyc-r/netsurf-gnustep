@@ -729,11 +729,13 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 }
 
 -(NSString*)dumpContentType: (enum content_debug)type {
-	char *fname = tempnam("/tmp", "netsurf");
-	if (fname == NULL) {
+	char fname[100];
+	char *tmp = tmpnam(NULL);
+	if (tmp == NULL) {
 		NSLog(@"tmpnam error");
 		return nil;
 	}
+	snprintf(fname, 100, "%s.txt", tmp);
 	FILE *f = fopen(fname, "w+");
 	if (f == NULL) {
 		NSLog(@"fopen error");
@@ -775,11 +777,13 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 		NSLog(@"get source data failed");
 		return;
 	}
-	char *fname = tempnam("/tmp", "netsurf");
-	if (fname == NULL) {
+	char *tmp = tmpnam(NULL);
+	if (tmp == NULL) {
 		NSLog(@"tmpnam error");
 		return;
 	}
+	char fname[100];
+	snprintf(fname, 100, "%s.txt", tmp);
 	FILE *f = fopen(fname, "w+");
 	if (f == NULL) {
 		NSLog(@"fopen error");

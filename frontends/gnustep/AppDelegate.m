@@ -224,19 +224,36 @@ static NSMenuItem *menuItemForItem(id item) {
 }
 
 -(void)openDeveloperFileAtPath: (NSString*)path {
-	NSString *app; 
+	NSString *app;
+	Website *website;
+	BrowserWindowController *current;
 	
+	website = [[Website alloc] initWithName: @"" url: [NSString 
+		stringWithFormat: @"file://%@", path]];
+	[website autorelease];
 	switch ([[Preferences defaultPreferences] developerViewLocation]) {
 	case ViewLocationTab:
-	case ViewLocationWindow:
-	case ViewLocationEditor:
-		app = [[NSWorkspace sharedWorkspace] getBestAppInRole: @"Viewer"
-			forExtension: @"txt"];
-		if (app == nil) {
-			NSLog(@"No app found to show content");
-		} else {
-			[[NSWorkspace sharedWorkspace] openFile: path withApplication: app];
+		current = [self activeBrowserWindow];
+		if (current != nil) {
+			[current newTab: [website url]];
+			break;
 		}
+	case ViewLocationWindow:
+		[self openWebsite: website];
+		break;
+	case ViewLocationEditor:
+		if (![[NSWorkspace sharedWorkspace] openFile: path]) {
+			NSAlert *alert = [[NSAlert alloc] init];
+			[alert setMessageText: @"No Editor"];
+			[alert setInformativeText: @"Either no NSWorkspace provider"\
+			 	" exists,\nor no app can be found to open this file"\
+				" type (.txt). \nTry picking a different option for"\
+				" developer views \nin preferences > appearance."];
+			[alert addButtonWithTitle: @"Ok"];
+			[alert runModal];
+			[alert release];
+		}
+		break;
 	default:
 		break;
 	}
