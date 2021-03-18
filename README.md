@@ -12,6 +12,9 @@ unlike the cocoa port.
 ![Screenshot](/screenshots/screenshot.jpeg)
 With Rik theme, client side decorations and mac-style menu.
 
+![Screenshot](/screenshots/screenshot2.png)
+With standard theme.
+
 Current State
 ----------------
 Works pretty well, has tabs (including vertical), history, download management, bookmarks.
