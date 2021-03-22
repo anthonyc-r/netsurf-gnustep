@@ -19,7 +19,8 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 #define PreferencesUpdatedNotificationName @"PreferencesUpdatedNotification"
 typedef NS_ENUM(NSInteger, PreferenceType) {
 	PreferenceTypeAlwaysShowTabs = 0,
-	PreferenceTypeTabLocation
+	PreferenceTypeTabLocation,
+	PreferenceTypeShowUrlSuggestions
 };
 
 @interface Preferences: NSObject {
@@ -48,7 +49,7 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 -(void)setAlwaysShowTabs: (BOOL)value;
 
 -(BOOL)switchTabImmediately;
--(void)setSwitchTabImmediaty: (BOOL)value;
+-(void)setSwitchTabImmediately: (BOOL)value;
 
 -(BOOL)blankNewTabs;
 -(void)setBlankNewTabs: (BOOL)value;
@@ -58,6 +59,9 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 
 -(ViewLocation)developerViewLocation;
 -(void)setDeveloperViewLocation: (ViewLocation)value;
+
+-(BOOL)showUrlSuggestions;
+-(void)setShowUrlSuggestions: (BOOL)value;
 
 +(Preferences*)defaultPreferences;
 @end

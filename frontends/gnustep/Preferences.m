@@ -13,6 +13,7 @@
 #define KEY_ALWAYS_SHOW_TABS @"always_show_tabs"
 #define KEY_TAB_LOCATION @"tab_location"
 #define KEY_DEVELOPER_VIEW_LOCATION @"developer_view_location"
+#define KEY_SHOW_URL_SUGGESTIONS @"show_url_suggestions"
 
 @interface Preferences (Private) 
 
@@ -170,6 +171,19 @@
 -(void)setDeveloperViewLocation: (ViewLocation)value {
 	[defaults setInteger: (NSInteger)value forKey:
 		KEY_DEVELOPER_VIEW_LOCATION];
+}
+
+-(BOOL)showUrlSuggestions {
+	if ([defaults objectForKey: KEY_SHOW_URL_SUGGESTIONS] != nil) {
+		return [defaults boolForKey: KEY_SHOW_URL_SUGGESTIONS];
+	} else {
+		return false;
+	}
+}
+
+-(void)setShowUrlSuggestions: (BOOL)value {
+	[defaults setBool: value forKey: KEY_SHOW_URL_SUGGESTIONS];
+	[self notifyPreferenceUpdated: PreferenceTypeShowUrlSuggestions];
 }
 
 +(Preferences*)defaultPreferences {

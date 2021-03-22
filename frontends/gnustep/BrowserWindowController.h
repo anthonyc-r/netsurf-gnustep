@@ -6,6 +6,7 @@
 #import "Website.h"
 #import "Preferences.h"
 #import "VerticalTabsView.h"
+#import "UrlSuggestionView.h"
 
 struct browser_window;
 @interface BrowserWindowController : NSWindowController<NSTextFieldDelegate, VerticalTabsViewDelegate> {
@@ -23,6 +24,7 @@ struct browser_window;
 	id activeTab;
 	id verticalTabsView;
 	TabLocation currentTabLocation;
+	UrlSuggestionView *urlSuggestionView;
 	
 	
 	// These three are set based on the currently focused tab.

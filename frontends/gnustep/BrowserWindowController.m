@@ -83,6 +83,7 @@ static id newTabTarget;
 
 -(void)dealloc {
 	[tabs release];
+	[urlSuggestionView release];
 	[super dealloc];
 }
 
@@ -93,6 +94,7 @@ static id newTabTarget;
 		selector: @selector(onPreferencesUpdated:)
 		name: PreferencesUpdatedNotificationName
 		object: nil];
+	urlSuggestionView = [[UrlSuggestionView alloc] initForUrlBar: urlBar];
 	NSLog(@"Browser window loaded");
 }
 

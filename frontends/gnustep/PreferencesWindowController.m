@@ -199,16 +199,18 @@
 
 // MARK: - APPEARANCE TAB
 -(void)configureAppearanceTab {
-	[alwaysShowTabBarButton setState: [[Preferences defaultPreferences] alwaysShowTabs] ?
-		NSOnState : NSOffState];
+	[alwaysShowTabBarButton setState: [[Preferences defaultPreferences] alwaysShowTabs] 
+		? NSOnState : NSOffState];
 	[switchToTabsButton setState: [[Preferences defaultPreferences] switchTabImmediately]
 		? NSOnState : NSOffState];
-	[bankNewTabsButton setState: [[Preferences defaultPreferences] blankNewTabs] ? 
-		NSOnState : NSOffState];
+	[bankNewTabsButton setState: [[Preferences defaultPreferences] blankNewTabs] 
+		? NSOnState : NSOffState];
 	TabLocation location = [[Preferences defaultPreferences] tabLocation];
 	[tabPositionButton selectItemAtIndex: (NSInteger)location];
 	ViewLocation viewLocation = [[Preferences defaultPreferences] developerViewLocation];
 	[developerViewsButton selectItemAtIndex: (NSInteger)viewLocation];
+	[urlSuggestionsButton setState: [[Preferences defaultPreferences] showUrlSuggestions]
+		? NSOnState : NSOffState];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
@@ -243,6 +245,8 @@
 
 -(void)didPressUrlSuggestions: (id)sender {
 	NSLog(@"didPressUrlSuggestions");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setShowUrlSuggestions: checked];
 }
 
 -(void)didPickUrlButtonsType: (id)sender {
