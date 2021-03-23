@@ -7,11 +7,11 @@
 @end
 
 @interface UrlSuggestionView: NSTableView {
-
+	id urlBar;
+	BOOL isActive;
 }
 
 -(id)initForUrlBar: (NSTextField*)aUrlBar;
--(void)updateQuery: (NSString*)aQuery;
 -(void)dismiss;
 
 @end

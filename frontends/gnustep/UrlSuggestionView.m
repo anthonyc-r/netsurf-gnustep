@@ -3,20 +3,29 @@
 #import "Preferences.h"
 
 @interface UrlSuggestionView(Private)
--(void)notifyPreferenceChanges;
--(void)onPreferencesUpdated: (NSNotification*)aNotification;
 -(void)updateActivationState;
+-(void)onPreferencesUpdated: (NSNotification*)aNotification;
+-(void)onUrlContentsChanged: (NSNotification*)aNotification;
 @end
 
 @implementation UrlSuggestionView
 
 -(id)initForUrlBar: (NSTextField*)aUrlBar {
 	if ((self = [super init])) {
+		urlBar = aUrlBar;
 		NSRect frame = [aUrlBar frame];
 		frame.origin.y -= frame.size.height;
 		[self setFrame: frame];
-		[self notifyPreferenceChanges];
+ 	 	[[NSNotificationCenter defaultCenter] addObserver: self
+ 			 selector: @selector(onPreferencesUpdated:)
+ 			 name: PreferencesUpdatedNotificationName
+ 			 object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+			selector: @selector(onUrlContentsChanged:)
+			name: NSControlTextDidChangeNotification
+			object: urlBar];
 		[self updateActivationState];
+		[self setAutoresizingMask: [aUrlBar autoresizingMask]];
 		[[aUrlBar superview] addSubview: self];
 	}
 	return self;
@@ -27,19 +36,8 @@
 	[super dealloc];
 }
 
--(void)updateQuery: (NSString*)aQuery {
-
-}
-
 -(void)dismiss {
 
-}
-
--(void)notifyPreferenceChanges {
-	[[NSNotificationCenter defaultCenter] addObserver: self
-		selector: @selector(onPreferencesUpdated:)
-		name: PreferencesUpdatedNotificationName
-		object: nil];
 }
 
 -(void)onPreferencesUpdated: (NSNotification*)aNotification {
@@ -52,12 +50,24 @@
 }
 
 -(void)updateActivationState {
-	BOOL isActive = [[Preferences defaultPreferences] showUrlSuggestions];
+	isActive = [[Preferences defaultPreferences] showUrlSuggestions];
 	if (isActive) {
 		[self setHidden: NO];
+
 	} else {
 		[self setHidden: YES];
+
 	}
+}
+
+-(void)onUrlContentsChanged: (NSNotification*)aNotification {
+	NSLog(@"contents changed?!");
+	if (!isActive) {
+		return;
+	}
+	id editor = [[aNotification userInfo] objectForKey: @"NSFieldEditor"];
+	
+	NSLog(@"%@", editor);
 }
 
 @end

@@ -134,4 +134,62 @@
 		WebsiteHistoryUpdatedNotificationName object: self];
 }
 
++(NSMutableArray*)getHistoryFromPath: (NSString*)path matching: (NSString*)queryString {
+	size_t nread, wsize;
+	long fileoff;
+	int lens[2];
+	FILE *f = fopen([path cString], "r");
+	struct website_data *wdata;
+	Website *website;
+	NSMutableArray *ret = [NSMutableArray array];
+
+	if (f == NULL) {
+		NSLog(@"Error opening file: %@", path);
+		return ret;
+	}
+	fileoff = 0;
+	while (1) {
+		if ((nread = fread(lens, sizeof (int), 2, f)) < 2) {
+			break;
+		}
+		wsize = lens[0] + lens[1] + sizeof (struct website_data);
+		// 0 Value of url_len implies this has been cleared. Skip.
+		if (lens[1] == 0) {
+			fseek(f, wsize - (nread * sizeof (int)), SEEK_CUR);
+			continue;
+		}
+		// Else it's valid, rewind and read the whole structure in.
+		fseek(f, -nread * sizeof (int), SEEK_CUR);
+		wdata = malloc(wsize);
+		fread(wdata, wsize, 1, f);
+		website = [[[Website alloc] initWithData: wdata atFileOffset: fileoff] 
+			autorelease];
+		// If there's a search value set, skip non-matching websites.
+		if (queryString == nil || [[website name] rangeOfString: queryString options: 
+			NSCaseInsensitiveSearch].location != NSNotFound) {
+			[ret addObject: website];
+		}
+		fileoff = ftell(f);
+	}
+	fclose(f);
+	return ret;
+}
+
++(NSArray*)getAllHistoryPaths {
+	NSString *path = [NSString stringWithFormat: @"%@/%@", NSHomeDirectory(), 
+		HISTORY_PATH];
+	NSError *error = nil;
+	NSPredicate *historyPredicate = [NSPredicate predicateWithFormat: 
+		@"self beginswith 'history_'"];
+	NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: path
+		error: &error];
+	if (error != nil) {
+		NSLog(@"Error fetching files in history dir: %@", path);
+		return [NSArray array];
+	}
+	files = [files filteredArrayUsingPredicate: historyPredicate];
+	NSLog(@"%@", files);
+	return [files sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
+}
+
 @end

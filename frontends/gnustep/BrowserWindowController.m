@@ -543,4 +543,5 @@ static id newTabTarget;
 +(id)newTabTarget {
 	return newTabTarget;
 }
+
 @end

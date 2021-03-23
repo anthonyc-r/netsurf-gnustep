@@ -36,4 +36,7 @@ struct website_data {
 
 -(void)open;
 -(void)addToHistory;
+
++(NSArray*)getAllHistoryPaths;
++(NSMutableArray*)getHistoryFromPath: (NSString*)path matching: (NSString*)queryString;
 @end

@@ -74,90 +74,39 @@ entries beforehand, as each item representing a 'section' is returned before it'
 	[super dealloc];
 }
 
--(NSMutableArray*)getHistoryFromPath: (NSString*)path {
-	size_t nread, wsize;
-	long fileoff;
-	int lens[2];
-	FILE *f = fopen([path cString], "r");
-	struct website_data *wdata;
-	Website *website;
-	NSMutableArray *ret = [NSMutableArray array];
-
-	if (f == NULL) {
-		NSLog(@"Error opening file: %@", path);
-		return ret;
-	}
-	fileoff = 0;
-	while (1) {
-		if ((nread = fread(lens, sizeof (int), 2, f)) < 2) {
-			break;
-		}
-		wsize = lens[0] + lens[1] + sizeof (struct website_data);
-		// 0 Value of url_len implies this has been cleared. Skip.
-		if (lens[1] == 0) {
-			fseek(f, wsize - (nread * sizeof (int)), SEEK_CUR);
-			continue;
-		}
-		// Else it's valid, rewind and read the whole structure in.
-		fseek(f, -nread * sizeof (int), SEEK_CUR);
-		wdata = malloc(wsize);
-		fread(wdata, wsize, 1, f);
-		website = [[[Website alloc] initWithData: wdata atFileOffset: fileoff] 
-			autorelease];
-		// If there's a search value set, skip non-matching websites.
-		if (searchValue == nil || [[website name] rangeOfString: searchValue options: 
-			NSCaseInsensitiveSearch].location != NSNotFound) {
-			[ret addObject: website];
-		}
-		fileoff = ftell(f);
-	}
-	fclose(f);
-	return ret;
-}
 -(NSMutableArray*)getAllHistory {
 	NSCalendarDate *date = [NSCalendarDate calendarDate];
 	NSInteger currentMonth = [date monthOfYear];
 	NSInteger currentYear = [date yearOfCommonEra];
 	NSInteger fileYear, fileMonth;
-	NSString *path = [NSString stringWithFormat: @"%@/%@", NSHomeDirectory(), 
-		HISTORY_PATH];
 	NSString *fpath, *filename, *sectionName;
 	NSArray *yearAndDate;
-	NSError *error = nil;
-	NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: path
-		error: &error];
+	NSString *path = [NSString stringWithFormat: @"%@/%@", NSHomeDirectory(), 
+		HISTORY_PATH];
 	NSMutableArray *ret = [NSMutableArray array];
 
-	if (error != nil) {
-		NSLog(@"Error fetching files in history dir: %@", path);
-		return ret;
-	}
-
-	NSEnumerator *reversedFiles = [[files sortedArrayUsingSelector: 
-		@selector(caseInsensitiveCompare:)] reverseObjectEnumerator];
+	NSEnumerator *reversedFiles = [[Website getAllHistoryPaths] reverseObjectEnumerator];
 	while ((filename = [reversedFiles nextObject]) != nil) {
-		if ([filename hasPrefix: @"history_"]) {
-			yearAndDate = [[filename substringFromIndex: 8] 
-				componentsSeparatedByString: @"_"];
-			fileYear = [[yearAndDate firstObject] integerValue];
-			fileMonth = [[yearAndDate objectAtIndex: 1] integerValue];
+		yearAndDate = [[filename substringFromIndex: 8] 
+		componentsSeparatedByString: @"_"];
+		fileYear = [[yearAndDate firstObject] integerValue];
+		fileMonth = [[yearAndDate objectAtIndex: 1] integerValue];
+		
+		if (fileYear == currentYear && fileMonth == currentMonth) {
+			sectionName = @"This Month";
+		} else if ((fileYear == currentYear && fileMonth == currentMonth - 1)
+			 || (currentMonth == 1 && currentYear == fileYear + 1 &&
+			fileMonth == 12)) {
 
-			if (fileYear == currentYear && fileMonth == currentMonth) {
-				sectionName = @"This Month";
-			} else if ((fileYear == currentYear && fileMonth == currentMonth - 1)
-				 || (currentMonth == 1 && currentYear == fileYear + 1 &&
-				fileMonth == 12)) {
-	
-				sectionName = @"Last Month";
-			} else {
-				sectionName = [NSString stringWithFormat: @"%ld/%ld", 
-					fileMonth, fileYear];
-			}
-			fpath = [path stringByAppendingPathComponent: filename];
-			[ret addObject: [Section sectionWithName: sectionName
-				items: [self getHistoryFromPath: fpath] referencingFilepath:
-				fpath]];
+			sectionName = @"Last Month";
+		} else {
+			sectionName = [NSString stringWithFormat: @"%ld/%ld", fileMonth, 
+				fileYear];
 		}
+		fpath = [path stringByAppendingPathComponent: filename];
+		[ret addObject: [Section sectionWithName: sectionName
+			items: [Website getHistoryFromPath: fpath matching: searchValue] 
+			referencingFilepath: fpath]];
 	}
 	return ret;
 }
