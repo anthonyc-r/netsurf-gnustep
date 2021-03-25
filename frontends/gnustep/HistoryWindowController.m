@@ -85,7 +85,7 @@ entries beforehand, as each item representing a 'section' is returned before it'
 		HISTORY_PATH];
 	NSMutableArray *ret = [NSMutableArray array];
 
-	NSEnumerator *reversedFiles = [[Website getAllHistoryPaths] reverseObjectEnumerator];
+	NSEnumerator *reversedFiles = [[Website getAllHistoryFiles] reverseObjectEnumerator];
 	while ((filename = [reversedFiles nextObject]) != nil) {
 		yearAndDate = [[filename substringFromIndex: 8] 
 		componentsSeparatedByString: @"_"];
@@ -105,7 +105,7 @@ entries beforehand, as each item representing a 'section' is returned before it'
 		}
 		fpath = [path stringByAppendingPathComponent: filename];
 		[ret addObject: [Section sectionWithName: sectionName
-			items: [Website getHistoryFromPath: fpath matching: searchValue] 
+			items: [Website getHistoryFromFile: filename matching: searchValue] 
 			referencingFilepath: fpath]];
 	}
 	return ret;

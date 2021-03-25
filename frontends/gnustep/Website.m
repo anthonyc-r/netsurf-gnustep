@@ -134,10 +134,13 @@
 		WebsiteHistoryUpdatedNotificationName object: self];
 }
 
-+(NSMutableArray*)getHistoryFromPath: (NSString*)path matching: (NSString*)queryString {
++(NSMutableArray*)getHistoryFromFile: (NSString*)file matching: (NSString*)queryString {
 	size_t nread, wsize;
 	long fileoff;
 	int lens[2];
+	NSString *historyRoot = [NSString stringWithFormat: @"%@/%@", NSHomeDirectory(), 
+		HISTORY_PATH];
+	NSString *path = [historyRoot stringByAppendingPathComponent: file];
 	FILE *f = fopen([path cString], "r");
 	struct website_data *wdata;
 	Website *website;
@@ -175,21 +178,22 @@
 	return ret;
 }
 
-+(NSArray*)getAllHistoryPaths {
++(NSArray*)getAllHistoryFiles {
 	NSString *path = [NSString stringWithFormat: @"%@/%@", NSHomeDirectory(), 
 		HISTORY_PATH];
 	NSError *error = nil;
 	NSPredicate *historyPredicate = [NSPredicate predicateWithFormat: 
 		@"self beginswith 'history_'"];
-	NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: path
-		error: &error];
+	NSMutableArray *files = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath: 
+		path error: &error] mutableCopy];
 	if (error != nil) {
 		NSLog(@"Error fetching files in history dir: %@", path);
 		return [NSArray array];
 	}
-	files = [files filteredArrayUsingPredicate: historyPredicate];
+	[files filterUsingPredicate: historyPredicate];
+	[files sortUsingSelector: @selector(caseInsensitiveCompare:)];
 	NSLog(@"%@", files);
-	return [files sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
+	return files;
 }
 
 @end
