@@ -2,10 +2,14 @@
 #import "UrlSuggestionView.h"
 #import "Preferences.h"
 
+#define ENTRY_HEIGHT 25
+#define MAX_HEIGHT 200
+
 @interface UrlSuggestionView(Private)
 -(void)updateActivationState;
 -(void)onPreferencesUpdated: (NSNotification*)aNotification;
 -(void)onUrlContentsChanged: (NSNotification*)aNotification;
+-(void)updateQuery: (NSString*)query;
 @end
 
 @implementation UrlSuggestionView
@@ -14,7 +18,7 @@
 	if ((self = [super init])) {
 		urlBar = aUrlBar;
 		NSRect frame = [aUrlBar frame];
-		frame.origin.y -= frame.size.height;
+		frame.size.height = 0;
 		[self setFrame: frame];
  	 	[[NSNotificationCenter defaultCenter] addObserver: self
  			 selector: @selector(onPreferencesUpdated:)
@@ -29,6 +33,7 @@
 		tableView = [[NSTableView alloc] init];
 		[tableView setDelegate: self];
 		[tableView setDataSource: self];
+		[tableView setRowHeight: ENTRY_HEIGHT];
 		NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier: @"name"];
 		[col setEditable: NO];
 		[col setWidth: frame.size.width];
@@ -80,6 +85,12 @@
 	if (!isActive) {
 		return;
 	}
+	id editor = [[aNotification userInfo] objectForKey: @"NSFieldEditor"];
+	NSString *query = [editor string];
+	[self updateQuery: query];
+}
+
+-(void)updateQuery: (NSString*)query {
 	if (recentWebsites == nil) {
 		NSMutableArray *recents = [NSMutableArray array];
 		NSArray *files = [Website getAllHistoryFiles];
@@ -93,8 +104,6 @@
 		recentWebsites = [recents retain];
 		NSLog(@"recents: %@", recentWebsites);
 	}
-	id editor = [[aNotification userInfo] objectForKey: @"NSFieldEditor"];
-	NSString *query = [editor string];
 	if (previousQuery == nil) {
 		NSLog(@"prev query is nil");
 		previousQuery = [query retain];
@@ -105,16 +114,20 @@
 		[filteredWebsites release];
 		filteredWebsites = [recentWebsites mutableCopy];
 	}
-	NSPredicate *queryPredicate = [NSPredicate predicateWithFormat: 
-		@"url contains %@ OR name contains %@", query, query];
-	[filteredWebsites filterUsingPredicate: queryPredicate];
+	if ([query length] > 0) {
+		NSPredicate *queryPredicate = [NSPredicate predicateWithFormat: 
+			@"url contains %@ OR name contains %@", query, query];
+		[filteredWebsites filterUsingPredicate: queryPredicate];
+	} else {
+		[filteredWebsites removeAllObjects];	
+	}
 	NSLog(@"%@", filteredWebsites);
 	[previousQuery release];
 	previousQuery = [query copy];
 	[tableView reloadData];
 	NSRect frame = [self frame];
 	CGFloat oldHeight = frame.size.height;
-	frame.size.height = [filteredWebsites count] * 20;
+	frame.size.height = MIN(MAX_HEIGHT, [filteredWebsites count] * ENTRY_HEIGHT);
 	frame.origin.y -= (frame.size.height - oldHeight);
 	[self setFrame: frame];
 }
@@ -139,7 +152,14 @@
 	return 20;
 }
 
--(void)tableViewSelectionDidChange: (NSTableView*)aTableView {
+-(void)tableViewSelectionDidChange: (NSNotification*)aNotification {
+	NSInteger row = [tableView selectedRow];
+	if (row == NSNotFound) {
+		return;
+	}
+	Website *selectedWebsite = [filteredWebsites objectAtIndex: row];
+	[urlBar setStringValue: [selectedWebsite url]];
+	[self updateQuery: @""];
 	NSLog(@"Selection changed");
 }
 
