@@ -57,6 +57,7 @@ S_FRONTEND := \
 	PreferencesWindowController.m	\
 	VerticalTabsView.m	\
 	UrlSuggestionView.m	\
+	NotifyingTextField.m	\
 	Website.m	\
 	BookmarkFolder.m	\
 	SearchProvider.m	\

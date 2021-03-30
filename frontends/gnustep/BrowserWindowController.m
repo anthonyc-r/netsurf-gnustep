@@ -94,7 +94,8 @@ static id newTabTarget;
 		selector: @selector(onPreferencesUpdated:)
 		name: PreferencesUpdatedNotificationName
 		object: nil];
-	urlSuggestionView = [[UrlSuggestionView alloc] initForUrlBar: urlBar];
+	urlSuggestionView = [[UrlSuggestionView alloc] initForUrlBar: urlBar
+		inBrowserWindowController: self];
 	NSLog(@"Browser window loaded");
 }
 

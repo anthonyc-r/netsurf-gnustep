@@ -33,6 +33,13 @@
 	);
 	Super = NSObject;
     };
+    NotifyingTextField = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSTextField;
+    };
     PlotView = {
 	Actions = (
 	);

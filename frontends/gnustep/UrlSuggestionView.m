@@ -1,5 +1,6 @@
 #import <Cocoa/Cocoa.h>
 #import "UrlSuggestionView.h"
+#import "BrowserWindowController.h"
 #import "Preferences.h"
 
 #define ENTRY_HEIGHT 25
@@ -14,9 +15,10 @@
 
 @implementation UrlSuggestionView
 
--(id)initForUrlBar: (NSTextField*)aUrlBar {
+-(id)initForUrlBar: (NSTextField*)aUrlBar inBrowserWindowController: (BrowserWindowController*)aBrowserWindowController {
 	if ((self = [super init])) {
 		urlBar = aUrlBar;
+		browserWindowController = aBrowserWindowController;
 		NSRect frame = [aUrlBar frame];
 		frame.size.height = 0;
 		[self setFrame: frame];
@@ -160,6 +162,7 @@
 	Website *selectedWebsite = [filteredWebsites objectAtIndex: row];
 	[urlBar setStringValue: [selectedWebsite url]];
 	[self updateQuery: @""];
+	[browserWindowController openWebsite: selectedWebsite];
 	NSLog(@"Selection changed");
 }
 

@@ -1,5 +1,6 @@
 #import <Cocoa/Cocoa.h>
 
+@class BrowserWindowController;
 @class UrlSuggestionView;
 
 @protocol UrlSuggestionViewDelegate
@@ -7,7 +8,10 @@
 @end
 
 @interface UrlSuggestionView: NSScrollView<NSTableViewDataSource, NSTableViewDelegate> {
+	// Not Retained
 	id urlBar;
+	id browserWindowController;
+	
 	BOOL isActive;
 	NSTableView *tableView;
 	NSArray *recentWebsites;
@@ -15,7 +19,7 @@
 	NSString *previousQuery;
 }
 
--(id)initForUrlBar: (NSTextField*)aUrlBar;
+-(id)initForUrlBar: (NSTextField*)aUrlBar inBrowserWindowController: (BrowserWindowController*)aBrowserWindowController;
 -(void)dismiss;
 
 @end
