@@ -2,6 +2,7 @@
 #import "UrlSuggestionView.h"
 #import "BrowserWindowController.h"
 #import "Preferences.h"
+#import "NotifyingTextField.h"
 
 #define ENTRY_HEIGHT 25
 #define MAX_HEIGHT 200
@@ -10,6 +11,8 @@
 -(void)updateActivationState;
 -(void)onPreferencesUpdated: (NSNotification*)aNotification;
 -(void)onUrlContentsChanged: (NSNotification*)aNotification;
+-(void)onUrlBarEndEditing: (id)sender;
+-(void)onUrlBarSpecialKeyPressed: (NSNotification*)aNotification;
 -(void)updateQuery: (NSString*)query;
 @end
 
@@ -29,6 +32,14 @@
 		[[NSNotificationCenter defaultCenter] addObserver: self
 			selector: @selector(onUrlContentsChanged:)
 			name: NSControlTextDidChangeNotification
+			object: urlBar];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+			selector: @selector(onUrlBarEndEditing:)
+			name: NSControlTextDidEndEditingNotification
+			object: urlBar];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+			selector: @selector(onUrlBarSpecialKeyPressed:)
+			name: NotifyingTextFieldSpecialKeyPressedNotification
 			object: urlBar];
 		[self updateActivationState];
 		[self setAutoresizingMask: [aUrlBar autoresizingMask]];
@@ -92,6 +103,38 @@
 	[self updateQuery: query];
 }
 
+-(void)onUrlBarEndEditing: (id)sender {
+	if (isActive && sender == self) {
+		[self updateQuery: @""];
+	} else if (isActive) {
+		// Clicking a suggested entry also triggers this method, so give it some
+		// time to click the table view before cleaing!!
+		[NSObject cancelPreviousPerformRequestsWithTarget: self
+			selector: @selector(onUrlBarEndEditing:) object: self];
+		[self performSelector: @selector(onUrlBarEndEditing:) withObject: self
+			afterDelay: 0.05];
+	}
+}
+
+-(void)onUrlBarSpecialKeyPressed: (NSNotification*)aNotification {
+	NSLog(@"Special key!");
+	NSNumber *number = [[aNotification userInfo] objectForKey: @"keyCode"];
+	NSInteger num = [number integerValue];
+	if (num == KEY_UP || num == KEY_DOWN) {
+		NSInteger newRow = -1;
+		NSInteger row = [tableView selectedRow];
+		if (row == -1 && num == KEY_DOWN) {
+			NSLog(@"No selection");
+			newRow = 0;	
+		} else if (row != -1) {
+			NSLog(@"Selection");
+			NSInteger sign = row == KEY_DOWN ? 1 : -1;
+			newRow = row + sign;
+		}
+		[tableView selectRow: newRow byExtendingSelection: NO];
+	}
+}
+
 -(void)updateQuery: (NSString*)query {
 	if (recentWebsites == nil) {
 		NSMutableArray *recents = [NSMutableArray array];
@@ -104,7 +147,6 @@
 				matching: nil]];
 		}
 		recentWebsites = [recents retain];
-		NSLog(@"recents: %@", recentWebsites);
 	}
 	if (previousQuery == nil) {
 		NSLog(@"prev query is nil");
@@ -123,7 +165,6 @@
 	} else {
 		[filteredWebsites removeAllObjects];	
 	}
-	NSLog(@"%@", filteredWebsites);
 	[previousQuery release];
 	previousQuery = [query copy];
 	[tableView reloadData];

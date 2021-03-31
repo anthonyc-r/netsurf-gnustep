@@ -3,7 +3,7 @@
 // TODO: Are these defined anywhere in GNUStep?
 #define KEY_UP 98
 #define KEY_DOWN 104
-#define SpecialKeyPressedNotification @"SpecialKeyPressed"
+#define NotifyingTextFieldSpecialKeyPressedNotification @"NotifyingTextFieldSpecialKeyPressed"
 
 @interface NotifyingTextField: NSTextField {
 
