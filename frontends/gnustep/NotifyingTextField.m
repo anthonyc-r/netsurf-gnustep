@@ -8,6 +8,7 @@
 
 @implementation NotifyingTextField
 
+
 -(void)keyUp: (NSEvent*)theEvent {
 	[super keyUp: theEvent];
 	NSDictionary *uinfo;
@@ -22,6 +23,7 @@
 			object: self userInfo: uinfo];
 		break;
 	default:
+
 		break;
 	}
 }

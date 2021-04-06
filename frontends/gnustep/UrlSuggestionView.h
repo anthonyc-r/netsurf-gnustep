@@ -17,6 +17,7 @@
 	NSArray *recentWebsites;
 	NSMutableArray *filteredWebsites;
 	NSString *previousQuery;
+	NSInteger highlightedRow;
 }
 
 -(id)initForUrlBar: (NSTextField*)aUrlBar inBrowserWindowController: (BrowserWindowController*)aBrowserWindowController;

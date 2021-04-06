@@ -5,7 +5,24 @@
 #import "NotifyingTextField.h"
 
 #define ENTRY_HEIGHT 25
-#define MAX_HEIGHT 200
+#define MAX_ENTRIES 8
+
+// Actually selecting a row causes the url bar to lose focus so, instead highlight them
+// when we use up and down to select a url.
+@interface HighlightCell: NSCell {
+}
+@end
+@implementation HighlightCell
+-(void)drawWithFrame: (NSRect)frame inView: (NSView*)view {
+	if ([self isHighlighted]) {
+		[NSGraphicsContext saveGraphicsState];
+		[[NSColor whiteColor] set];
+		[NSBezierPath fillRect: frame];
+		[NSGraphicsContext restoreGraphicsState];
+	}
+	[super drawWithFrame: frame inView: view];
+}
+@end
 
 @interface UrlSuggestionView(Private)
 -(void)updateActivationState;
@@ -14,6 +31,8 @@
 -(void)onUrlBarEndEditing: (id)sender;
 -(void)onUrlBarSpecialKeyPressed: (NSNotification*)aNotification;
 -(void)updateQuery: (NSString*)query;
+-(void)setUrlBarFromHighlighted;
+-(void)onWindowResignKey: (NSNotification*)aNotification;
 @end
 
 @implementation UrlSuggestionView
@@ -24,6 +43,7 @@
 		browserWindowController = aBrowserWindowController;
 		NSRect frame = [aUrlBar frame];
 		frame.size.height = 0;
+		highlightedRow = -1;
 		[self setFrame: frame];
  	 	[[NSNotificationCenter defaultCenter] addObserver: self
  			 selector: @selector(onPreferencesUpdated:)
@@ -41,6 +61,10 @@
 			selector: @selector(onUrlBarSpecialKeyPressed:)
 			name: NotifyingTextFieldSpecialKeyPressedNotification
 			object: urlBar];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+			selector: @selector(onWindowResignKey:)
+			name: NSWindowDidResignKeyNotification
+			object: [urlBar window]];
 		[self updateActivationState];
 		[self setAutoresizingMask: [aUrlBar autoresizingMask]];
 		tableView = [[NSTableView alloc] init];
@@ -50,6 +74,7 @@
 		NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier: @"name"];
 		[col setEditable: NO];
 		[col setWidth: frame.size.width];
+		[col setDataCell: [[HighlightCell alloc] init]];
 		[tableView addTableColumn: col];
 		[col release];
 		[tableView setHeaderView: nil];
@@ -71,6 +96,12 @@
 
 -(void)dismiss {
 
+}
+
+-(void)onWindowResignKey: (NSNotification*)aNotification {
+	if (isActive) {
+		[self updateQuery: @""];
+	}
 }
 
 -(void)onPreferencesUpdated: (NSNotification*)aNotification {
@@ -107,6 +138,7 @@
 	if (isActive && sender == self) {
 		[self updateQuery: @""];
 	} else if (isActive) {
+		[self setUrlBarFromHighlighted];
 		// Clicking a suggested entry also triggers this method, so give it some
 		// time to click the table view before cleaing!!
 		[NSObject cancelPreviousPerformRequestsWithTarget: self
@@ -116,26 +148,34 @@
 	}
 }
 
+-(void)setUrlBarFromHighlighted {
+	NSInteger selectedIndex = highlightedRow;
+	if (selectedIndex >= MAX_ENTRIES)
+		selectedIndex = -1;
+	if (isActive && selectedIndex >= 0 
+		&& selectedIndex < (NSInteger)[filteredWebsites count]) {
+		
+		Website *website = [filteredWebsites objectAtIndex: highlightedRow];
+		[urlBar setStringValue: [website url]];
+	}
+}
+
 -(void)onUrlBarSpecialKeyPressed: (NSNotification*)aNotification {
-	NSLog(@"Special key!");
 	NSNumber *number = [[aNotification userInfo] objectForKey: @"keyCode"];
 	NSInteger num = [number integerValue];
 	if (num == KEY_UP || num == KEY_DOWN) {
-		NSInteger newRow = -1;
-		NSInteger row = [tableView selectedRow];
-		if (row == -1 && num == KEY_DOWN) {
-			NSLog(@"No selection");
-			newRow = 0;	
-		} else if (row != -1) {
-			NSLog(@"Selection");
-			NSInteger sign = row == KEY_DOWN ? 1 : -1;
-			newRow = row + sign;
+		if (highlightedRow == -1 && num == KEY_DOWN) {
+			highlightedRow = 0;	
+		} else if (highlightedRow != -1) {
+			NSInteger sign = num == KEY_DOWN ? 1 : -1;
+			highlightedRow = MIN(highlightedRow + sign, MAX_ENTRIES + 1);
 		}
-		[tableView selectRow: newRow byExtendingSelection: NO];
+		[tableView reloadData];
 	}
 }
 
 -(void)updateQuery: (NSString*)query {
+	highlightedRow = -1;
 	if (recentWebsites == nil) {
 		NSMutableArray *recents = [NSMutableArray array];
 		NSArray *files = [Website getAllHistoryFiles];
@@ -170,7 +210,7 @@
 	[tableView reloadData];
 	NSRect frame = [self frame];
 	CGFloat oldHeight = frame.size.height;
-	frame.size.height = MIN(MAX_HEIGHT, [filteredWebsites count] * ENTRY_HEIGHT);
+	frame.size.height = MIN(MAX_ENTRIES, [filteredWebsites count]) * ENTRY_HEIGHT;
 	frame.origin.y -= (frame.size.height - oldHeight);
 	[self setFrame: frame];
 }
@@ -179,7 +219,7 @@
 
 
 -(NSInteger)numberOfRowsInTableView: (NSTableView*)aTableView {
-	return [filteredWebsites count];
+	return MIN([filteredWebsites count], MAX_ENTRIES);
 }
 
 -(id)tableView: (NSTableView*)aTableView objectValueForTableColumn: (NSTableColumn*)aColumn row: (NSInteger)aRow {
@@ -205,6 +245,10 @@
 	[self updateQuery: @""];
 	[browserWindowController openWebsite: selectedWebsite];
 	NSLog(@"Selection changed");
+}
+
+-(void)tableView: (NSTableView*)aTableView willDisplayCell: (NSCell*)cell forTableColumn: (NSTableColumn*)column row: (NSInteger)row {
+	[cell setHighlighted: row == highlightedRow];
 }
 
 @end
