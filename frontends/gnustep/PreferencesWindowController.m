@@ -211,6 +211,8 @@
 	[developerViewsButton selectItemAtIndex: (NSInteger)viewLocation];
 	[urlSuggestionsButton setState: [[Preferences defaultPreferences] showUrlSuggestions]
 		? NSOnState : NSOffState];
+	UrlBarButtonType buttonType = [[Preferences defaultPreferences] urlBarButtonType];
+	[urlBarButtonsTypeButton selectItemAtIndex: (NSInteger)buttonType];
 }
 
 -(void)didPickDeveloperViews: (id)sender {
@@ -251,6 +253,9 @@
 
 -(void)didPickUrlButtonsType: (id)sender {
 	NSLog(@"didPickUrlButtonsType");
+	UrlBarButtonType buttonType = (UrlBarButtonType)[sender indexOfItem: [sender
+		selectedItem]];
+	[[Preferences defaultPreferences] setUrlBarButtonType: buttonType];
 }
 
 @end

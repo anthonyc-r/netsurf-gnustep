@@ -102,6 +102,10 @@ E_RESOURCES := \
 	internal.css	\
 	quirks.css	\
 	SearchEngines	\
+	forward.png	\
+	back.png	\
+	refresh.png	\
+	search.png	\
 
 E_RESOURCES := $(addprefix resources/,$(E_RESOURCES))
 	

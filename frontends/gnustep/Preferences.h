@@ -15,12 +15,18 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 	TabLocationNone
 };
 
+typedef NS_ENUM(NSInteger, UrlBarButtonType) {
+	UrlBarButtonTypeText = 0,
+	UrlBarButtonTypeImage
+};
+
 // Certain preferences will notify that they have been updated using this key.
 #define PreferencesUpdatedNotificationName @"PreferencesUpdatedNotification"
 typedef NS_ENUM(NSInteger, PreferenceType) {
 	PreferenceTypeAlwaysShowTabs = 0,
 	PreferenceTypeTabLocation,
-	PreferenceTypeShowUrlSuggestions
+	PreferenceTypeShowUrlSuggestions,
+	PreferenceTypeUrlBarButtonType
 };
 
 @interface Preferences: NSObject {
@@ -62,6 +68,9 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 
 -(BOOL)showUrlSuggestions;
 -(void)setShowUrlSuggestions: (BOOL)value;
+
+-(UrlBarButtonType)urlBarButtonType;
+-(void)setUrlBarButtonType: (UrlBarButtonType)buttonType;
 
 +(Preferences*)defaultPreferences;
 @end

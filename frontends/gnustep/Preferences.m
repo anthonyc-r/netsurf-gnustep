@@ -14,6 +14,7 @@
 #define KEY_TAB_LOCATION @"tab_location"
 #define KEY_DEVELOPER_VIEW_LOCATION @"developer_view_location"
 #define KEY_SHOW_URL_SUGGESTIONS @"show_url_suggestions"
+#define KEY_URL_BAR_BUTTON_TYPE @"url_bar_button_type"
 
 @interface Preferences (Private) 
 
@@ -184,6 +185,21 @@
 -(void)setShowUrlSuggestions: (BOOL)value {
 	[defaults setBool: value forKey: KEY_SHOW_URL_SUGGESTIONS];
 	[self notifyPreferenceUpdated: PreferenceTypeShowUrlSuggestions];
+}
+
+-(UrlBarButtonType)urlBarButtonType {
+	if ([defaults objectForKey: KEY_URL_BAR_BUTTON_TYPE] != nil) {
+		return (UrlBarButtonType)[defaults integerForKey:
+			KEY_URL_BAR_BUTTON_TYPE];
+	} else {
+		return UrlBarButtonTypeText;
+	}
+}
+
+-(void)setUrlBarButtonType: (UrlBarButtonType)buttonType {
+	[defaults setInteger: (NSInteger)buttonType forKey: 
+		KEY_URL_BAR_BUTTON_TYPE];
+	[self notifyPreferenceUpdated: PreferenceTypeUrlBarButtonType];
 }
 
 +(Preferences*)defaultPreferences {

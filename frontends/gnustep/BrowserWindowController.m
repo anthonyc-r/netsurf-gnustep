@@ -66,6 +66,7 @@ static id newTabTarget;
 -(Website*)currentWebsiteForTab: (id)tab;
 -(void)updateTabsVisibility;
 -(void)onPreferencesUpdated: (id)sender;
+-(void)reconfigureUrlBarButtons;
 @end
 
 @implementation BrowserWindowController
@@ -533,11 +534,28 @@ static id newTabTarget;
 	currentTabLocation = location;
 }
 
+-(void)reconfigureUrlBarButtons {
+	NSLog(@"reconfigure url bar buttons");
+	UrlBarButtonType buttonType = [[Preferences defaultPreferences] urlBarButtonType];
+	NSLog(@"type: %d", buttonType);
+	switch (buttonType) {
+	case UrlBarButtonTypeImage:
+		[backButton setImage: [NSImage imageNamed: @"back"]];
+		break;
+	case UrlBarButtonTypeText:
+		break;
+	default:
+		break;
+	}
+}
+
 -(void)onPreferencesUpdated: (id)sender {
 	id dict = [sender object];
 	PreferenceType type = (PreferenceType)[[dict objectForKey: @"type"] integerValue];
 	if (type == PreferenceTypeAlwaysShowTabs || type == PreferenceTypeTabLocation) {
 		[self updateTabsVisibility];
+	} else if (type == PreferenceTypeUrlBarButtonType) {
+		[self reconfigureUrlBarButtons];
 	}
 }
 
