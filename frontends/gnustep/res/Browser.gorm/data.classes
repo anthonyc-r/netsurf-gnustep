@@ -18,7 +18,8 @@
 	    refreshButton,
 	    searchImage,
 	    searchBar,
-	    tabView
+	    tabView,
+	    searchLabel
 	);
 	Super = NSWindowController;
     };

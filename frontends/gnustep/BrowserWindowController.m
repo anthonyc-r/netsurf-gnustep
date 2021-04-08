@@ -97,6 +97,7 @@ static id newTabTarget;
 		object: nil];
 	urlSuggestionView = [[UrlSuggestionView alloc] initForUrlBar: urlBar
 		inBrowserWindowController: self];
+	[self reconfigureUrlBarButtons];
 	NSLog(@"Browser window loaded");
 }
 
@@ -537,12 +538,26 @@ static id newTabTarget;
 -(void)reconfigureUrlBarButtons {
 	NSLog(@"reconfigure url bar buttons");
 	UrlBarButtonType buttonType = [[Preferences defaultPreferences] urlBarButtonType];
-	NSLog(@"type: %d", buttonType);
 	switch (buttonType) {
 	case UrlBarButtonTypeImage:
+		[backButton setTitle: nil];
 		[backButton setImage: [NSImage imageNamed: @"back"]];
+		[forwardButton setTitle: nil];
+		[forwardButton setImage: [NSImage imageNamed: @"forward"]];
+		[refreshButton setTitle: nil];
+		[refreshButton setImage: [NSImage imageNamed: @"refresh"]];
+		[searchImage setImage: [NSImage imageNamed: @"search"]];
+		[searchLabel setStringValue: nil];
 		break;
 	case UrlBarButtonTypeText:
+		[backButton setTitle: @"Back"];
+		[backButton setImage: nil];
+		[forwardButton setTitle: @"Forward"];
+		[forwardButton setImage: nil];
+		[refreshButton setTitle: @"Refresh"];
+		[refreshButton setImage: nil];
+		[searchImage setImage: nil];
+		[searchLabel setStringValue: @"Search:"];
 		break;
 	default:
 		break;

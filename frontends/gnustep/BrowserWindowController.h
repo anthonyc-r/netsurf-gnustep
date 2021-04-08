@@ -19,6 +19,7 @@ struct browser_window;
 	enum gui_pointer_shape lastRequestedPointer;
 	id searchBar;
 	id searchImage;
+	id searchLabel;
 	NSMutableArray *tabs;
 	BOOL isClosing;
 	id activeTab;
