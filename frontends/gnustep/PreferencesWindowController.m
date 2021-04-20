@@ -12,6 +12,7 @@
 -(void)configureMainTab;
 -(void)reconfigureDownloadLocationButton;
 -(void)configureAppearanceTab;
+-(void)configureContentTab;
 @end
 @interface DownloadLocation: NSObject {
 	NSString *name;
@@ -256,6 +257,51 @@
 	UrlBarButtonType buttonType = (UrlBarButtonType)[sender indexOfItem: [sender
 		selectedItem]];
 	[[Preferences defaultPreferences] setUrlBarButtonType: buttonType];
+}
+
+// MARK: - CONTENT TAB
+-(void)configureContentTab {
+
+}
+
+-(void)didChangeFontSizeStepper: (id)sender {
+
+}
+
+-(void)didEnterFontSize: (id)sender {
+
+}
+
+-(void)didPickDefaultFont: (id)sender {
+
+}
+
+-(void)didPickLoadImages: (id)sender {
+
+}
+
+-(void)didPressEnableAnimations: (id)sender {
+
+}
+
+-(void)didPressEnableJavascript: (id)sender {
+
+}
+
+-(void)didPressHideAdverts: (id)sender {
+
+}
+
+-(void)didPressPreventPopups: (id)sender {
+
+}
+
+-(void)didPressPreviewFont: (id)sender {
+
+}
+
+-(void)didPickPreferredLanguage: (id)sender {
+
 }
 
 @end

@@ -16,6 +16,17 @@
 	id switchToTabsButton;
 	id tabPositionButton;
 	id urlSuggestionsButton;
+// CONTENT
+	id defaultFontButton;
+	id displayImagesButton;
+	id enableAnimationButton;
+	id enableJavascriptButton;
+	id fontSizeStepper;
+	id hideAdvertsButton;
+	id fontSizeField;
+	id preferredLanguageButton;
+	id preventPopupsButton;
+	id previewFontButton;
 
 	NSMutableArray *downloadLocations;
 }
@@ -37,4 +48,17 @@
 -(void)didPressSwitchToTabs: (id)sender;
 -(void)didPressUrlSuggestions: (id)sender;
 -(void)didPickUrlButtonsType: (id)sender;
+
+// CONTENT
+-(void)didChangeFontSizeStepper: (id)sender;
+-(void)didEnterFontSize: (id)sender;
+-(void)didPickDefaultFont: (id)sender;
+-(void)didPickLoadImages: (id)sender;
+-(void)didPressEnableAnimations: (id)sender;
+-(void)didPressEnableJavascript: (id)sender;
+-(void)didPressHideAdverts: (id)sender;
+-(void)didPressPreventPopups: (id)sender;
+-(void)didPressPreviewFont: (id)sender;
+-(void)didPickPreferredLanguage: (id)sender;
+
 @end

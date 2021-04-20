@@ -2,21 +2,31 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     FirstResponder = {
 	Actions = (
+	    "didChangeFontSizeStepper:",
+	    "didEnterFontSize:",
 	    "didEnterStartupPage:",
+	    "didPickDefaultFont:",
 	    "didPickDeveloperViews:",
 	    "didPickDownloadLocation:",
+	    "didPickLoadImages:",
 	    "didPickSearchProvider:",
 	    "didPickTabPosition:",
+	    "didPickUrlButtonsType:",
 	    "didPressAlwaysShowTabBar:",
 	    "didPressBlankNewTabs:",
 	    "didPressDownloadConfirmOverwrite:",
 	    "didPressDownloadRemoveOnComplete:",
+	    "didPressEnableAnimations:",
+	    "didPressEnableJavascript:",
+	    "didPressHideAdverts:",
+	    "didPressPreventPopups:",
+	    "didPressPreviewFont:",
 	    "didPressSearchFromUrlBar:",
 	    "didPressStartupUseCurrentPage:",
 	    "didPressStartupUseDefaultPage:",
 	    "didPressSwitchToTabs:",
 	    "didPressUrlSuggestions:",
-	    "didPickUrlButtonsType:"
+	    "didPickPreferredLanguage:"
 	);
 	Super = NSObject;
     };
@@ -36,7 +46,17 @@
 	    "didPressBlankNewTabs:",
 	    "didPressSwitchToTabs:",
 	    "didPressUrlSuggestions:",
-	    "didPickUrlButtonsType:"
+	    "didPickUrlButtonsType:",
+	    "didChangeFontSizeStepper:",
+	    "didEnterFontSize:",
+	    "didPickDefaultFont:",
+	    "didPickLoadImages:",
+	    "didPressEnableAnimations:",
+	    "didPressEnableJavascript:",
+	    "didPressHideAdverts:",
+	    "didPressPreventPopups:",
+	    "didPressPreviewFont:",
+	    "didPickPreferredLanguage:"
 	);
 	Outlets = (
 	    downloadConfirmOverwriteButton,
@@ -51,7 +71,17 @@
 	    urlBarButtonsTypeButton,
 	    switchToTabsButton,
 	    tabPositionButton,
-	    urlSuggestionsButton
+	    urlSuggestionsButton,
+	    defaultFontButton,
+	    displayImagesButton,
+	    enableAnimationButton,
+	    enableJavascriptButton,
+	    fontSizeStepper,
+	    hideAdvertsButton,
+	    fontSizeField,
+	    preferredLanguageButton,
+	    preventPopupsButton,
+	    previewFontButton
 	);
 	Super = NSWindowController;
     };
