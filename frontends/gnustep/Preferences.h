@@ -1,6 +1,9 @@
 #import <Foundation/Foundation.h>
 #import "SearchProvider.h"
 
+#define NS_PREFS_DIR ([@"~/.config/NetSurf/" stringByExpandingTildeInPath])
+#define NS_PREFS_FILE ([@"~/.config/NetSurf/prefs" stringByExpandingTildeInPath])
+
 typedef NS_ENUM(NSInteger, ViewLocation) {
 	ViewLocationWindow = 0,
 	ViewLocationTab,
@@ -18,6 +21,13 @@ typedef NS_ENUM(NSInteger, TabLocation) {
 typedef NS_ENUM(NSInteger, UrlBarButtonType) {
 	UrlBarButtonTypeText = 0,
 	UrlBarButtonTypeImage
+};
+
+typedef NS_ENUM(NSInteger, LoadImages) {
+	LoadImagesAll = 0,
+	LoadImagesForeground,
+	LoadImagesBackground,
+	LoadImagesNone
 };
 
 // Certain preferences will notify that they have been updated using this key.
@@ -71,6 +81,9 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 
 -(UrlBarButtonType)urlBarButtonType;
 -(void)setUrlBarButtonType: (UrlBarButtonType)buttonType;
+
+-(LoadImages)loadImages;
+-(void)setLoadImages: (LoadImages)loadImages;
 
 +(Preferences*)defaultPreferences;
 @end

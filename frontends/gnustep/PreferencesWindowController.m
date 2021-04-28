@@ -60,6 +60,7 @@
 -(void)awakeFromNib {
 	[self configureMainTab];
 	[self configureAppearanceTab];
+	[self configureContentTab];
 }
 
 // MARK: - MAIN TAB
@@ -261,47 +262,51 @@
 
 // MARK: - CONTENT TAB
 -(void)configureContentTab {
-
+	LoadImages loadImages = [[Preferences defaultPreferences] loadImages];
+	[displayImagesButton selectItemAtIndex: (NSInteger)loadImages];
 }
 
 -(void)didChangeFontSizeStepper: (id)sender {
-
+	NSLog(@"didChangeFontSizeStepper");
 }
 
 -(void)didEnterFontSize: (id)sender {
-
+	NSLog(@"didEnterFontSize");
 }
 
 -(void)didPickDefaultFont: (id)sender {
-
+	NSLog(@"didPickDefualtFont");
 }
 
 -(void)didPickLoadImages: (id)sender {
-
+	NSLog(@"didPickLoadImages");
+	LoadImages loadImages = (LoadImages)[sender indexOfItem: [sender
+		selectedItem]];
+	[[Preferences defaultPreferences] setLoadImages: loadImages];
 }
 
 -(void)didPressEnableAnimations: (id)sender {
-
+	NSLog(@"didPressEnableAnimations");
 }
 
 -(void)didPressEnableJavascript: (id)sender {
-
+	NSLog(@"didPressEnableJavascript");
 }
 
 -(void)didPressHideAdverts: (id)sender {
-
+	NSLog(@"didPressHideAdverts");
 }
 
 -(void)didPressPreventPopups: (id)sender {
-
+	NSLog(@"didPressPreventPopups");
 }
 
 -(void)didPressPreviewFont: (id)sender {
-
+	NSLog(@"didPressPreviewFont");
 }
 
 -(void)didPickPreferredLanguage: (id)sender {
-
+	NSLog(@"didPickPreferredLanguage");
 }
 
 @end

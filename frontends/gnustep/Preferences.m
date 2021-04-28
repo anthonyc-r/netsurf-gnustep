@@ -1,4 +1,6 @@
 #import <Foundation/Foundation.h>
+#import <stdbool.h>
+#import "utils/nsoption.h"
 #import "SearchProvider.h"
 #import "Preferences.h"
 
@@ -16,10 +18,11 @@
 #define KEY_SHOW_URL_SUGGESTIONS @"show_url_suggestions"
 #define KEY_URL_BAR_BUTTON_TYPE @"url_bar_button_type"
 
+
 @interface Preferences (Private) 
 
 -(void)notifyPreferenceUpdated: (PreferenceType)type;
-
+-(void)saveNetsurfPrefsFile;
 @end
 
 @implementation Preferences
@@ -202,6 +205,43 @@
 	[self notifyPreferenceUpdated: PreferenceTypeUrlBarButtonType];
 }
 
+-(LoadImages)loadImages {
+	bool loadForeground = nsoption_bool(foreground_images);
+	bool loadBackground = nsoption_bool(background_images);
+	if (loadForeground && loadBackground) {
+		return LoadImagesAll;
+	} else if (loadForeground) {
+		return LoadImagesForeground;
+	} else if (loadBackground) {
+		return LoadImagesBackground;
+	} else {
+		NSLog(@"none");
+		return LoadImagesNone;
+	}
+}
+
+-(void)setLoadImages: (LoadImages)loadImages {
+	switch (loadImages) {
+	case LoadImagesAll:
+		nsoption_set_bool(foreground_images, true);
+		nsoption_set_bool(background_images, true);
+		break;
+	case LoadImagesForeground:
+		nsoption_set_bool(foreground_images, true);
+		nsoption_set_bool(background_images, false);
+		break;
+	case LoadImagesBackground:
+		nsoption_set_bool(foreground_images, false);
+		nsoption_set_bool(background_images, true);
+		break;
+	default:
+		nsoption_set_bool(foreground_images, false);
+		nsoption_set_bool(background_images, false);
+		break;
+	}
+	[self saveNetsurfPrefsFile];
+}
+
 +(Preferences*)defaultPreferences {
 	static Preferences *prefs;
 	if (prefs == nil) {
@@ -217,5 +257,13 @@
 	];
 	[[NSNotificationCenter defaultCenter] postNotificationName:
 		PreferencesUpdatedNotificationName object: dict];
+}
+
+-(void)saveNetsurfPrefsFile {
+	[[NSFileManager defaultManager] createDirectoryAtPath: NS_PREFS_DIR
+		attributes: nil];
+	if (nsoption_write([NS_PREFS_FILE cString], NULL, NULL) != NSERROR_OK) {
+		NSLog(@"Failed to write prefs to file %@", NS_PREFS_FILE);
+	}
 }
 @end

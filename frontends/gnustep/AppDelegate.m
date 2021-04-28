@@ -281,9 +281,15 @@ int main(int argc, char **argv) {
 	
        /* common initialisation */
 	error = nsoption_init(set_defaults, &nsoptions, &nsoptions_default);
-       NSCAssert(error == NSERROR_OK, @"Options failed to initialise");
-       error = netsurf_init(NULL);
-       NSCAssert(error == NSERROR_OK, @"NetSurf failed to initialise");
+	NSCAssert(error == NSERROR_OK, @"Options failed to initialise");
+	error = netsurf_init(NULL);
+	NSCAssert(error == NSERROR_OK, @"NetSurf failed to initialise");
+       
+ 	/* Load user options */
+	error = nsoption_read([NS_PREFS_FILE cString], nsoptions);
+	if (error != NSERROR_OK) {
+		NSLog(@"Failed to load user preferences");
+	}
 		
 	NSApplication *app = [NSApplication sharedApplication];
 	AppDelegate *delegate = [AppDelegate new];
