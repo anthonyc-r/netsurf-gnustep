@@ -404,6 +404,10 @@ struct box {
 	 */
 	struct column *col;
 
+	/**
+	 * List item value.
+	 */
+	int list_value;
 
 	/**
 	 * List marker box if this is a list-item, or NULL.
@@ -446,14 +450,6 @@ struct box {
 	struct browser_window *iframe;
 
 };
-
-
-/* Frame target names (constant pointers to save duplicating the strings many
- * times). We convert _blank to _top for user-friendliness. */
-extern const char *TARGET_SELF;
-extern const char *TARGET_PARENT;
-extern const char *TARGET_TOP;
-extern const char *TARGET_BLANK;
 
 
 #endif

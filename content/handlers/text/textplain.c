@@ -23,6 +23,7 @@
  * plain text content handling implementation.
  */
 
+#include <string.h>
 #include <parserutils/input/inputstream.h>
 
 #include "utils/errors.h"
@@ -1604,12 +1605,22 @@ textplain_textselection_copy(struct content *c,
 	return NSERROR_OK;
 }
 
+
+/**
+ * Retrieve the index of the end of the text
+ *
+ * \param[in] c Content to retrieve size of
+ * \return Size, in bytes, of data
+ */
 static nserror
 textplain_textselection_get_end(struct content *c, unsigned *end_idx)
 {
-	*end_idx = textplain_size(c);
+	textplain_content *text = (textplain_content *)c;
+
+	*end_idx = text->utf8_data_size;
 	return NSERROR_OK;
 }
+
 
 /**
  * plain text content handler table
@@ -1670,12 +1681,3 @@ nserror textplain_init(void)
 
 
 
-/* exported interface documented in html/textplain.h */
-size_t textplain_size(struct content *c)
-{
-	textplain_content *text = (textplain_content *) c;
-
-	assert(c != NULL);
-
-	return text->utf8_data_size;
-}

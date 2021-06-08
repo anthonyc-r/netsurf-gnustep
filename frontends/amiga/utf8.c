@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Chris Young <chris@unsatisfactorysoftware.co.uk>
+ * Copyright 2008-2021 Chris Young <chris@unsatisfactorysoftware.co.uk>
  *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
  *
@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <proto/codesets.h>
 #include <proto/exec.h>
 #include <proto/utility.h>
 
@@ -31,20 +32,73 @@
 
 #include "amiga/utf8.h"
 
+static nserror ami_utf8_codesets(const char *string, size_t len, char **result, bool to_local)
+{
+	char *out;
+	ULONG utf8_tag = CSA_SourceCodeset, local_tag = CSA_DestCodeset, len_tag = CSA_SourceLen;
+	static struct codeset *utf8_cs = NULL;
+	static struct codeset *local_cs = NULL;
+
+	if(local_cs == NULL) local_cs = CodesetsFind(NULL,
+#ifdef __amigaos4__
+						CSA_MIBenum, nsoption_int(local_codeset),
+#else
+						NULL,
+#endif
+					TAG_DONE);
+
+     if(utf8_cs == NULL) utf8_cs = CodesetsFind(NULL,
+                           CSA_MIBenum, CS_MIBENUM_UTF_8,
+                           TAG_DONE);
+
+	if(to_local == false) {
+		local_tag = CSA_SourceCodeset;
+		utf8_tag = CSA_DestCodeset;
+	}
+
+	if(len == 0) len_tag = TAG_IGNORE;
+
+	out = CodesetsConvertStr(CSA_Source, string,
+						len_tag, len,
+#ifdef __amigaos4__
+						local_tag, local_cs,
+#endif
+						utf8_tag, utf8_cs,
+						CSA_MapForeignChars, TRUE,
+						TAG_DONE);
+
+	if(out != NULL) {
+		*result = strdup(out);
+		CodesetsFreeA(out, NULL);
+	} else {
+		return NSERROR_BAD_ENCODING;
+	}
+
+	return NSERROR_OK;
+}
+
 nserror utf8_from_local_encoding(const char *string, size_t len, char **result)
 {
-	return utf8_from_enc(string, nsoption_charp(local_charset), len, result, NULL);
+	if(__builtin_expect((CodesetsBase == NULL), 0)) {
+		return utf8_from_enc(string, nsoption_charp(local_charset), len, result, NULL);
+	} else {
+		return ami_utf8_codesets(string, len, result, false);
+	}
 }
 
 nserror utf8_to_local_encoding(const char *string, size_t len, char **result)
 {
-	nserror err = NSERROR_NOMEM;
-	char *local_charset = ASPrintf("%s//IGNORE", nsoption_charp(local_charset));
-	if(local_charset) {
-		err = utf8_to_enc(string, local_charset, len, result);
-		FreeVec(local_charset);
+	if(__builtin_expect((CodesetsBase == NULL), 0)) {
+		nserror err = NSERROR_NOMEM;
+		char *local_charset = ASPrintf("%s//IGNORE", nsoption_charp(local_charset));
+		if(local_charset) {
+			err = utf8_to_enc(string, local_charset, len, result);
+			FreeVec(local_charset);
+		}
+		return err;
+	} else {
+		return ami_utf8_codesets(string, len, result, true);
 	}
-	return err;
 }
 
 void ami_utf8_free(char *ptr)

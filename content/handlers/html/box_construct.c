@@ -25,6 +25,7 @@
  * Implementation of conversion from DOM tree to box tree.
  */
 
+#include <string.h>
 #include <dom/dom.h>
 
 #include "utils/errors.h"
@@ -84,12 +85,6 @@ struct box_construct_props {
 };
 
 static const content_type image_types = CONTENT_IMAGE;
-
-/* the strings are not important, since we just compare the pointers */
-const char *TARGET_SELF = "_self";
-const char *TARGET_PARENT = "_parent";
-const char *TARGET_TOP = "_top";
-const char *TARGET_BLANK = "_blank";
 
 /**
  * mapping from CSS display to box type this table must be in sync
@@ -287,7 +282,8 @@ box_get_style(html_content *c,
 	ctx.parent_style = parent_style;
 
 	/* Select style for element */
-	styles = nscss_get_style(&ctx, n, &c->media, inline_style);
+	styles = nscss_get_style(&ctx, n, &c->media, &c->unit_len_ctx,
+			inline_style);
 
 	/* No longer need inline style */
 	if (inline_style != NULL)
@@ -371,6 +367,7 @@ box_construct_marker(struct box *box,
 {
 	lwc_string *image_uri;
 	struct box *marker;
+	enum css_list_style_type_e list_style_type;
 
 	marker = box_create(NULL, box->style, false, NULL, NULL, title,
 			NULL, ctx->bctx);
@@ -379,81 +376,33 @@ box_construct_marker(struct box *box,
 
 	marker->type = BOX_BLOCK;
 
+	list_style_type = css_computed_list_style_type(box->style);
+
 	/** \todo marker content (list-style-type) */
-	switch (css_computed_list_style_type(box->style)) {
+	switch (list_style_type) {
 	case CSS_LIST_STYLE_TYPE_DISC:
 		/* 2022 BULLET */
 		marker->text = (char *) "\342\200\242";
 		marker->length = 3;
 		break;
+
 	case CSS_LIST_STYLE_TYPE_CIRCLE:
 		/* 25CB WHITE CIRCLE */
 		marker->text = (char *) "\342\227\213";
 		marker->length = 3;
 		break;
+
 	case CSS_LIST_STYLE_TYPE_SQUARE:
 		/* 25AA BLACK SMALL SQUARE */
 		marker->text = (char *) "\342\226\252";
 		marker->length = 3;
 		break;
-	case CSS_LIST_STYLE_TYPE_DECIMAL:
-	case CSS_LIST_STYLE_TYPE_LOWER_ALPHA:
-	case CSS_LIST_STYLE_TYPE_LOWER_ROMAN:
-	case CSS_LIST_STYLE_TYPE_UPPER_ALPHA:
-	case CSS_LIST_STYLE_TYPE_UPPER_ROMAN:
+
 	default:
-		if (parent->last) {
-			struct box *last = parent->last;
-
-			/* Drill down into last child of parent
-			 * to find the list marker (if any)
-			 *
-			 * Floated list boxes end up as:
-			 *
-			 * parent
-			 *   BOX_INLINE_CONTAINER
-			 *     BOX_FLOAT_{LEFT,RIGHT}
-			 *       BOX_BLOCK <-- list box
-			 *        ...
-			 */
-			while (last != NULL && last->list_marker == NULL) {
-				struct box *last_inner = last;
-
-				while (last_inner != NULL) {
-					if (last_inner->list_marker != NULL)
-						break;
-					if (last_inner->type ==
-							BOX_INLINE_CONTAINER ||
-							last_inner->type ==
-							BOX_FLOAT_LEFT ||
-							last_inner->type ==
-							BOX_FLOAT_RIGHT) {
-						last_inner = last_inner->last;
-					} else {
-						last_inner = NULL;
-					}
-				}
-				if (last_inner != NULL) {
-					last = last_inner;
-				} else {
-					last = last->prev;
-				}
-			}
-
-			if (last && last->list_marker) {
-				marker->rows = last->list_marker->rows + 1;
-			}
-		}
-
-		marker->text = talloc_array(ctx->bctx, char, 20);
-		if (marker->text == NULL)
-			return false;
-
-		snprintf(marker->text, 20, "%u.", marker->rows);
-		marker->length = strlen(marker->text);
-		break;
+		/* Numerical list counters get handled in layout. */
+		/* Fall through. */
 	case CSS_LIST_STYLE_TYPE_NONE:
-		marker->text = 0;
+		marker->text = NULL;
 		marker->length = 0;
 		break;
 	}
@@ -973,20 +922,20 @@ box_text_transform(char *s, unsigned int len, enum css_text_transform_e tt)
 		case CSS_TEXT_TRANSFORM_UPPERCASE:
 			for (i = 0; i < len; ++i)
 				if ((unsigned char) s[i] < 0x80)
-					s[i] = toupper(s[i]);
+					s[i] = ascii_to_upper(s[i]);
 			break;
 		case CSS_TEXT_TRANSFORM_LOWERCASE:
 			for (i = 0; i < len; ++i)
 				if ((unsigned char) s[i] < 0x80)
-					s[i] = tolower(s[i]);
+					s[i] = ascii_to_lower(s[i]);
 			break;
 		case CSS_TEXT_TRANSFORM_CAPITALIZE:
 			if ((unsigned char) s[0] < 0x80)
-				s[0] = toupper(s[0]);
+				s[0] = ascii_to_upper(s[0]);
 			for (i = 1; i < len; ++i)
 				if ((unsigned char) s[i] < 0x80 &&
-						isspace(s[i - 1]))
-					s[i] = toupper(s[i]);
+						ascii_is_space(s[i - 1]))
+					s[i] = ascii_to_upper(s[i]);
 			break;
 		default:
 			break;

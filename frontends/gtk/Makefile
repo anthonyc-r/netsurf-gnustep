@@ -103,6 +103,7 @@ GLIB_COMPILE_RESOURCES := glib-compile-resources
 CFLAGS += -DWITH_GRESOURCE
 
 NETSURF_GRESOURCE_XML := $(NSGTK_RESOURCES_DIR)/netsurf.gresource.xml
+UI_GRESOURCE_XML := $(NSGTK_RESOURCES_DIR)/ui.gresource.xml
 MESSAGES_GRESOURCE_XML := $(NSGTK_RESOURCES_DIR)/messages.gresource.xml
 
 # generate the netsurf gresource source files
@@ -111,6 +112,13 @@ $(OBJROOT)/netsurf_gresource.c: $(NETSURF_GRESOURCE_XML) $(shell $(GLIB_COMPILE_
 	$(Q)$(GLIB_COMPILE_RESOURCES) --generate-source --sourcedir $(NSGTK_RESOURCES_DIR) --target=$@ $<
 
 S_RESOURCE += $(OBJROOT)/netsurf_gresource.c
+
+# generate the ui gresource source files
+$(OBJROOT)/ui_gresource.c: $(UI_GRESOURCE_XML) $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir $(NSGTK_RESOURCES_DIR)/gtk$(NETSURF_GTK_MAJOR) --generate-dependencies $(UI_GRESOURCE_XML))
+	$(VQ)echo "GRESORCE: $<"
+	$(Q)$(GLIB_COMPILE_RESOURCES) --generate-source --sourcedir $(NSGTK_RESOURCES_DIR)/gtk$(NETSURF_GTK_MAJOR) --target=$@ $<
+
+S_RESOURCE += $(OBJROOT)/ui_gresource.c
 
 # generate the messages gresource source file
 $(OBJROOT)/messages_gresource.c: $(MESSAGES_GRESOURCE_XML) $(addsuffix /Messages,$(addprefix $(MESSAGES_TARGET)/,$(MESSAGES_LANGUAGES)))
@@ -158,11 +166,11 @@ endif
 # ----------------------------------------------------------------------------
 
 # S_FRONTEND are sources purely for the GTK frontend
-S_FRONTEND := gui.c schedule.c layout_pango.c bitmap.c plotters.c	\
-	scaffolding.c gdk.c completion.c throbber.c accelerator.c \
-	selection.c window.c fetch.c download.c menu.c print.c		\
-	search.c tabs.c toolbar.c gettext.c compat.c viewdata.c		\
-	viewsource.c preferences.c about.c resources.c corewindow.c	\
+S_FRONTEND := gui.c misc.c schedule.c layout_pango.c bitmap.c plotters.c \
+	scaffolding.c gdk.c completion.c throbber.c accelerator.c        \
+	selection.c window.c fetch.c download.c menu.c print.c		 \
+	search.c tabs.c toolbar.c gettext.c compat.c viewdata.c		 \
+	viewsource.c preferences.c about.c resources.c corewindow.c	 \
 	local_history.c global_history.c cookies.c hotlist.c page_info.c
 
 # This is the final source build list
@@ -182,10 +190,10 @@ GTK_RESOURCES_LIST := \
 
 GTK_RESOURCES_LIST := \
 	$(addprefix $(NSGTK_RESOURCES_DIR)/, $(GTK_RESOURCES_LIST)) \
-	$(wildcard $(NSGTK_RESOURCES_DIR)/*.gtk$(NETSURF_GTK_MAJOR).ui)
+	$(wildcard $(NSGTK_RESOURCES_DIR)/gtk$(NETSURF_GTK_MAJOR)/*.ui)
 
 # translations with more than just Messages files
-GTK_TRANSLATIONS_HTML := de en fr it ja nl
+GTK_TRANSLATIONS_HTML := de en fr it ja nl zh_CN
 
 # destination for installed resources is the first entry in the gtk resource path
 NSGTK_RESOURCES_DESTDIR := $(DESTDIR)$(word 1,$(subst :, ,$(NETSURF_GTK_RES_PATH)))

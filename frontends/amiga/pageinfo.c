@@ -67,9 +67,13 @@ ami_pageinfo_destroy(struct ami_corewindow *ami_cw)
 {
 	nserror res;
 	struct ami_pageinfo_window *pageinfo_win = (struct ami_pageinfo_window *)ami_cw;
-	res = page_info_destroy(pageinfo_win->pi);
-	if (res == NSERROR_OK) {
-		ami_corewindow_fini(&pageinfo_win->core); /* closes the window for us */
+	if(pageinfo_win->pi != NULL) {
+		res = page_info_destroy(pageinfo_win->pi);
+
+		if (res == NSERROR_OK) {
+			pageinfo_win->pi = NULL;
+			ami_corewindow_fini(&pageinfo_win->core); /* closes the window for us */
+		}
 	}
 }
 
@@ -95,9 +99,9 @@ static BOOL
 ami_pageinfo_event(struct ami_corewindow *ami_cw, ULONG result)
 {
 	if((result & WMHI_CLASSMASK) == WMHI_INACTIVE) {
-		/* Window went inactive, so close it */
-		ami_pageinfo_destroy(ami_cw);
-		return TRUE;
+		/* Window went inactive, so schedule to close it */
+		ami_schedule(0, ami_pageinfo_close_cb, ami_cw);
+		/* NB: do not return TRUE here as we're still open for now */
 	}
 	return FALSE;
 }

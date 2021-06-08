@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Vincent Sanders <vince@netsurf-browser.org>
+ * Copyright 2020 Vincent Sanders <vince@netsurf-browser.org>
  *
  * This file is part of NetSurf.
  *
@@ -16,18 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** \file
- * about: URL method handler
+/**
+ * \file
+ * about scheme choices handler interface
  */
 
-#ifndef NETSURF_CONTENT_FETCHERS_FETCH_ABOUT_H
-#define NETSURF_CONTENT_FETCHERS_FETCH_ABOUT_H
+#ifndef NETSURF_CONTENT_FETCHERS_ABOUT_CHOICES_H
+#define NETSURF_CONTENT_FETCHERS_ABOUT_CHOICES_H
 
 /**
- * Register about scheme handler.
+ * Handler to generate about scheme choices page.
  *
- * \return NSERROR_OK on successful registration or error code on failure.
+ * \param ctx The fetcher context.
+ * \return true if handled false if aborted.
  */
-nserror fetch_about_register(void);
+bool fetch_about_choices_handler(struct fetch_about_context *ctx);
 
 #endif
