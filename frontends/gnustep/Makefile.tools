@@ -1,0 +1,7 @@
+# -*- mode: makefile-gmake -*-
+##
+## tool setup for the gnustep target
+##
+
+# use native package config
+PKG_CONFIG := pkg-config

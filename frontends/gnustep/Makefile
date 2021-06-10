@@ -79,7 +79,7 @@ SOURCES = $(addprefix $(shell pwd)/,$(S_COMMON) $(S_IMAGE) $(S_BROWSER) $(S_FRON
 
 # Since we prefix the sources with the pwd, also create a special
 # prefixed rule so that the testament is run
-$(shell pwd)/content/fetchers/about.c: testament
+$(shell pwd)/content/fetchers/about/about.c: testament
 
 EXETARGET := NetSurf
 
