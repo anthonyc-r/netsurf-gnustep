@@ -30,6 +30,14 @@ typedef NS_ENUM(NSInteger, LoadImages) {
 	LoadImagesNone
 };
 
+typedef NS_ENUM(NSInteger, FontType) {
+	FontTypeSansSerif = 0,
+	FontTypeSerif,
+	FontTypeMonospace,
+	FontTypeCursive,
+	FontTypeFantasy
+};
+
 // Certain preferences will notify that they have been updated using this key.
 #define PreferencesUpdatedNotificationName @"PreferencesUpdatedNotification"
 typedef NS_ENUM(NSInteger, PreferenceType) {
@@ -84,6 +92,21 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 
 -(LoadImages)loadImages;
 -(void)setLoadImages: (LoadImages)loadImages;
+
+-(BOOL)disablePopups;
+-(void)setDisablePopups: (BOOL)value;
+
+-(BOOL)hideAds;
+-(void)setHideAds: (BOOL)value;
+
+-(BOOL)enableJavascript;
+-(void)setEnableJavascript: (BOOL)value;
+
+-(BOOL)enableAnimation;
+-(void)setEnableAnimation: (BOOL)value;
+
+-(FontType)defaultFont;
+-(void)setDefaultFont: (FontType)value;
 
 +(Preferences*)defaultPreferences;
 @end

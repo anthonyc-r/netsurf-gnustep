@@ -264,6 +264,16 @@
 -(void)configureContentTab {
 	LoadImages loadImages = [[Preferences defaultPreferences] loadImages];
 	[displayImagesButton selectItemAtIndex: (NSInteger)loadImages];
+	[preventPopupsButton setState: [[Preferences defaultPreferences] disablePopups] 
+		? NSOnState : NSOffState];
+	[hideAdvertsButton setState: [[Preferences defaultPreferences] hideAds]
+		? NSOnState : NSOffState];
+	[enableJavascriptButton setState: [[Preferences defaultPreferences] enableJavascript]
+		? NSOnState : NSOffState];
+	[enableAnimationButton setState: [[Preferences defaultPreferences] enableAnimation]
+		? NSOnState : NSOffState];
+	FontType fontType = [[Preferences defaultPreferences] defaultFont];
+	[defaultFontButton selectItemAtIndex: (NSInteger)fontType];
 }
 
 -(void)didChangeFontSizeStepper: (id)sender {
@@ -276,6 +286,8 @@
 
 -(void)didPickDefaultFont: (id)sender {
 	NSLog(@"didPickDefualtFont");
+	FontType fontType = (FontType)[sender indexOfItem: [sender selectedItem]];
+	[[Preferences defaultPreferences] setDefaultFont: fontType];
 }
 
 -(void)didPickLoadImages: (id)sender {
@@ -287,18 +299,26 @@
 
 -(void)didPressEnableAnimations: (id)sender {
 	NSLog(@"didPressEnableAnimations");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setEnableAnimation: checked];
 }
 
 -(void)didPressEnableJavascript: (id)sender {
 	NSLog(@"didPressEnableJavascript");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setEnableJavascript: checked];
 }
 
 -(void)didPressHideAdverts: (id)sender {
 	NSLog(@"didPressHideAdverts");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setHideAds: checked];
 }
 
 -(void)didPressPreventPopups: (id)sender {
 	NSLog(@"didPressPreventPopups");
+	BOOL checked = [sender state] == NSOnState;
+	[[Preferences defaultPreferences] setDisablePopups: checked];
 }
 
 -(void)didPressPreviewFont: (id)sender {

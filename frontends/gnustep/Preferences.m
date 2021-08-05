@@ -242,6 +242,54 @@
 	[self saveNetsurfPrefsFile];
 }
 
+-(BOOL)disablePopups {
+	// return (BOOL)nsoption_bool(disable_popups);
+	return NO;
+}
+
+-(void)setDisablePopups: (BOOL)value {
+	// nsoption_set_bool(disable_popups, (bool)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(BOOL)hideAds {
+	return (BOOL)nsoption_bool(block_advertisements);
+}
+
+-(void)setHideAds: (BOOL)value {
+	nsoption_set_bool(block_advertisements, (bool)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(BOOL)enableJavascript {
+	return (BOOL)nsoption_bool(enable_javascript);
+}
+
+-(void)setEnableJavascript: (BOOL)value {
+	nsoption_set_bool(enable_javascript, (bool)value);
+	[self saveNetsurfPrefsFile];
+}
+
+
+-(BOOL)enableAnimation {
+	return (BOOL)nsoption_bool(animate_images);
+}
+
+-(void)setEnableAnimation: (BOOL)value {
+	nsoption_set_bool(animate_images, (bool)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(FontType)defaultFont {
+	return (FontType)nsoption_int(font_default);
+}
+
+-(void)setDefaultFont: (FontType)value {
+	nsoption_set_int(font_default, (NSInteger)value);
+	[self saveNetsurfPrefsFile];
+}
+
+
 +(Preferences*)defaultPreferences {
 	static Preferences *prefs;
 	if (prefs == nil) {
