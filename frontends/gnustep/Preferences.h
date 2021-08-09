@@ -108,5 +108,11 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 -(FontType)defaultFont;
 -(void)setDefaultFont: (FontType)value;
 
+-(NSString*)preferredLanguage;
+-(void)setPreferredLanguage: (NSString*)value;
+
+-(NSUInteger)fontSize;
+-(void)setFontSize: (NSUInteger)value;
+
 +(Preferences*)defaultPreferences;
 @end

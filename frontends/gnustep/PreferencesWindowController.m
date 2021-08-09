@@ -274,14 +274,41 @@
 		? NSOnState : NSOffState];
 	FontType fontType = [[Preferences defaultPreferences] defaultFont];
 	[defaultFontButton selectItemAtIndex: (NSInteger)fontType];
+
+	NSUInteger selectedIndex = 0;
+	NSString *preferredLanguage = [[Preferences defaultPreferences] preferredLanguage];
+	NSString *languagesPath = [[NSBundle mainBundle] pathForResource: @"Languages" ofType: @"plist"];
+	NSArray *languages = [NSArray arrayWithContentsOfFile: languagesPath];
+	for (NSUInteger i = 0; i < [languages count]; i++) {
+		[preferredLanguageButton addItemWithTitle: [languages objectAtIndex: i]];
+		if ([[languages objectAtIndex: i] isEqualTo: preferredLanguage]) {
+			selectedIndex = i;
+		}
+	}
+	[preferredLanguageButton selectItemAtIndex: selectedIndex];
+	NSUInteger fontSize = [[Preferences defaultPreferences] fontSize];
+	[fontSizeField setStringValue: [NSString stringWithFormat: @"%u", fontSize]];
+	[fontSizeStepper setIntegerValue: fontSize];
 }
 
 -(void)didChangeFontSizeStepper: (id)sender {
 	NSLog(@"didChangeFontSizeStepper");
+	NSInteger value = [sender integerValue];
+	if (value < 1) {
+		value = 1;
+		[sender setIntegerValue: value];
+	}
+	[fontSizeField setStringValue: [NSString stringWithFormat: @"%u", value]];
+	[[Preferences defaultPreferences] setFontSize: value];
 }
 
 -(void)didEnterFontSize: (id)sender {
 	NSLog(@"didEnterFontSize");
+	NSInteger value = [[sender stringValue] integerValue];
+	if (value < 1)
+		value = 1;
+	[fontSizeStepper setIntegerValue: value];
+	[[Preferences defaultPreferences] setFontSize: (NSUInteger)value];
 }
 
 -(void)didPickDefaultFont: (id)sender {
@@ -327,6 +354,7 @@
 
 -(void)didPickPreferredLanguage: (id)sender {
 	NSLog(@"didPickPreferredLanguage");
+	[[Preferences defaultPreferences] setPreferredLanguage: [sender title]];
 }
 
 @end

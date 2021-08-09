@@ -92,6 +92,8 @@ R_RESOURCES := \
 	Bookmarks.gorm	\
 	CreateBookmark.gorm	\
 	Preferences.gorm	\
+	Languages.plist	\
+
 
 R_RESOURCES := $(addprefix $(FRONTEND_RESOURCES_DIR)/,$(R_RESOURCES))
 

@@ -289,6 +289,29 @@
 	[self saveNetsurfPrefsFile];
 }
 
+-(NSString*)preferredLanguage {
+	char *lang = nsoption_charp(accept_language);
+	if (lang == NULL) {
+		return @"en";
+	} else {
+		return [NSString stringWithCString: lang];	
+	}
+}
+
+-(void)setPreferredLanguage: (NSString*)value {
+	NSLog(@"Set to %@", value);
+	nsoption_set_charp(accept_language, strdup([value cString]));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)fontSize {
+	return (NSUInteger)nsoption_int(font_size);
+}
+
+-(void)setFontSize: (NSUInteger)value {
+	nsoption_set_int(font_size, (int)value);
+	[self saveNetsurfPrefsFile];
+}
 
 +(Preferences*)defaultPreferences {
 	static Preferences *prefs;
