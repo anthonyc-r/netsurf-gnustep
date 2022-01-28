@@ -60,6 +60,7 @@
 		NSLog(@"Error: expected download thread to be initialized");
 		return NO;
 	}
+	[data retain];
 	[self performSelector: @selector(reallyWriteData:) onThread: downloadThread
 		withObject: data waitUntilDone: NO modes: [NSArray arrayWithObject:
 		NSDefaultRunLoopMode]];

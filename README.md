@@ -9,7 +9,7 @@ this port requires CoreFoundation, and CoreGraphics dependencies. This
 port compiles with just basic GNUstep base, gui, and back libraries 
 unlike the cocoa port.
 
-To build, follow the instructions on the quickstart link below, replace netsurf in the generated `workspace` folder with this, and run `./gnustepbuild.sh`. Note that you'll need gmake on openbsd.
+To build, follow the instructions on the quickstart link below, replace netsurf in the generated `workspace` folder with this, and run `make TARGET=gnustep`.
 
 ![Screenshot](/screenshots/screenshot.jpeg)
 With Rik theme, client side decorations and mac-style menu.
