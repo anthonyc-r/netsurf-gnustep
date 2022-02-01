@@ -110,7 +110,6 @@ static struct gui_download_window *gnustep_download_create(struct download_conte
 
 // ??
 static nserror gnustep_download_data(struct gui_download_window *dw,	const char *data, unsigned int size) {
-	NSLog(@"gnustep_download_data");
 	BOOL success = [(id)dw appendToDownload: [NSData dataWithBytesNoCopy: (void*)data
 		length: size freeWhenDone: NO]];
 	if (success) {

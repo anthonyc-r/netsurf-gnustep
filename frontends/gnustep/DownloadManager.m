@@ -3,6 +3,11 @@
 #import "desktop/download.h"
 #import "Preferences.h"
 
+@interface DownloadItem(Private)
+-(void) completeAndNotifyManager;
+-(void) notifyManager;
+@end
+
 @implementation DownloadItem
 
 -(id)initWithManager: (DownloadManager*)aManager destination: (NSURL*)aDestination size: (NSInteger)aSize index: (NSUInteger)anIndex ctx: (struct download_context*)aCtx {
@@ -10,6 +15,8 @@
 		error = nil;
 		index = anIndex;
 		written = 0;
+		confirmedSize = 0;
+		confirmedSizeLock = [[NSLock alloc] init];
 		completed = NO;
 		size = aSize;
 		startDate = [[NSDate date] retain];
@@ -29,12 +36,15 @@
 	return self;
 }
 
+// TODO: - Why isn't this releasing?
 -(void)dealloc {
+	NSLog(@"DownloadItem dealloc!!");
 	runThread = NO;
 	[destination release];
 	[outputStream close];
 	[outputStream release];
 	[startDate release];
+	[confirmedSizeLock release];
 	if (error) {
 		[error release];
 	}
@@ -56,11 +66,11 @@
 }
 
 -(BOOL)appendToDownload: (NSData*)data {
+	sizeUntilNow += [data length];
 	if (downloadThread == nil) {
 		NSLog(@"Error: expected download thread to be initialized");
 		return NO;
 	}
-	[data retain];
 	[self performSelector: @selector(reallyWriteData:) onThread: downloadThread
 		withObject: data waitUntilDone: NO modes: [NSArray arrayWithObject:
 		NSDefaultRunLoopMode]];
@@ -68,9 +78,15 @@
 }
 
 -(void)reallyWriteData: (NSData*)data {
-	NSUInteger len = [data length];
-	NSUInteger writtenNow = [outputStream write: [data bytes] maxLength: len];
-	written += writtenNow;
+	NSUInteger toWrite = [data length];
+	NSInteger thisWrite;
+	const uint8_t *start = [data bytes];
+	while (toWrite > 0) {
+		thisWrite = [outputStream write: start maxLength: toWrite];
+		start += thisWrite;
+		toWrite -= thisWrite;
+	}
+	written += [data length];
 	// Unless im misunderstanding download_context_get_total_length appears to return
 	// a too-small non-zero value for download size when called so...
 	size = MAX(written, size);
@@ -81,6 +97,25 @@
 			waitUntilDone: NO];
 	}
 	lastWrite = time;
+
+	// Check if we're complete.
+	BOOL done;
+	[confirmedSizeLock lock];
+	done = confirmedSize > 0 && written >= confirmedSize;
+	[confirmedSizeLock unlock];
+	if (done) {
+		[self performSelectorOnMainThread: @selector(completeAndNotifyManager) 
+			withObject: nil waitUntilDone: NO];
+	}
+}
+-(void)completeAndNotifyManager {
+		completed = YES;
+		runThread = NO;
+		[outputStream close];
+		[[manager delegate] downloadManager: manager didUpdateItem: self];
+		if ([[Preferences defaultPreferences] removeDownloadsOnComplete]) {
+			[manager removeDownloadsAtIndexes: [NSIndexSet indexSetWithIndex: index]];
+		}
 }
 -(void)notifyManager {
 	[[manager delegate] downloadManager: manager didUpdateItem: self];
@@ -104,12 +139,14 @@
 }
 
 -(void)complete {
-	[outputStream close];
-	completed = YES;
-	[[manager delegate] downloadManager: manager didUpdateItem: self];
-	if ([[Preferences defaultPreferences] removeDownloadsOnComplete]) {
-		[manager removeDownloadsAtIndexes: [NSIndexSet indexSetWithIndex: index]];
-	}
+	NSLog(@"Complete called...");
+	// Having set this non-0, our download thread will know to complete.
+	[confirmedSizeLock lock];
+	confirmedSize = sizeUntilNow;
+	[confirmedSizeLock unlock];
+	// Trigger a write just to trigger the completion check if there's no data
+	// pending write.
+	[self appendToDownload: [NSData data]];
 }
 
 -(BOOL)isComplete {

@@ -14,6 +14,8 @@ struct download_context;
 	BOOL completed;
 	BOOL cancelled;
 	NSUInteger size;
+	NSUInteger confirmedSize, sizeUntilNow;
+	NSLock *confirmedSizeLock;
 	NSUInteger written;
 	NSInteger index;
 	NSDate *startDate;
