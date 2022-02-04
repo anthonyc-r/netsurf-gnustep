@@ -192,9 +192,8 @@ static nserror plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitm
 	[tf scaleXBy: 1.0 yBy: -1.0];
 	[tf translateXBy: 0 yBy: -offset];
 	[GSCurrentContext() GSSetCTM: tf];
-	[[NSColor redColor] set];
-	[GSCurrentContext() setCompositingOperation: NSCompositeSourceOver];
-	[bmp drawInRect: rect];
+	[bmp drawInRect: rect fromRect: NSMakeRect(0, 0, width, height)
+		operation: NSCompositeSourceOver fraction: 1.0 respectFlipped: NO hints: nil];
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
