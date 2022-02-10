@@ -8,6 +8,7 @@
 #import "netsurf/types.h"
 #import "utils/nsurl.h"
 #import "netsurf/mouse.h"
+#import "netsurf/form.h"
 
 struct window_tab {
 	BrowserWindowController *window;
@@ -146,6 +147,22 @@ static void gnustep_window_place_caret(struct gui_window *gw, int x, int y, int 
 	[wtab->window placeCaretAtX: x y: y height: height inTab: wtab->tab];
 }
 
+static void gnustep_window_create_form_select_menu(struct gui_window *gw, struct form_control *control) {
+	struct form_option *opt;
+	struct rect rect;
+	struct window_tab *wtab = (struct window_tab*)gw;
+	if (form_control_bounding_rect(control, &rect) != NSERROR_OK) {
+		NSLog("Failed to get control bounding rect, skipping");
+		return;
+	}
+	NSMutableArray *options = [NSMutableArray array];
+	for(opt = form_select_get_option(control, 0); opt != NULL; opt = opt->next) {
+		[options addObject: [NSString stringWithCString: opt->text]];
+	}
+	[wtab->window showDropdownMenuWithOptions: options atLocation:
+		NSMakePoint(rect.x0, rect.y1) inTab: wtab->tab control: control];
+}
+
 struct gui_window_table gnustep_window_table = {
 	.create = gnustep_window_create,
 	.destroy = gnustep_window_destroy,
@@ -157,5 +174,6 @@ struct gui_window_table gnustep_window_table = {
 	.set_title = gnustep_window_set_title,
 	.set_url = gnustep_window_set_url,
 	.place_caret = gnustep_window_place_caret,
-	.set_pointer = gnustep_window_set_pointer
+	.set_pointer = gnustep_window_set_pointer,
+	.create_form_select_menu = gnustep_window_create_form_select_menu,
 };

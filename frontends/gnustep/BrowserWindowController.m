@@ -574,6 +574,11 @@ static id newTabTarget;
 	}
 }
 
+-(void)showDropdownMenuWithOptions: (NSArray*)options atLocation: (NSPoint)location inTab: (id)tab control: (struct form_control*)control {
+	[[tab plotView] showDropdownMenuWithOptions: options atLocation: location 
+		control: control];
+}
+
 +(id)newTabTarget {
 	return newTabTarget;
 }

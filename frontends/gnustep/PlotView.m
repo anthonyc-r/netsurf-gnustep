@@ -31,6 +31,7 @@
 #import "utils/nsoption.h"
 #import "utils/messages.h"
 #import "netsurf/content_type.h"
+#import "netsurf/form.h"
 
 #define colour_red_component( c )		(((c) >>  0) & 0xFF)
 #define colour_green_component( c )		(((c) >>  8) & 0xFF)
@@ -796,5 +797,24 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 	[self openDump: [NSString stringWithCString: fname]];
 }
 
+-(void)showDropdownMenuWithOptions: (NSArray*)options atLocation: (NSPoint)location control: (struct form_control*)control {
+	NSMenu *popupMenu = [[NSMenu alloc] initWithTitle: @""];
+	NSMenuItem *opt;
+	for (NSInteger i = 0; i < [options count]; i++) {
+		opt = [popupMenu addItemWithTitle: [options objectAtIndex: i] action:
+			@selector(didPickDropdownOption:) keyEquivalent: @""];
+		[opt setTag: i];
+		[opt setRepresentedObject: [NSValue valueWithPointer: control]];
+	}
+	[NSMenu popUpContextMenu: popupMenu withEvent: nil forView: self];
+	[popupMenu release];
+}
+
+-(void)didPickDropdownOption: (id)sender {
+	NSValue *controlPointer = [sender representedObject];
+	struct form_control *control = (struct form_control*)[controlPointer pointerValue];
+	if (form_select_process_selection(control, [sender tag]) != NSERROR_OK)
+		NSLog(@"Failed to process selection");
+}
 
 @end

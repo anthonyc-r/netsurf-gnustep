@@ -9,6 +9,8 @@
 #import "UrlSuggestionView.h"
 
 struct browser_window;
+struct form_control;
+
 @interface BrowserWindowController : NSWindowController<NSTextFieldDelegate, VerticalTabsViewDelegate> {
 	id backButton;
 	id forwardButton;
@@ -68,6 +70,8 @@ struct browser_window;
 -(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)bookmarkPage: (id)sender;
+
+-(void)showDropdownMenuWithOptions: (NSArray*)options atLocation: (NSPoint)location inTab: (id)tab control: (struct form_control*)control;
 
 
 +(id)newTabTarget;
