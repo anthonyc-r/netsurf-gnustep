@@ -193,6 +193,16 @@ static NSMenuItem *menuItemForItem(id item) {
 	}
 }
 
+-(NSURL*)requestFileLocation {
+	NSSavePanel *openPanel = [NSOpenPanel openPanel];
+	[openPanel setDirectory: NSHomeDirectory()];
+	if ([openPanel runModal] == NSOKButton) {
+		return [openPanel URL];
+	} else {
+		return nil;
+	}
+}
+
 -(void)openWebsite: (Website*)aWebsite {
 	struct nsurl *url;
 	nserror error;

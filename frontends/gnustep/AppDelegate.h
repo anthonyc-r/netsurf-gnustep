@@ -45,6 +45,7 @@ id preferencesWindowController;
 -(void)showBookmarksWindow: (id)sender;
 -(void)showPreferencesWindow: (id)sender;
 -(NSURL*)requestDownloadDestination;
+-(NSURL*)requestFileLocation;
 -(void)openWebsite: (Website*)aWebsite;
 -(void)openDeveloperFileAtPath: (NSString*)path;
 -(NSString*)currentUrl;

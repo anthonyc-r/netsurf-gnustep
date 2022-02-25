@@ -50,6 +50,7 @@ struct form_control;
 -(id)initialTabId;
 
 // Browser control
+-(struct browser_window *)browser;
 -(NSSize)getBrowserSizeForTab: (id)tab;
 -(NSPoint)getBrowserScrollForTab: (id)tab;
 -(void)setBrowserScroll: (NSPoint)scroll forTab: (id)tab;

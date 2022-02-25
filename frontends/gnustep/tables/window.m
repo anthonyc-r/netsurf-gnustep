@@ -152,7 +152,7 @@ static void gnustep_window_create_form_select_menu(struct gui_window *gw, struct
 	struct rect rect;
 	struct window_tab *wtab = (struct window_tab*)gw;
 	if (form_control_bounding_rect(control, &rect) != NSERROR_OK) {
-		NSLog("Failed to get control bounding rect, skipping");
+		NSLog(@"Failed to get control bounding rect, skipping");
 		return;
 	}
 	NSMutableArray *options = [NSMutableArray array];
@@ -161,6 +161,15 @@ static void gnustep_window_create_form_select_menu(struct gui_window *gw, struct
 	}
 	[wtab->window showDropdownMenuWithOptions: options atLocation:
 		NSMakePoint(rect.x0, rect.y1) inTab: wtab->tab control: control];
+}
+
+static void gnustep_window_file_gadget_open(struct gui_window *gw, struct hlcache_handle *hl, struct form_control *gadget) {
+	AppDelegate *appDelegate = (AppDelegate*)[NSApp delegate];
+	NSURL *location = [appDelegate requestFileLocation];
+	if (location != nil) {
+		struct window_tab *wtab = (struct window_tab*)gw;
+		browser_window_set_gadget_filename([wtab->window browser], gadget, [[location absoluteString] cString]);
+	}
 }
 
 struct gui_window_table gnustep_window_table = {
@@ -176,4 +185,5 @@ struct gui_window_table gnustep_window_table = {
 	.place_caret = gnustep_window_place_caret,
 	.set_pointer = gnustep_window_set_pointer,
 	.create_form_select_menu = gnustep_window_create_form_select_menu,
+	.file_gadget_open = gnustep_window_file_gadget_open,
 };

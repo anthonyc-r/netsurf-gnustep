@@ -183,6 +183,10 @@ static id newTabTarget;
 	return [tabs objectAtIndex: 0];
 }
 
+-(struct browser_window *)browser {
+	return browser;
+}
+
 -(void)back: (id)sender {
 	NSLog(@"Browser backward");
 	[plotView back: sender];
