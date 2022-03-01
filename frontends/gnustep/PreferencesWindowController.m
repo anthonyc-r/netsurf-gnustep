@@ -13,6 +13,7 @@
 -(void)reconfigureDownloadLocationButton;
 -(void)configureAppearanceTab;
 -(void)configureContentTab;
+-(void)configurePrivacyTab;
 @end
 @interface DownloadLocation: NSObject {
 	NSString *name;
@@ -61,6 +62,7 @@
 	[self configureMainTab];
 	[self configureAppearanceTab];
 	[self configureContentTab];
+	[self configurePrivacyTab];
 }
 
 // MARK: - MAIN TAB
@@ -355,6 +357,39 @@
 -(void)didPickPreferredLanguage: (id)sender {
 	NSLog(@"didPickPreferredLanguage");
 	[[Preferences defaultPreferences] setPreferredLanguage: [sender title]];
+}
+
+// MARK: - PRIVACY TAB
+-(void)configurePrivacyTab {
+	NSLog(@"Configure content tab");
+}
+
+-(void)didPressReferralSubmission: (id)sender {
+	NSLog(@"didPressReferralSubmission", sender);
+}
+
+-(void)didPressDoNotTrack: (id)sender {
+	NSLog(@"didPressDoNotTrack", sender);
+}
+
+-(void)didPressLocalHistoryTooltip: (id)sender {
+	NSLog(@"didPressLocalHistoryTooltip", sender);
+}
+
+-(void)didChangeBrowsingHistory: (id)sender {
+	NSLog(@"didChangeBrowsingHistory", sender);
+}
+
+-(void)didChangeMemCacheSize: (id)sender {
+	NSLog(@"didChangeMemCacheSize", sender);
+}
+
+-(void)didChangeDiskCacheSize: (id)sender {
+	NSLog(@"didChangeDiskCacheSize", sender);
+}
+
+-(void)didChangeExpireCache: (id)sender {
+	NSLog(@"didChangeExpireCache", sender);
 }
 
 @end

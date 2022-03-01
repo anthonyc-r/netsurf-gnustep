@@ -2,31 +2,38 @@
     "## Comment" = "Do NOT change this file, Gorm maintains it";
     FirstResponder = {
 	Actions = (
+	    "didChangeBrowsingHistory:",
+	    "didChangeDiskCacheSize:",
 	    "didChangeFontSizeStepper:",
+	    "didChangeMemCacheSize:",
 	    "didEnterFontSize:",
 	    "didEnterStartupPage:",
 	    "didPickDefaultFont:",
 	    "didPickDeveloperViews:",
 	    "didPickDownloadLocation:",
 	    "didPickLoadImages:",
+	    "didPickPreferredLanguage:",
 	    "didPickSearchProvider:",
 	    "didPickTabPosition:",
 	    "didPickUrlButtonsType:",
 	    "didPressAlwaysShowTabBar:",
 	    "didPressBlankNewTabs:",
+	    "didPressDoNotTrack:",
 	    "didPressDownloadConfirmOverwrite:",
 	    "didPressDownloadRemoveOnComplete:",
 	    "didPressEnableAnimations:",
 	    "didPressEnableJavascript:",
 	    "didPressHideAdverts:",
+	    "didPressLocalHistoryTooltip:",
 	    "didPressPreventPopups:",
 	    "didPressPreviewFont:",
+	    "didPressReferralSubmission:",
 	    "didPressSearchFromUrlBar:",
 	    "didPressStartupUseCurrentPage:",
 	    "didPressStartupUseDefaultPage:",
 	    "didPressSwitchToTabs:",
 	    "didPressUrlSuggestions:",
-	    "didPickPreferredLanguage:"
+	    "didChangeExpireCache:"
 	);
 	Super = NSObject;
     };
@@ -56,7 +63,14 @@
 	    "didPressHideAdverts:",
 	    "didPressPreventPopups:",
 	    "didPressPreviewFont:",
-	    "didPickPreferredLanguage:"
+	    "didPickPreferredLanguage:",
+	    "didChangeBrowsingHistory:",
+	    "didChangeDiskCacheSize:",
+	    "didChangeMemCacheSize:",
+	    "didPressDoNotTrack:",
+	    "didPressLocalHistoryTooltip:",
+	    "didPressReferralSubmission:",
+	    "didChangeExpireCache:"
 	);
 	Outlets = (
 	    downloadConfirmOverwriteButton,
@@ -81,7 +95,15 @@
 	    fontSizeField,
 	    preferredLanguageButton,
 	    preventPopupsButton,
-	    previewFontButton
+	    previewFontButton,
+	    doNotTrackButton,
+	    localHistoryUrlTooltipButton,
+	    memCacheSizeField,
+	    diskCacheSizeField,
+	    expireCacheField,
+	    referralSubmissionButton,
+	    rememberHistoryField,
+	    newOutlet
 	);
 	Super = NSWindowController;
     };

@@ -27,6 +27,14 @@
 	id preferredLanguageButton;
 	id preventPopupsButton;
 	id previewFontButton;
+// PRIVACY
+	id doNotTrackButton;
+	id referralSubmissionButton;
+	id localHistoryUrlTooltipButton;
+	id rememberHistoryField;
+	id memCacheSizeField;
+	id diskCacheSizeField;
+	id expireCacheField;
 
 	NSMutableArray *downloadLocations;
 }
@@ -60,5 +68,14 @@
 -(void)didPressPreventPopups: (id)sender;
 -(void)didPressPreviewFont: (id)sender;
 -(void)didPickPreferredLanguage: (id)sender;
+
+// PRIVACY
+-(void)didPressReferralSubmission: (id)sender;
+-(void)didPressDoNotTrack: (id)sender;
+-(void)didPressLocalHistoryTooltip: (id)sender;
+-(void)didChangeBrowsingHistory: (id)sender;
+-(void)didChangeMemCacheSize: (id)sender;
+-(void)didChangeDiskCacheSize: (id)sender;
+-(void)didChangeExpireCache: (id)sender;
 
 @end
