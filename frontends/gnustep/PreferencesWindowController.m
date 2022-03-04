@@ -362,34 +362,63 @@
 // MARK: - PRIVACY TAB
 -(void)configurePrivacyTab {
 	NSLog(@"Configure content tab");
+	[doNotTrackButton setState: [[Preferences defaultPreferences]
+		sendDoNotTrackRequest] ? NSOnState : NSOffState];
+	[referralSubmissionButton setState: [[Preferences defaultPreferences]
+		enableReferralSubmission] ? NSOnState : NSOffState];
+	[localHistoryUrlTooltipButton setState: [[Preferences defaultPreferences]
+		showHistoryTooltip] ? NSOnState : NSOffState];
+
+	[rememberHistoryField setStringValue: [NSString stringWithFormat: @"%u",
+		[[Preferences defaultPreferences] browsingHistoryDays]]];
+	[memCacheSizeField setStringValue: [NSString stringWithFormat: @"%u",
+		[[Preferences defaultPreferences] memCacheSize]]];
+	[diskCacheSizeField setStringValue: [NSString stringWithFormat: @"%u",
+		[[Preferences defaultPreferences] diskCacheSize]]];
+	[expireCacheField setStringValue: [NSString stringWithFormat: @"%u",
+		[[Preferences defaultPreferences] cacheExpiryDays]]];
 }
 
 -(void)didPressReferralSubmission: (id)sender {
 	NSLog(@"didPressReferralSubmission", sender);
+	[[Preferences defaultPreferences] setEnableReferralSubmission: [sender state]
+		== NSOnState ? YES : NO];
 }
 
 -(void)didPressDoNotTrack: (id)sender {
 	NSLog(@"didPressDoNotTrack", sender);
+	[[Preferences defaultPreferences] setSendDoNotTrackRequest: [sender state]
+		== NSOnState ? YES : NO];
 }
 
 -(void)didPressLocalHistoryTooltip: (id)sender {
 	NSLog(@"didPressLocalHistoryTooltip", sender);
+	[[Preferences defaultPreferences] setShowHistoryTooltip: [sender state]
+		== NSOnState ? YES : NO];
 }
 
 -(void)didChangeBrowsingHistory: (id)sender {
 	NSLog(@"didChangeBrowsingHistory", sender);
+	[[Preferences defaultPreferences] setBrowsingHistoryDays:
+		(NSUInteger)[[sender stringValue] integerValue]];
 }
 
 -(void)didChangeMemCacheSize: (id)sender {
 	NSLog(@"didChangeMemCacheSize", sender);
+	[[Preferences defaultPreferences] setMemCacheSize:
+		(NSUInteger)[[sender stringValue] integerValue]];
 }
 
 -(void)didChangeDiskCacheSize: (id)sender {
 	NSLog(@"didChangeDiskCacheSize", sender);
+	[[Preferences defaultPreferences] setDiskCacheSize:
+		(NSUInteger)[[sender stringValue] integerValue]];
 }
 
 -(void)didChangeExpireCache: (id)sender {
 	NSLog(@"didChangeExpireCache", sender);
+	[[Preferences defaultPreferences] setCacheExpiryDays:
+		(NSUInteger)[[sender stringValue] integerValue]];
 }
 
 @end

@@ -114,5 +114,26 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 -(NSUInteger)fontSize;
 -(void)setFontSize: (NSUInteger)value;
 
+-(BOOL)enableReferralSubmission;
+-(void)setEnableReferralSubmission: (BOOL)value;
+
+-(BOOL)sendDoNotTrackRequest;
+-(void)setSendDoNotTrackRequest: (BOOL)value;
+
+-(BOOL)showHistoryTooltip;
+-(void)setShowHistoryTooltip: (BOOL)value;
+
+-(NSUInteger)browsingHistoryDays;
+-(void)setBrowsingHistoryDays: (NSUInteger)value;
+
+-(NSUInteger)diskCacheSize;
+-(void)setDiskCacheSize: (NSUInteger)value;
+
+-(NSUInteger)memCacheSize;
+-(void)setMemCacheSize: (NSUInteger)value;
+
+-(NSUInteger)cacheExpiryDays;
+-(void)setCacheExpiryDays: (NSUInteger)value;
+
 +(Preferences*)defaultPreferences;
 @end

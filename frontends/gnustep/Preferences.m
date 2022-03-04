@@ -17,6 +17,8 @@
 #define KEY_DEVELOPER_VIEW_LOCATION @"developer_view_location"
 #define KEY_SHOW_URL_SUGGESTIONS @"show_url_suggestions"
 #define KEY_URL_BAR_BUTTON_TYPE @"url_bar_button_type"
+#define KEY_SHOW_HISTORY_TOOLTIP @"show_history_tooltip"
+#define KEY_BROWSING_HISTORY_DAYS @"browsing_history_days"
 
 
 @interface Preferences (Private) 
@@ -310,6 +312,67 @@
 
 -(void)setFontSize: (NSUInteger)value {
 	nsoption_set_int(font_size, (int)value);
+	[self saveNetsurfPrefsFile];
+}
+
+
+-(BOOL)enableReferralSubmission {
+	return (BOOL)nsoption_bool(send_referer);
+}
+-(void)setEnableReferralSubmission: (BOOL)value {
+	nsoption_set_bool(send_referer, (bool)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(BOOL)sendDoNotTrackRequest {
+	return (BOOL)nsoption_bool(do_not_track);
+}
+-(void)setSendDoNotTrackRequest: (BOOL)value {
+	nsoption_set_bool(do_not_track, (bool)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(BOOL)showHistoryTooltip {
+	if ([defaults objectForKey: KEY_SHOW_HISTORY_TOOLTIP] != nil) {
+		return [defaults boolForKey: KEY_SHOW_HISTORY_TOOLTIP];
+	} else {
+		return NO;
+	}
+}
+-(void)setShowHistoryTooltip: (BOOL)value {
+	[defaults setBool: value forKey: KEY_SHOW_HISTORY_TOOLTIP];
+}
+
+-(NSUInteger)browsingHistoryDays {
+	return [defaults integerForKey: KEY_BROWSING_HISTORY_DAYS];
+}
+-(void)setBrowsingHistoryDays: (NSUInteger)value {
+	[defaults setInteger: value forKey: KEY_BROWSING_HISTORY_DAYS];
+}
+
+-(NSUInteger)diskCacheSize {
+	NSUInteger bytes = (NSUInteger)nsoption_int(disc_cache_size);
+	return bytes / 0x100000;
+}
+-(void)setDiskCacheSize: (NSUInteger)value {
+	nsoption_set_int(disc_cache_size, (int)(value * 0x100000));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)memCacheSize {
+	NSUInteger bytes = (NSUInteger)nsoption_int(memory_cache_size);
+	return bytes / 0x100000;
+}
+-(void)setMemCacheSize: (NSUInteger)value {
+	nsoption_set_int(memory_cache_size, (int)(value * 0x100000));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)cacheExpiryDays {
+	return (NSUInteger)nsoption_int(disc_cache_age);
+}
+-(void)setCacheExpiryDays: (NSUInteger)value {
+	nsoption_set_int(disc_cache_age, (int)value);
 	[self saveNetsurfPrefsFile];
 }
 
