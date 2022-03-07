@@ -183,7 +183,7 @@
 		HISTORY_PATH];
 	NSError *error = nil;
 	NSPredicate *historyPredicate = [NSPredicate predicateWithFormat: 
-		@"self beginswith 'history_'"];
+		@"count >= 8 AND self beginswith 'history_'"];
 	NSMutableArray *files = [[[NSFileManager defaultManager] contentsOfDirectoryAtPath: 
 		path error: &error] mutableCopy];
 	if (error != nil) {
