@@ -46,6 +46,7 @@ static nserror set_defaults(struct nsoption_s *defaults)
 -(void)applicationDidFinishLaunching: (NSNotification*)aNotification {
 	NSLog(@"NSApp did finish launching..");
 	[NSBundle loadNibNamed: @"Menu" owner: NSApp];
+	[self clearBrowsingHistory];
 }
 
 -(void)historyUpdated: (NSNotification*)aNotification {
@@ -227,6 +228,16 @@ static NSMenuItem *menuItemForItem(id item) {
 		}
 	}
 	return nil;
+}
+
+-(void)clearBrowsingHistory {
+	NSUInteger days = [[Preferences defaultPreferences] browsingHistoryDays];
+	if (days > 0) {
+		NSLog(@"Clearing history older thna %u", days);
+		[Website deleteHistoryOlderThanDays: days];
+	} else {
+		NSLog(@"browsingHistoryDays preference set to 0, won't clear history");
+	}
 }
 
 -(NSString*)currentUrl {

@@ -1,7 +1,7 @@
 #import <Cocoa/Cocoa.h>
 
 #define WebsiteHistoryUpdatedNotificationName @"WebsiteHistoryUpdatedNotification"
-#define HISTORY_PATH @"/.config/NetSurf"
+#define HISTORY_PATH @"/.config/NetSurf/history"
 
 struct website_data {
 	int len_name;
@@ -9,6 +9,7 @@ struct website_data {
 	// ignored. In this case, len_name will be the entire length of the structure.
 	// See HistoryWindowController for the impl of this.
 	int len_url;
+	NSTimeInterval timeIntervalSinceReferenceDate;
 	char data[];
 };
 
@@ -17,6 +18,7 @@ struct website_data {
 	BookmarkFolder *parentFolder;
 	NSString *filename;
 	long fileOffset;
+	NSDate *dateViewed;
 	struct website_data *data;
 }
 
@@ -39,4 +41,6 @@ struct website_data {
 
 +(NSArray*)getAllHistoryFiles;
 +(NSMutableArray*)getHistoryFromFile: (NSString*)file matching: (NSString*)queryString;
++(void)deleteHistoryOlderThanDays: (NSUInteger)days;
++(void)deleteHistoryOlderThanDate: (NSDate*)date;
 @end

@@ -6,6 +6,10 @@
 #import "Website.h"
 #import "AppDelegate.h"
 
+@interface Website(Private)
++(void)truncateHistoryFileAtPath: (NSString*)path olderThanDate: (NSDate*)date;
+@end
+
 @implementation Website
 
 -(id)initWithName: (NSString*)aName url: (NSString*)aUrl {
@@ -15,6 +19,8 @@
 		data = malloc(sizeof (struct website_data) + nlen + urlen);
 		data->len_name = nlen;
 		data->len_url = urlen;
+		data->timeIntervalSinceReferenceDate = [[NSDate date]
+			timeIntervalSinceReferenceDate];
 		memcpy(data->data, [aName cString], nlen);
 		memcpy(data->data + nlen, [aUrl cString], urlen);
 		fileOffset = -1;
@@ -55,6 +61,11 @@
 -(NSString*)url {
 	return [NSString stringWithCString: data->data + data->len_name length: 
 		data->len_url];
+}
+
+-(NSDate*)dateViewed {
+	return [NSDate dateWithTimeIntervalSinceReferenceDate:
+		data->timeIntervalSinceReferenceDate];
 }
 
 -(void)setName: (NSString*)aName {
@@ -196,4 +207,102 @@
 	return files;
 }
 
++(void)deleteHistoryOlderThanDays: (NSUInteger)days {
+	NSCalendarDate *now = [NSCalendarDate date];
+	NSCalendarDate *deletionThreshold = [now dateByAddingYears: 0 months: 0
+		days: -days hours: 0 minutes: 0 seconds: 0];
+	[Website deleteHistoryOlderThanDate: deletionThreshold];
+}
+
++(void)deleteHistoryOlderThanDate: (NSDate*)date {
+	// Get month&year for month
+	NSCalendarDate *calendarDate = [NSCalendarDate
+		dateWithTimeIntervalSinceReferenceDate:
+		[date timeIntervalSinceReferenceDate]];
+	NSInteger targetMonth = [calendarDate monthOfYear];
+	NSInteger targetYear = [calendarDate yearOfCommonEra];
+	// Iterate through all history files & delete older
+	NSArray *historyFiles = [Website getAllHistoryFiles];
+	NSArray *yearAndDate;
+	NSEnumerator *fileEnumerator = [historyFiles objectEnumerator];
+	NSString *filename, *fullPath;
+	NSInteger fileYear, fileMonth;
+	BOOL isFileOld;
+	NSError *err = nil;
+	NSString *historyPath = [NSString stringWithFormat: @"%@/%@",
+		NSHomeDirectory(), HISTORY_PATH];
+	while ((filename = [fileEnumerator nextObject]) != nil) {
+		yearAndDate = [[filename substringFromIndex: 8]
+			componentsSeparatedByString: @"_"];
+		fileYear = [[yearAndDate firstObject] integerValue];
+		fileMonth = [[yearAndDate objectAtIndex: 1] integerValue];
+		isFileOld = fileYear < targetYear || (fileYear == targetYear &&
+			fileMonth < targetMonth);
+		if (isFileOld) {
+			fullPath = [NSString stringWithFormat: @"%@/%@", historyPath,
+				filename];
+			err = nil;
+			[[NSFileManager defaultManager] removeItemAtPath: fullPath
+				error: &err];
+			if (err != nil)
+				NSLog(@"Error removing file at: %@", fullPath);
+		}
+	}
+	// Open history file for current month or done if not exist
+	NSString *currentMonth = [historyFiles lastObject];
+	yearAndDate = [[currentMonth substringFromIndex: 8]
+		componentsSeparatedByString: @"_"];
+	fileYear = [[yearAndDate firstObject] integerValue];
+	fileMonth = [[yearAndDate objectAtIndex: 1] integerValue];
+	if (fileYear == targetYear || fileMonth == targetMonth) {
+		fullPath = [NSString stringWithFormat: @"%@/%@", historyPath,
+			currentMonth];
+		[Website truncateHistoryFileAtPath: fullPath olderThanDate: date];
+	}
+}
+
++(void)truncateHistoryFileAtPath: (NSString*)path olderThanDate: (NSDate*)date {
+	NSFileHandle *handle = [NSFileHandle fileHandleForUpdatingAtPath: path];
+	if (handle == nil) {
+		NSLog(@"Failed to open history file for updating at path: %@", path);
+		return;
+	}
+	NSTimeInterval ival = [date timeIntervalSinceReferenceDate];
+	struct website_data buf[10];
+	NSUInteger nread, i;
+	NSData *data;
+	do {
+		data = [handle readDataUpToLength: sizeof(buf)];
+		if (data == nil) {
+			NSLog(@"readDataUpToLength failed");
+			return;
+		}
+		nread = [data length] / sizeof (struct website_data);
+		[data getBytes: buf length: nread * sizeof (struct website_data)];
+		for (i = 0; i < nread; i++) {
+			if (buf[i].timeIntervalSinceReferenceDate < ival)
+				break;
+		}
+	} while (nread  == 10);
+	// If we didn't iterate to the end, must thave found a point with older time.
+	if (i == nread) {
+		NSLog(@"Reached the end of history file without finding older entries");
+		return;
+	}
+	// Rewind the file back to the start of that point.
+	unsigned long long offset;
+	long long rwnd = (long long)((i - nread) * sizeof (struct website_data));
+	NSError *err = nil;
+	[handle getOffset: &offset error: &err];
+	if (err != nil) {
+		NSLog(@"Failed to get file offset");
+		return;
+	}
+	offset += rwnd;
+	[handle truncateAtOffset: offset error: &err];
+	if (err != nil) {
+		NSLog(@"Failed to truncate history file");
+		return;
+	}
+}
 @end

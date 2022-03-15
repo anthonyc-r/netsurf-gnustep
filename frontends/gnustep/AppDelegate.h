@@ -48,6 +48,7 @@ id preferencesWindowController;
 -(NSURL*)requestFileLocation;
 -(void)openWebsite: (Website*)aWebsite;
 -(void)openDeveloperFileAtPath: (NSString*)path;
+-(void)clearBrowsingHistory;
 -(NSString*)currentUrl;
 -(BrowserWindowController*)activeBrowserWindow;
 @end

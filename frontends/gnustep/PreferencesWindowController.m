@@ -401,6 +401,7 @@
 	NSLog(@"didChangeBrowsingHistory", sender);
 	[[Preferences defaultPreferences] setBrowsingHistoryDays:
 		(NSUInteger)[[sender stringValue] integerValue]];
+	[[NSApp delegate] clearBrowsingHistory];
 }
 
 -(void)didChangeMemCacheSize: (id)sender {
