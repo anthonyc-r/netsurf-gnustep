@@ -7,7 +7,7 @@
 #import "AppDelegate.h"
 
 @interface Website(Private)
-+(void)truncateHistoryFileAtPath: (NSString*)path olderThanDate: (NSDate*)date;
++(void)zeroHistoryFileAtPath: (NSString*)path olderThanDate: (NSDate*)date;
 @end
 
 @implementation Website
@@ -161,6 +161,7 @@
 		NSLog(@"Error opening file: %@", path);
 		return ret;
 	}
+	NSLog(@"Parsing file: %@", path);
 	fileoff = 0;
 	while (1) {
 		if ((nread = fread(lens, sizeof (int), 2, f)) < 2) {
@@ -175,6 +176,10 @@
 		// Else it's valid, rewind and read the whole structure in.
 		fseek(f, -nread * sizeof (int), SEEK_CUR);
 		wdata = malloc(wsize);
+		if (wdata == NULL) {
+			perror("NULL MALLOC?!");
+			return ret;
+		}
 		fread(wdata, wsize, 1, f);
 		website = [[[Website alloc] initWithData: wdata atFileOffset: fileoff] 
 			autorelease];
@@ -203,7 +208,6 @@
 	}
 	[files filterUsingPredicate: historyPredicate];
 	[files sortUsingSelector: @selector(caseInsensitiveCompare:)];
-	NSLog(@"%@", files);
 	return files;
 }
 
@@ -257,52 +261,100 @@
 	if (fileYear == targetYear || fileMonth == targetMonth) {
 		fullPath = [NSString stringWithFormat: @"%@/%@", historyPath,
 			currentMonth];
-		[Website truncateHistoryFileAtPath: fullPath olderThanDate: date];
+		char *cTmpPath = tempnam(NULL, NULL);
+		NSString *tmpPath = [NSString stringWithCString: cTmpPath];
+		NSLog(@"Copying file from '%@', to '%@'", fullPath, tmpPath);
+		err = nil;
+		[[NSFileManager defaultManager] copyItemAtPath: fullPath toPath: tmpPath
+			error: &err];
+		if (err != nil) {
+			NSLog(@"Error copying history to temp file at path: %@ (%@)", tmpPath, err);
+			return;
+		}
+		[Website zeroHistoryFileAtPath: tmpPath olderThanDate: date];
+		err = nil;
+		[[NSFileManager defaultManager] removeItemAtPath: fullPath error: &err];
+		if (err != nil) {
+			NSLog(@"Failed to remove existing history file at path: %@", fullPath);
+			return;
+		}
+		[[NSFileManager defaultManager] moveItemAtPath: tmpPath toPath: fullPath
+			error: &err];
+		if (err != nil) {
+			NSLog(@"Failed to copy back the tmp file at %@, to path %@", tmpPath,
+				fullPath);
+		} else {
+			NSLog(@"Copied history file back in place");
+		}
 	}
 }
 
-+(void)truncateHistoryFileAtPath: (NSString*)path olderThanDate: (NSDate*)date {
++(void)zeroHistoryFileAtPath: (NSString*)path olderThanDate: (NSDate*)date {
 	NSFileHandle *handle = [NSFileHandle fileHandleForUpdatingAtPath: path];
 	if (handle == nil) {
 		NSLog(@"Failed to open history file for updating at path: %@", path);
 		return;
 	}
 	NSTimeInterval ival = [date timeIntervalSinceReferenceDate];
-	struct website_data buf[10];
-	NSUInteger nread, i;
+	NSLog(@"clear history older than: %f", ival);
 	NSData *data;
+	NSError *err = nil;
+	BOOL foundEnd = NO;
+	int totalSize, largestSize;
+	largestSize = 100;
+	struct website_data *wdata = malloc(largestSize);
 	do {
-		data = [handle readDataUpToLength: sizeof(buf)];
-		if (data == nil) {
-			NSLog(@"readDataUpToLength failed");
-			return;
+		data = [handle readDataOfLength: offsetof(struct website_data, data)];
+		if (data == nil || [data length] == 0) {
+			NSLog(@"readDataUpToLength 1 failed (EOF?)");
+			break;
 		}
-		nread = [data length] / sizeof (struct website_data);
-		[data getBytes: buf length: nread * sizeof (struct website_data)];
-		for (i = 0; i < nread; i++) {
-			if (buf[i].timeIntervalSinceReferenceDate < ival)
-				break;
+		[data getBytes: wdata length: offsetof(struct website_data, data)];
+
+		data = [handle readDataOfLength: wdata->len_name + wdata->len_url];
+		if (data == nil || [data length] == 0) {
+			NSLog(@"readDataUpToLength 2 failed (EOF?)");
+			break;
 		}
-	} while (nread  == 10);
-	// If we didn't iterate to the end, must thave found a point with older time.
-	if (i == nread) {
-		NSLog(@"Reached the end of history file without finding older entries");
+		totalSize = sizeof (struct website_data) + wdata->len_name + wdata->len_url;
+		if (totalSize > largestSize) {
+			wdata = realloc(wdata, totalSize);
+			largestSize = totalSize;
+		}
+		[data getBytes: &(wdata->data) length: wdata->len_name + wdata->len_url];
+		if (wdata->len_url == 0) {
+			// Deleted entry, skip.
+			continue;
+		}
+		if (wdata->timeIntervalSinceReferenceDate > ival) {
+			NSLog(@"End found");
+			foundEnd = YES;
+			break;
+		}
+	} while (!foundEnd);
+	free(wdata);
+
+	if (!foundEnd) {
+		NSLog(@"Reached the end of history file without finding newer entries. Clear entire file.");
+		[handle truncateFileAtOffset: 0];
 		return;
 	}
-	// Rewind the file back to the start of that point.
-	unsigned long long offset;
-	long long rwnd = (long long)((i - nread) * sizeof (struct website_data));
-	NSError *err = nil;
-	[handle getOffset: &offset error: &err];
+	unsigned long long offset = [handle offsetInFile];
 	if (err != nil) {
 		NSLog(@"Failed to get file offset");
 		return;
 	}
-	offset += rwnd;
-	[handle truncateAtOffset: offset error: &err];
-	if (err != nil) {
-		NSLog(@"Failed to truncate history file");
+	offset -= (unsigned long long)totalSize;
+	if (offset == 0) {
+		NSLog(@"No entries need clearing.");
 		return;
 	}
+	wdata = calloc(1, offset);
+	wdata->len_name = offset - sizeof (struct website_data);
+	wdata->len_url = 0;
+	[handle seekToFileOffset: 0];
+	[handle writeData: [NSData dataWithBytesNoCopy: wdata length: offset]];
+	[handle closeFile];
+	NSLog(@"Zero'd %@ to %llu", path, offset);
 }
 @end

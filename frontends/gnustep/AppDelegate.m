@@ -233,7 +233,7 @@ static NSMenuItem *menuItemForItem(id item) {
 -(void)clearBrowsingHistory {
 	NSUInteger days = [[Preferences defaultPreferences] browsingHistoryDays];
 	if (days > 0) {
-		NSLog(@"Clearing history older thna %u", days);
+		NSLog(@"Clearing history older than %u days", days);
 		[Website deleteHistoryOlderThanDays: days];
 	} else {
 		NSLog(@"browsingHistoryDays preference set to 0, won't clear history");

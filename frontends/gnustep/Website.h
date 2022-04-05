@@ -6,7 +6,7 @@
 struct website_data {
 	int len_name;
 	// A 0 value of len_url implies that the data has been 'cleared', and should be 
-	// ignored. In this case, len_name will be the entire length of the structure.
+	// ignored. In this case, len_name will be the entire length of 'data'.
 	// See HistoryWindowController for the impl of this.
 	int len_url;
 	NSTimeInterval timeIntervalSinceReferenceDate;
