@@ -35,6 +35,16 @@
 	id memCacheSizeField;
 	id diskCacheSizeField;
 	id expireCacheField;
+// NETWORK
+	id proxyTypeButton;
+	id proxyHostField;
+	id proxyPortField;
+	id proxyUsernameField;
+	id proxyPasswordField;
+	id proxyOmitField;
+	id maxFetchersField;
+	id fetchesPerHostField;
+	id cachedConnectionsField;
 
 	NSMutableArray *downloadLocations;
 }
@@ -77,5 +87,16 @@
 -(void)didChangeMemCacheSize: (id)sender;
 -(void)didChangeDiskCacheSize: (id)sender;
 -(void)didChangeExpireCache: (id)sender;
+
+// NETWORK
+-(void)didPickProxyType: (id)sender;
+-(void)didChangeProxyHost: (id)sender;
+-(void)didChangeProxyPort: (id)sender;
+-(void)didChangeProxyUsername: (id)sender;
+-(void)didChangeProxyPassword: (id)sender;
+-(void)didChangeProxyOmit: (id)sender;
+-(void)didChangeMaxFetchers: (id)sender;
+-(void)didChangeFetchesPerHost: (id)sender;
+-(void)didChangeCachedConnections: (id)sender;
 
 @end

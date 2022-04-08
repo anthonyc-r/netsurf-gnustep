@@ -3,9 +3,18 @@
     FirstResponder = {
 	Actions = (
 	    "didChangeBrowsingHistory:",
+	    "didChangeCachedConnections:",
 	    "didChangeDiskCacheSize:",
+	    "didChangeExpireCache:",
+	    "didChangeFetchesPerHost:",
 	    "didChangeFontSizeStepper:",
+	    "didChangeMaxFetchers:",
 	    "didChangeMemCacheSize:",
+	    "didChangeProxyHost:",
+	    "didChangeProxyOmit:",
+	    "didChangeProxyPassword:",
+	    "didChangeProxyPort:",
+	    "didChangeProxyUsername:",
 	    "didEnterFontSize:",
 	    "didEnterStartupPage:",
 	    "didPickDefaultFont:",
@@ -33,7 +42,7 @@
 	    "didPressStartupUseDefaultPage:",
 	    "didPressSwitchToTabs:",
 	    "didPressUrlSuggestions:",
-	    "didChangeExpireCache:"
+	    "didPickProxyType:"
 	);
 	Super = NSObject;
     };
@@ -70,7 +79,16 @@
 	    "didPressDoNotTrack:",
 	    "didPressLocalHistoryTooltip:",
 	    "didPressReferralSubmission:",
-	    "didChangeExpireCache:"
+	    "didChangeExpireCache:",
+	    "didChangeCachedConnections:",
+	    "didChangeFetchesPerHost:",
+	    "didChangeMaxFetchers:",
+	    "didChangeProxyHost:",
+	    "didChangeProxyOmit:",
+	    "didChangeProxyPassword:",
+	    "didChangeProxyPort:",
+	    "didChangeProxyUsername:",
+	    "didPickProxyType:"
 	);
 	Outlets = (
 	    downloadConfirmOverwriteButton,
@@ -103,7 +121,16 @@
 	    expireCacheField,
 	    referralSubmissionButton,
 	    rememberHistoryField,
-	    newOutlet
+	    proxyHostField,
+	    dummyIdentifier,
+	    maxFetchersField,
+	    fetchesPerHostField,
+	    cachedConnectionsField,
+	    proxyOmitField,
+	    proxyPasswordField,
+	    proxyPortField,
+	    proxyTypeButton,
+	    proxyUsernameField
 	);
 	Super = NSWindowController;
     };

@@ -422,4 +422,41 @@
 		(NSUInteger)[[sender stringValue] integerValue]];
 }
 
+-(void)didPickProxyType: (id)sender {
+	NSLog(@"didPickProxyType");
+}
+
+-(void)didChangeProxyHost: (id)sender {
+	NSLog(@"didChangeProxyHost");
+}
+
+-(void)didChangeProxyPort: (id)sender {
+	NSLog(@"didChangeProxyPort");
+}
+
+-(void)didChangeProxyUsername: (id)sender {
+	NSLog(@"didChangeProxyUsername");
+}
+
+-(void)didChangeProxyPassword: (id)sender {
+	NSLog(@"didChangeProxyPassword");
+}
+
+-(void)didChangeProxyOmit: (id)sender {
+	NSLog(@"didChangeProxyOmit");
+}
+
+-(void)didChangeMaxFetchers: (id)sender {
+	NSLog(@"didChangeMaxFetchers");
+}
+
+-(void)didChangeFetchesPerHost: (id)sender {
+	NSLog(@"didChangeFetchesPerHost");
+}
+
+-(void)didChangeCachedConnections: (id)sender {
+	NSLog(@"didChangeCachedConnections");
+}
+
+
 @end
