@@ -376,6 +376,139 @@
 	[self saveNetsurfPrefsFile];
 }
 
+-(ProxyType)proxyType {
+	if (!nsoption_bool(http_proxy))
+		return ProxyTypeDirect;
+
+	int proxyType = nsoption_int(http_proxy_auth);
+	BOOL authenticated = (nsoption_charp(http_proxy_auth_user) != NULL)
+		&& (nsoption_charp(http_proxy_auth_pass) != NULL);
+	BOOL hostProvided = nsoption_charp(http_proxy_host) != NULL;
+
+	if (!hostProvided)
+		return ProxyTypeSystem;
+
+	// If the required fields of a selected proxy type arne't set; Default to none.
+	switch (proxyType) {
+	case OPTION_HTTP_PROXY_AUTH_NONE:
+			return ProxyTypeNoAuth;
+	case OPTION_HTTP_PROXY_AUTH_BASIC:
+		if (authenticated)
+			return ProxyTypeBasicAuth;
+		else
+			return ProxyTypeDirect;
+	case OPTION_HTTP_PROXY_AUTH_NTLM:
+		if (authenticated)
+			return ProxyTypeAuth;
+		else
+			return ProxyTypeDirect;
+	default:
+		return ProxyTypeDirect;
+	}
+}
+-(void)setProxyType: (ProxyType)value {
+	switch (value) {
+	case ProxyTypeDirect:
+		nsoption_set_bool(http_proxy, false);
+		break;
+	case ProxyTypeNoAuth:
+		nsoption_set_bool(http_proxy, true);
+		nsoption_set_int(http_proxy_auth, OPTION_HTTP_PROXY_AUTH_NONE);
+		break;
+	case ProxyTypeBasicAuth:
+		nsoption_set_bool(http_proxy, true);
+		nsoption_set_int(http_proxy_auth, OPTION_HTTP_PROXY_AUTH_BASIC);
+		break;
+	case ProxyTypeAuth:
+		nsoption_set_bool(http_proxy, true);
+		nsoption_set_int(http_proxy_auth, OPTION_HTTP_PROXY_AUTH_NTLM);
+		break;
+	case ProxyTypeSystem:
+		nsoption_set_bool(http_proxy, true);
+		nsoption_set_charp(http_proxy_host, NULL);
+		nsoption_set_int(http_proxy_auth, OPTION_HTTP_PROXY_AUTH_NONE);
+		break;
+	}
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSString*)proxyHost {
+	char *value =  nsoption_charp(http_proxy_host);
+	if (value == NULL)
+		return nil;
+	return [NSString stringWithCString: value];
+}
+-(void)setProxyHost: (NSString*)value {
+	nsoption_set_charp(http_proxy_host, strdup([value cString]));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)proxyPort {
+	return (NSUInteger)nsoption_int(http_proxy_port);
+}
+-(void)setProxyPort: (NSUInteger)value {
+	nsoption_set_int(http_proxy_port, (int)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSString*)proxyUsername {
+	char *value =  nsoption_charp(http_proxy_auth_user);
+	if (value == NULL)
+		return nil;
+	return [NSString stringWithCString: value];
+}
+-(void)setProxyUsername: (NSString*)value {
+	nsoption_set_charp(http_proxy_auth_user, strdup([value cString]));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSString*)proxyPassword {
+	char *value =  nsoption_charp(http_proxy_auth_pass);
+	if (value == NULL)
+		return nil;
+	return [NSString stringWithCString: value];
+}
+-(void)setProxyPassword: (NSString*)value {
+	nsoption_set_charp(http_proxy_auth_pass, strdup([value cString]));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSString*)proxyOmit {
+	char *value =  nsoption_charp(http_proxy_noproxy);
+	if (value == NULL)
+		return nil;
+	return [NSString stringWithCString: value];
+}
+-(void)setProxyOmit: (NSString*)value {
+	nsoption_set_charp(http_proxy_noproxy, strdup([value cString]));
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)maximumFetchers {
+	return (NSUInteger)nsoption_int(max_fetchers);
+}
+-(void)setMaximumFetchers: (NSUInteger)value {
+	nsoption_set_int(max_fetchers, (int)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)fetchesPerHost {
+	return (NSUInteger)nsoption_int(max_fetchers_per_host);
+}
+-(void)setFetchesPerHost: (NSUInteger)value {
+	nsoption_set_int(max_fetchers_per_host, (int)value);
+	[self saveNetsurfPrefsFile];
+}
+
+-(NSUInteger)cachedConnections {
+	return (NSUInteger)nsoption_int(max_cached_fetch_handles);
+}
+-(void)setCachedConnections: (NSUInteger)value {
+	nsoption_set_int(max_cached_fetch_handles, (int)value);
+	[self saveNetsurfPrefsFile];
+}
+
+
 +(Preferences*)defaultPreferences {
 	static Preferences *prefs;
 	if (prefs == nil) {

@@ -14,6 +14,8 @@
 -(void)configureAppearanceTab;
 -(void)configureContentTab;
 -(void)configurePrivacyTab;
+-(void)configureNetworkTab;
+-(void)configureProxyFieldsEnabled: (ProxyType)proxyType;
 @end
 @interface DownloadLocation: NSObject {
 	NSString *name;
@@ -63,6 +65,7 @@
 	[self configureAppearanceTab];
 	[self configureContentTab];
 	[self configurePrivacyTab];
+	[self configureNetworkTab];
 }
 
 // MARK: - MAIN TAB
@@ -422,40 +425,108 @@
 		(NSUInteger)[[sender stringValue] integerValue]];
 }
 
+// MARK: - NETWORK TAB
+-(void)configureNetworkTab {
+	Preferences *prefs = [Preferences defaultPreferences];
+	[proxyTypeButton selectItemAtIndex: (NSUInteger)[prefs proxyType]];
+	[proxyHostField setStringValue: [prefs proxyHost]];
+	[proxyUsernameField setStringValue: [prefs proxyUsername]];
+	[proxyPortField setIntegerValue: [prefs proxyPort]];
+	[proxyPasswordField setStringValue: [prefs proxyPassword]];
+	[proxyOmitField setStringValue: [prefs proxyOmit]];
+	[maxFetchersField setIntegerValue: [prefs maximumFetchers]];
+	[fetchesPerHostField setIntegerValue: [prefs fetchesPerHost]];
+	[cachedConnectionsField setIntegerValue: [prefs cachedConnections]];
+	[self configureProxyFieldsEnabled: [prefs proxyType]];
+}
+
+static void disable(NSControl *field) {
+	[field setStringValue: nil];
+	[field setEnabled: NO];
+}
+static void enable(NSControl *field) {
+	[field setEnabled: YES];
+}
+-(void)configureProxyFieldsEnabled: (ProxyType)proxyType {
+	enable(proxyHostField);
+	enable(proxyPortField);
+	enable(proxyUsernameField);
+	enable(proxyPasswordField);
+	enable(proxyOmitField);
+
+	switch (proxyType) {
+	case ProxyTypeDirect:
+		disable(proxyHostField);
+		disable(proxyPortField);
+		disable(proxyUsernameField);
+		disable(proxyPasswordField);
+		disable(proxyOmitField);
+		break;
+	case ProxyTypeBasicAuth:
+		break;
+	case ProxyTypeNoAuth:
+		disable(proxyUsernameField);
+		disable(proxyPasswordField);
+		break;
+	case ProxyTypeAuth:
+		break;
+	case ProxyTypeSystem:
+		disable(proxyHostField);
+		disable(proxyPortField);
+		disable(proxyUsernameField);
+		disable(proxyPasswordField);
+		[proxyHostField setStringValue: @"localhost"];
+		break;
+	default:
+		break;
+	}
+}
+
 -(void)didPickProxyType: (id)sender {
 	NSLog(@"didPickProxyType");
+	NSUInteger selected = [sender indexOfItem: [sender selectedItem]];
+	[[Preferences defaultPreferences] setProxyType: (ProxyType)selected];
+	[self configureProxyFieldsEnabled: (ProxyType)selected];
 }
 
 -(void)didChangeProxyHost: (id)sender {
 	NSLog(@"didChangeProxyHost");
+	[[Preferences defaultPreferences] setProxyHost: [sender stringValue]];
 }
 
 -(void)didChangeProxyPort: (id)sender {
 	NSLog(@"didChangeProxyPort");
+	[[Preferences defaultPreferences] setProxyPort: [[sender stringValue] integerValue]];
 }
 
 -(void)didChangeProxyUsername: (id)sender {
 	NSLog(@"didChangeProxyUsername");
+	[[Preferences defaultPreferences] setProxyUsername: [sender stringValue]];
 }
 
 -(void)didChangeProxyPassword: (id)sender {
 	NSLog(@"didChangeProxyPassword");
+	[[Preferences defaultPreferences] setProxyPassword: [sender stringValue]];
 }
 
 -(void)didChangeProxyOmit: (id)sender {
 	NSLog(@"didChangeProxyOmit");
+	[[Preferences defaultPreferences] setProxyOmit: [sender stringValue]];
 }
 
 -(void)didChangeMaxFetchers: (id)sender {
 	NSLog(@"didChangeMaxFetchers");
+	[[Preferences defaultPreferences] setMaximumFetchers: [[sender stringValue] integerValue]];
 }
 
 -(void)didChangeFetchesPerHost: (id)sender {
 	NSLog(@"didChangeFetchesPerHost");
+	[[Preferences defaultPreferences] setFetchesPerHost: [[sender stringValue] integerValue]];
 }
 
 -(void)didChangeCachedConnections: (id)sender {
 	NSLog(@"didChangeCachedConnections");
+	[[Preferences defaultPreferences] setCachedConnections: [[sender stringValue] integerValue]];
 }
 
 

@@ -38,6 +38,14 @@ typedef NS_ENUM(NSInteger, FontType) {
 	FontTypeFantasy
 };
 
+typedef NS_ENUM(NSInteger, ProxyType) {
+	ProxyTypeDirect = 0,
+	ProxyTypeBasicAuth,
+	ProxyTypeNoAuth,
+	ProxyTypeAuth,
+	ProxyTypeSystem
+};
+
 // Certain preferences will notify that they have been updated using this key.
 #define PreferencesUpdatedNotificationName @"PreferencesUpdatedNotification"
 typedef NS_ENUM(NSInteger, PreferenceType) {
@@ -134,6 +142,34 @@ typedef NS_ENUM(NSInteger, PreferenceType) {
 
 -(NSUInteger)cacheExpiryDays;
 -(void)setCacheExpiryDays: (NSUInteger)value;
+
+-(ProxyType)proxyType;
+-(void)setProxyType: (ProxyType)value;
+
+-(NSString*)proxyHost;
+-(void)setProxyHost: (NSString*)value;
+
+-(NSUInteger)proxyPort;
+-(void)setProxyPort: (NSUInteger)value;
+
+-(NSString*)proxyUsername;
+-(void)setProxyUsername: (NSString*)value;
+
+-(NSString*)proxyPassword;
+-(void)setProxyPassword: (NSString*)value;
+
+-(NSString*)proxyOmit;
+-(void)setProxyOmit: (NSString*)value;
+
+-(NSUInteger)maximumFetchers;
+-(void)setMaximumFetchers: (NSUInteger)value;
+
+-(NSUInteger)fetchesPerHost;
+-(void)setFetchesPerHost: (NSUInteger)value;
+
+-(NSUInteger)cachedConnections;
+-(void)setCachedConnections: (NSUInteger)value;
+
 
 +(Preferences*)defaultPreferences;
 @end
