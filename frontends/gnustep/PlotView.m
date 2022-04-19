@@ -328,11 +328,6 @@ static const struct plotter_table gnustep_plotters = {
 
 - (NSPoint) convertMousePoint: (NSEvent *)event {
 	NSPoint location = [self convertPoint: [event locationInWindow] fromView: nil];
-	float bscale = browser_window_get_scale(browser);
-
-	location.x /= bscale;
-	location.y /= bscale;
-
 	return location;
 }
 
@@ -815,6 +810,18 @@ static browser_mouse_state cocoa_mouse_flags_for_event( NSEvent *evt ) {
 	struct form_control *control = (struct form_control*)[controlPointer pointerValue];
 	if (form_select_process_selection(control, [sender tag]) != NSERROR_OK)
 		NSLog(@"Failed to process selection");
+}
+
+-(void)resetZoom: (id)sender {
+	browser_window_set_scale(browser, 1.0, true);
+}
+
+-(void)zoomIn: (id)sender {
+	browser_window_set_scale(browser, 0.05, false);
+}
+
+-(void)zoomOut: (id)sender {
+	browser_window_set_scale(browser, -0.05, false);
 }
 
 @end

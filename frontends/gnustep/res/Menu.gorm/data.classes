@@ -19,16 +19,21 @@
 	    "didTapNewWindow:",
 	    "findNext:",
 	    "findPrevious:",
-	    "newTab:",
 	    "newFolder:",
+	    "newTab:",
+	    "reload:",
 	    "remove:",
 	    "removeAll:",
+	    "resetZoom:",
 	    "showAll:",
 	    "showBookmarksWindow:",
 	    "showDownloadsWindow:",
 	    "showFindPanel:",
 	    "showHistoryWindow:",
-	    "showPreferencesWindow:"
+	    "showPreferencesWindow:",
+	    "stopLoading:",
+	    "zoomIn:",
+	    "zoomOut:"
 	);
 	Super = NSObject;
     };

@@ -71,6 +71,11 @@ struct form_control;
 -(void)findPrevious: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)showAll: (NSString*)needle matchCase: (BOOL)matchCase sender: (id)sender;
 -(void)bookmarkPage: (id)sender;
+-(void)zoomIn: (id)sender;
+-(void)zoomOut: (id)sender;
+-(void)resetZoom: (id)sender;
+-(void)reload: (id)sender;
+-(void)stopLoading: (id)sender;
 
 -(void)showDropdownMenuWithOptions: (NSArray*)options atLocation: (NSPoint)location inTab: (id)tab control: (struct form_control*)control;
 

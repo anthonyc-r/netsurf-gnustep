@@ -245,7 +245,7 @@ static id newTabTarget;
 }
 -(void)updateBrowserExtentForTab: (id)tab {
 	int width, height;
-	browser_window_get_extents([tab browser], false, &width, &height);
+	browser_window_get_extents([tab browser], true, &width, &height);
 	NSLog(@"set frame to size: %d, %d", width, height);
 	[[tab plotView] setFrame: NSMakeRect(0, 0, width, height)];
 }
@@ -352,6 +352,27 @@ static id newTabTarget;
 	[NSApp runModalForWindow: [bmController window]];
 	[bmController release];
 }
+
+-(void)zoomIn: (id)sender {
+	[plotView zoomIn: sender];
+}
+
+-(void)zoomOut: (id)sender {
+	[plotView zoomOut: sender];
+}
+
+-(void)resetZoom: (id)sender {
+	[plotView resetZoom: sender];
+}
+
+-(void)reload: (id)sender {
+	[plotView reload: sender];
+}
+
+-(void)stopLoading: (id)sender {
+	[plotView stopReloading: sender];
+}
+
 
 -(NSString*)visibleUrl {
 	return [[self currentWebsiteForTab: activeTab] url];

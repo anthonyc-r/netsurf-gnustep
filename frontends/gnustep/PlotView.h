@@ -17,4 +17,7 @@
 -(void)reload: (id)sender;
 -(void)stopReloading: (id)sender;
 -(void)showDropdownMenuWithOptions: (NSArray*)options atLocation: (NSPoint)location control: (struct form_control*)control;
+-(void)zoomIn: (id)sender;
+-(void)zoomOut: (id)sender;
+-(void)resetZoom: (id)sender;
 @end
