@@ -23,7 +23,7 @@ Works pretty well, has tabs (including vertical), history, download management, 
 
 What still needs doing
 ----------------
-Preferences (currently partially done - WIP), other bits and bobs probably.
+Currently mostly in parity with the gtk port.
 
 
 Tested and built on OpenBSD 6.8(macppc) + clang, and Ubuntu 20.10 + gcc.
