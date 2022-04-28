@@ -19,11 +19,7 @@ With standard theme.
 
 Current State
 ----------------
-Works pretty well, has tabs (including vertical), history, download management, bookmarks.
-
-What still needs doing
-----------------
-Currently mostly in parity with the gtk port.
+Works pretty well, mostly in parity with the GTK port. Has tabs (including vertical), history, download management, bookmarks.
 
 
 Tested and built on OpenBSD 6.8(macppc) + clang, and Ubuntu 20.10 + gcc.
