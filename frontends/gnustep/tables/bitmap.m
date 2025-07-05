@@ -137,13 +137,13 @@ struct gui_bitmap_table gnustep_bitmap_table = {
 	.destroy = gnustep_bitmap_destroy,
 	.set_opaque = gnustep_bitmap_set_opaque,
 	.get_opaque = gnustep_bitmap_get_opaque,
-	.test_opaque = gnustep_bitmap_test_opaque,
+//	.test_opaque = gnustep_bitmap_test_opaque,
 	.get_buffer = gnustep_bitmap_get_buffer,
 	.get_rowstride = gnustep_bitmap_get_rowstride,
 	.get_width = gnustep_bitmap_get_width,
 	.get_height = gnustep_bitmap_get_height,
-	.get_bpp = gnustep_bitmap_get_bpp,
-	.save = gnustep_bitmap_save,
+//	.get_bpp = gnustep_bitmap_get_bpp,
+//	.save = gnustep_bitmap_save,
 	.modified = gnustep_bitmap_modified,
 	.render = gnustep_bitmap_render
 };

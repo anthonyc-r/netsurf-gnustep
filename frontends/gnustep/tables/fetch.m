@@ -21,7 +21,7 @@
 #import <libgen.h>
 #import "utils/url.h"
 #import "netsurf/fetch.h"
-
+#import "utils/nsurl.h"
 
 /*******************/
 /****** Fetch ******/ 
@@ -55,7 +55,7 @@ static const char *gnustep_fetch_filetype(const char *unix_path) {
 	}
 }
 
-static const char *gnustep_fetch_get_resource_url(const char *path) {
+static nsurl *gnustep_fetch_get_resource_url(const char *path) {
 	struct nsurl *url = NULL;
 	NSString *nspath = [[NSBundle mainBundle] pathForResource: [NSString 
 		stringWithUTF8String: path] ofType: @""];

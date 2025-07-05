@@ -7,7 +7,7 @@ CFLAGS += -std=c99 -Dnsamiga
 ifneq ($(SUBTARGET),os3)
   CFLAGS += -O2 -mstrict-align -finline-functions -U__STRICT_ANSI__ -D__USE_INLINE__ -D__USE_BASETYPE__
 else
-  CFLAGS += -O2 -DPATH_MAX=1024 -D__m68k__ -m68020
+  CFLAGS += -O2 -DPATH_MAX=1024 -D__m68k__ -fomit-frame-pointer -m68020-60 -msoft-float
 endif
 
 $(eval $(call feature_enabled,AMIGA_ICON,-DWITH_AMIGA_ICON,,Amiga icon))
@@ -80,7 +80,7 @@ AMIGA_DISTRIBUTION_FILES := $(FRONTEND_SOURCE_DIR)/dist/*
 AMIGA_PKG_DIR := $(FRONTEND_SOURCE_DIR)/pkg
 AMIGA_INSTALL_TARGET_DIR := NetSurf_Amiga
 
-netsurf.lha: $(EXETARGET)
+netsurf.lha: $(EXETARGET) $(POSTEXES)
 	$(VQ)echo Creating netsurf.lha
 	$(Q)rm -rf $(AMIGA_INSTALL_TARGET_DIR)
 	$(Q)$(MKDIR) -p $(AMIGA_INSTALL_TARGET_DIR)/NetSurf

@@ -28,6 +28,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include "netsurf/inttypes.h"
 #include "netsurf/plot_style.h"
 
 #include "utils/errors.h"
@@ -132,7 +133,7 @@ nserror nscolour_update(void)
 {
 	nserror res;
 
-	res = nscolour__get("Window", "WindowText", 16, 16,
+	res = nscolour__get("Canvas", "CanvasText", 16, 16,
 			&nscolours[NSCOLOUR_WIN_EVEN_BG],
 			&nscolours[NSCOLOUR_WIN_EVEN_BG_HOVER],
 			&nscolours[NSCOLOUR_WIN_EVEN_FG],
@@ -145,7 +146,7 @@ nserror nscolour_update(void)
 		return res;
 	}
 
-	res = nscolour__get("Window", "WindowText", 15, 16,
+	res = nscolour__get("Canvas", "CanvasText", 15, 16,
 			&nscolours[NSCOLOUR_WIN_ODD_BG],
 			&nscolours[NSCOLOUR_WIN_ODD_BG_HOVER],
 			&nscolours[NSCOLOUR_WIN_ODD_FG],
@@ -171,7 +172,7 @@ nserror nscolour_update(void)
 		return res;
 	}
 
-	res = ns_system_colour_char("Scrollbar",
+	res = ns_system_colour_char("Canvas",
 			&nscolours[NSCOLOUR_SCROLL_WELL]);
 	if (res != NSERROR_OK) {
 		return res;
@@ -211,49 +212,49 @@ nserror nscolour_get_stylesheet(const char **stylesheet_out)
 
 	ret = snprintf(buffer, sizeof(buffer),
 			".ns-odd-bg {\n"
-			"\tbackground-color: #%06x;\n"
+			"\tbackground-color: #%06"PRIx32";\n"
 			"}\n"
 			".ns-odd-bg-hover {\n"
-			"\tbackground-color: #%06x;\n"
+			"\tbackground-color: #%06"PRIx32";\n"
 			"}\n"
 			".ns-odd-fg {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-odd-fg-subtle {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-odd-fg-faded {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-odd-fg-good {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-odd-fg-bad {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-bg {\n"
-			"\tbackground-color: #%06x;\n"
+			"\tbackground-color: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-bg-hover {\n"
-			"\tbackground-color: #%06x;\n"
+			"\tbackground-color: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-fg {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-fg-subtle {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-fg-faded {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-fg-good {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-even-fg-bad {\n"
-			"\tcolor: #%06x;\n"
+			"\tcolor: #%06"PRIx32";\n"
 			"}\n"
 			".ns-border {\n"
-			"\tborder-color: #%06x;\n"
+			"\tborder-color: #%06"PRIx32";\n"
 			"}\n",
 			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]),
 			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG_HOVER]),

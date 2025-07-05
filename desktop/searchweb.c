@@ -53,7 +53,7 @@ static struct search_web_ctx_s {
 } search_web_ctx;
 
 
-static const char *default_providers = "Google|www.google.com|http://www.google.com/search?q=%s|http://www.google.com/favicon.ico|\n";
+static const char *default_providers = "DuckDuckGo|www.duckduckgo.com|https://www.duckduckgo.com/html/?q=%s|https://www.duckduckgo.com/favicon.ico|\n";
 
 static const char *default_search_icon_url = "resource:icons/search.png";
 
@@ -333,11 +333,11 @@ search_web_omni(const char *term,
 		}
 
 		/* try with adding default scheme */
-		eterm = malloc(strlen(term) + SLEN("http://") + 1);
+		eterm = malloc(strlen(term) + SLEN("https://") + 1);
 		if (eterm == NULL) {
 			return NSERROR_NOMEM;
 		}
-		sprintf(eterm, "http://%s", term);
+		sprintf(eterm, "https://%s", term);
 		ret = nsurl_create(eterm, &url);
 		free(eterm);
 		if (ret == NSERROR_OK) {
@@ -351,7 +351,13 @@ search_web_omni(const char *term,
 		}
 	}
 
-	/* must be initialised */
+	/* ensure providers are initialised */
+	if (search_web_ctx.providers == NULL) {
+		ret = search_web_init(NULL);
+		if (ret != NSERROR_OK) {
+			return ret;
+		}
+	}
 	if (search_web_ctx.providers == NULL) {
 		return NSERROR_INIT_FAILED;
 	}
@@ -394,10 +400,11 @@ nserror search_web_get_provider_bitmap(struct bitmap **bitmap_out)
 
 
 /* exported interface documented in desktop/searchweb.h */
-nserror search_web_select_provider(int selection)
+nserror search_web_select_provider(const char *selection)
 {
 	struct search_provider *provider;
 	struct bitmap *ico_bitmap = NULL;
+	size_t pidx;
 
 	/* must be initialised */
 	if (search_web_ctx.providers == NULL) {
@@ -405,12 +412,15 @@ nserror search_web_select_provider(int selection)
 	}
 
 	/* negative value just selects whatevers current */
-	if (selection >= 0) {
-		/* ensure selection lies within acceptable range */
-		if ((size_t)selection < search_web_ctx.providers_count) {
-			search_web_ctx.current = selection;
-		} else {
-			/* out of range */
+	if (selection != NULL) {
+		for (pidx=0; pidx < search_web_ctx.providers_count;pidx++) {
+			if (strcmp(search_web_ctx.providers[pidx].name, selection)==0) {
+				search_web_ctx.current = pidx;
+				break;
+			}
+		}
+		if (pidx == search_web_ctx.providers_count) {
+			/* selected provider not found */
 			search_web_ctx.current = 0;
 		}
 	}
@@ -425,11 +435,11 @@ nserror search_web_select_provider(int selection)
 	    (search_web_ctx.default_ico_handle != NULL)) {
 		ico_bitmap = content_get_bitmap(search_web_ctx.default_ico_handle);
 	}
-	/* update the callback with the provider change. Bitmap may
+
+	/* signal the frontend with the provider change. Bitmap may
 	 * be NULL at this point.
 	 */
 	guit->search_web->provider_update(provider->name, ico_bitmap);
-
 
 	/* if the providers icon has not been retrieved get it now */
 	if (provider->ico_handle == NULL) {
@@ -499,17 +509,21 @@ default_ico_callback(hlcache_handle *ico,
 }
 
 /* exported interface documented in desktop/searchweb.h */
-ssize_t search_web_iterate_providers(ssize_t from, const char **name)
+ssize_t search_web_iterate_providers(ssize_t iter, const char **name)
 {
-	if (from < 0)
-		return -1;
+	if (iter < 0) {
+		iter=0;
+	} else {
+		iter++;
+	}
 
-	if ((size_t)from >= search_web_ctx.providers_count)
-		return -1;
+	if ((size_t)iter >= search_web_ctx.providers_count) {
+		iter = -1;
+	} else {
+		*name = search_web_ctx.providers[iter].name;
+	}
 
-	*name = search_web_ctx.providers[from].name;
-
-	return from + 1;
+	return iter;
 }
 
 

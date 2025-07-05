@@ -3,6 +3,7 @@
 #
 # Copyright 2007 Daniel Silverstone <dsilvers@netsurf-browser.org>
 # Copyright 2008 Rob Kendrick <rjek@netsurf-browser.org>
+# Copyright 2024 Vincent Sanders <vince@netsurf-browser.org>
 #
 # Trivially, invoke as:
 #   make
@@ -27,42 +28,6 @@ all: all-program
 
 # default values for base variables
 
-ifeq ($(HOST),FreeMiNT)
-  HOST := mint
-endif
-ifeq ($(HOST),mint)
-  ifeq ($(TARGET),)
-    TARGET := atari
-  endif
-endif
-
-ifeq ($(findstring MINGW,$(HOST)),MINGW)
-  # MSYS' uname reports the likes of "MINGW32_NT-6.0"
-  HOST := windows
-endif
-ifeq ($(HOST),windows)
-  ifeq ($(TARGET),)
-    TARGET := windows
-  endif
-endif
-
-# Default target is GTK backend
-ifeq ($(TARGET),)
-  TARGET := gtk3
-endif
-
-# valid values for the TARGET
-VLDTARGET := riscos gtk2 gtk3 beos amiga amigaos3 framebuffer windows atari monkey gnustep
-
-# Check for valid TARGET
-ifeq ($(filter $(VLDTARGET),$(TARGET)),)
-  $(error Unknown TARGET "$(TARGET)", Must be one of $(VLDTARGET))
-endif
-
-# ensure empty values for base variables
-
-# Sub target for build
-SUBTARGET=
 # Resources executable target depends upon
 RESOURCES=
 # Messages executable target depends on
@@ -75,13 +40,6 @@ MESSAGES_LANGUAGES=de en fr it nl zh_CN
 # The target directory for the split messages
 MESSAGES_TARGET=resources
 
-# Defaults for tools
-PERL=perl
-MKDIR=mkdir
-TOUCH=touch
-STRIP?=strip
-INSTALL?=install
-
 # build verbosity
 ifeq ($(V),1)
   Q:=
@@ -90,31 +48,11 @@ else
 endif
 VQ=@
 
-# Override this only if the host compiler is called something different
-BUILD_CC := cc
-BUILD_CFLAGS = -g -W -Wall -Wundef -Wpointer-arith -Wcast-align \
-	-Wwrite-strings -Wmissing-declarations -Wuninitialized \
-	-Wno-unused-parameter
-
 # compute HOST, TARGET and SUBTARGET
 include frontends/Makefile.hts
 
-# target specific tool overrides
-include frontends/$(TARGET)/Makefile.tools
-
-# compiler versioning to adjust warning flags
-CC_VERSION := $(shell $(CC) -dumpfullversion -dumpversion)
-CC_MAJOR := $(word 1,$(subst ., ,$(CC_VERSION)))
-CC_MINOR := $(word 2,$(subst ., ,$(CC_VERSION)))
-define cc_ver_ge
-$(shell expr $(CC_MAJOR) \> $(1) \| \( $(CC_MAJOR) = $(1) \& $(CC_MINOR) \>= $(2) \) )
-endef
-
-# CCACHE
-ifeq ($(origin CCACHE),undefined)
-  CCACHE=$(word 1,$(shell ccache -V 2>/dev/null))
-endif
-CC := $(CCACHE) $(CC)
+# tools used in builds
+include Makefile.tools
 
 # Target paths
 OBJROOT = build/$(HOST)-$(TARGET)$(SUBTARGET)
@@ -132,6 +70,11 @@ include Makefile.macros
 # General flag setup
 # ----------------------------------------------------------------------------
 
+# host compiler flags
+BUILD_CFLAGS = -g -W -Wall -Wundef -Wpointer-arith -Wcast-align \
+	-Wwrite-strings -Wmissing-declarations -Wuninitialized \
+	-Wno-unused-parameter
+
 # Set up the warning flags here so that they can be overridden in the
 #   Makefile.config
 COMMON_WARNFLAGS = -W -Wall -Wundef -Wpointer-arith -Wcast-align \
@@ -146,9 +89,14 @@ ifeq ($(call cc_ver_ge,4,6),1)
   COMMON_WARNFLAGS += -Wno-unused-but-set-variable
 endif
 
-# Implicit fallthrough warnings suppressed by comment
-ifeq ($(call cc_ver_ge,7,1),1)
-  COMMON_WARNFLAGS += -Wimplicit-fallthrough=3
+ifeq ($(TOOLCHAIN),gcc)
+  # Implicit fallthrough warnings
+  ifeq ($(call cc_ver_ge,7,1),1)
+    COMMON_WARNFLAGS += -Wimplicit-fallthrough=5
+  endif
+else
+  # non gcc has different warning syntax
+  COMMON_WARNFLAGS += -Wimplicit-fallthrough
 endif
 
 # deal with chaging warning flags for different platforms
@@ -207,6 +155,7 @@ endif
 $(eval $(call pkg_config_find_and_add_enabled,OPENSSL,openssl,OpenSSL))
 
 $(eval $(call pkg_config_find_and_add_enabled,UTF8PROC,libutf8proc,utf8))
+$(eval $(call pkg_config_find_and_add_enabled,JPEGXL,libjxl,JPEGXL))
 $(eval $(call pkg_config_find_and_add_enabled,WEBP,libwebp,WEBP))
 $(eval $(call pkg_config_find_and_add_enabled,PNG,libpng,PNG))
 $(eval $(call pkg_config_find_and_add_enabled,BMP,libnsbmp,BMP))
@@ -365,12 +314,17 @@ IFLAGS = $(addprefix -I,$(INCLUDE_DIRS))
 
 $(EXETARGET): $(OBJECTS) $(RESOURCES) $(MESSAGES) tools/linktrace-to-depfile.pl
 	$(VQ)echo "    LINK: $(EXETARGET)"
-ifneq ($(TARGET)$(SUBTARGET),riscos-elf)
+ifneq ($(TARGET),riscos)
 	$(Q)$(CC) -o $(EXETARGET) $(OBJECTS) $(LDFLAGS) > $(DEPROOT)/link-raw.d
 else
+	@# RISC OS targets are a bit special: we need to convert ELF -> AIF
+  ifeq ($(SUBTARGET),-aof)
+	$(Q)$(CC) -o $(EXETARGET) $(OBJECTS) $(LDFLAGS) > $(DEPROOT)/link-raw.d
+  else
 	$(Q)$(CXX) -o $(EXETARGET:,ff8=,e1f) $(OBJECTS) $(LDFLAGS) > $(DEPROOT)/link-raw.d
 	$(Q)$(ELF2AIF) $(EXETARGET:,ff8=,e1f) $(EXETARGET)
 	$(Q)$(RM) $(EXETARGET:,ff8=,e1f)
+  endif
 endif
 	$(VQ)echo "LINKDEPS: $(EXETARGET)"
 	$(Q)echo -n "$(EXETARGET) $(DEPROOT)/link.d: " > $(DEPROOT)/link.d
@@ -498,13 +452,13 @@ docs: docs/Doxyfile
 
 # split fat messages into properties files suitable for uploading to transifex
 messages-split-tfx:
-	for splitlang in $(FAT_LANGUAGES);do perl ./utils/split-messages.pl -l $${splitlang} -f transifex -p any -o Messages.any.$${splitlang}.tfx resources/FatMessages;done
+	for splitlang in $(FAT_LANGUAGES);do $(PERL) ./utils/split-messages.pl -l $${splitlang} -f transifex -p any -o Messages.any.$${splitlang}.tfx resources/FatMessages;done
 
 # download property files from transifex
 messages-fetch-tfx:
-	for splitlang in $(FAT_LANGUAGES);do $(RM) Messages.any.$${splitlang}.tfx ; perl ./utils/fetch-transifex.pl -w insecure -l $${splitlang} -o Messages.any.$${splitlang}.tfx ;done
+	for splitlang in $(FAT_LANGUAGES);do $(RM) Messages.any.$${splitlang}.tfx ; $(PERL) ./utils/fetch-transifex.pl -w insecure -l $${splitlang} -o Messages.any.$${splitlang}.tfx ;done
 
 # merge property files into fat messages
 messages-import-tfx: messages-fetch-tfx
-	for tfxlang in $(FAT_LANGUAGES);do perl ./utils/import-messages.pl -l $${tfxlang} -p any -f transifex -o resources/FatMessages -i resources/FatMessages -I Messages.any.$${tfxlang}.tfx ; $(RM) Messages.any.$${tfxlang}.tfx; done
+	for tfxlang in $(FAT_LANGUAGES);do $(PERL) ./utils/import-messages.pl -l $${tfxlang} -p any -f transifex -o resources/FatMessages -i resources/FatMessages -I Messages.any.$${tfxlang}.tfx ; $(RM) Messages.any.$${tfxlang}.tfx; done
 

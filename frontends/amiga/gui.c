@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2020 Chris Young <chris@unsatisfactorysoftware.co.uk>
+ * Copyright 2008-2025 Chris Young <chris@unsatisfactorysoftware.co.uk>
  *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
  *
@@ -161,6 +161,7 @@
 #include "amiga/selectmenu.h"
 #include "amiga/theme.h"
 #include "amiga/utf8.h"
+#include "amiga/corewindow.h"
 
 #define AMINS_SCROLLERPEN NUMDRIPENS
 #define NSA_KBD_SCROLL_PX 10
@@ -272,6 +273,7 @@ struct gui_window_2 {
 	char *restrict svbuffer;
 	char *restrict status;
 	char *restrict wintitle;
+	char icontitle[24];
 	char *restrict helphints[GID_LAST];
 	browser_mouse_state prev_mouse_state;
 	struct timeval lastclick;
@@ -358,7 +360,6 @@ static char *current_user_faviconcache;
 static const __attribute__((used)) char *stack_cookie = "\0$STACK:196608\0";
 
 const char * const versvn;
-const char * const verdate;
 
 static void ami_switch_tab(struct gui_window_2 *gwin, bool redraw);
 static void ami_change_tab(struct gui_window_2 *gwin, int direction);
@@ -927,48 +928,91 @@ static UWORD ami_system_colour_scrollbar_fgpen(struct DrawInfo *drinfo)
 
 }
 
+#ifdef __amigaos4__
+
 /**
- * set option from pen
+ * convert an amiga pen to a netsurf colour
  */
-static nserror
-colour_option_from_pen(UWORD pen,
-			   enum nsoption_e option,
-			   struct Screen *screen,
-			   colour def_colour)
+static colour
+nscolour_from_pen(struct Screen *screen, UWORD pen, colour sel_colour)
 {
 	ULONG colr[3];
 	struct DrawInfo *drinfo;
 
-	if((option < NSOPTION_SYS_COLOUR_START) ||
-	   (option > NSOPTION_SYS_COLOUR_END) ||
-	   (nsoptions[option].type != OPTION_COLOUR)) {
-		return NSERROR_BAD_PARAMETER;
-	}
+	drinfo = GetScreenDrawInfo(screen);
 
-	if(screen != NULL) {
-		drinfo = GetScreenDrawInfo(screen);
-		if(drinfo != NULL) {
-
-			if(pen == AMINS_SCROLLERPEN) pen = ami_system_colour_scrollbar_fgpen(drinfo);
-
-			/* Get the colour of the pen being used for "pen" */
-			GetRGB32(screen->ViewPort.ColorMap, drinfo->dri_Pens[pen], 1, (ULONG *)&colr);
-
-			/* convert it to a color */
-			def_colour = ((colr[0] & 0xff000000) >> 24) |
-				((colr[1] & 0xff000000) >> 16) |
-				((colr[2] & 0xff000000) >> 8);
-
-			FreeScreenDrawInfo(screen, drinfo);
+	if (drinfo != NULL) {
+		if (pen == AMINS_SCROLLERPEN) {
+			pen = ami_system_colour_scrollbar_fgpen(drinfo);
 		}
-	}
 
-	if (nsoptions_default[option].value.c == nsoptions[option].value.c)
-		nsoptions[option].value.c = def_colour;
-	nsoptions_default[option].value.c = def_colour;
+		/* Get the colour of the pen being used for "pen" */
+		GetRGB32(screen->ViewPort.ColorMap,
+			 drinfo->dri_Pens[pen],
+			 1,
+			 (ULONG *)&colr);
+
+		/* convert it to a color */
+		sel_colour = ((colr[0] & 0xff000000) >> 24) |
+			((colr[1] & 0xff000000) >> 16) |
+			((colr[2] & 0xff000000) >> 8);
+
+		FreeScreenDrawInfo(screen, drinfo);
+	}
+	return sel_colour;
+}
+
+
+/**
+ * set system colour options from amiga pen
+ */
+static nserror system_colours_from_pen(struct Screen *screen)
+{
+        #define MAP_SIZE (19)
+	int mapidx;
+	colour sel_colour;
+	struct pcm {
+		enum nsoption_e option;
+		UWORD pen;
+		colour def_colour;
+	};
+	struct pcm pen_colour_map[MAP_SIZE] = {
+		{NSOPTION_sys_colour_AccentColor, FILLPEN, 0x00000000},
+		{NSOPTION_sys_colour_AccentColorText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_ActiveText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_ButtonBorder, FILLPEN, 0x00000000},
+		{NSOPTION_sys_colour_ButtonFace, FOREGROUNDPEN, 0x00aaaaaa},
+		{NSOPTION_sys_colour_ButtonText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_Canvas, BACKGROUNDPEN, 0x00aaaaaa},
+		{NSOPTION_sys_colour_CanvasText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_Field, BACKGROUNDPEN, 0x00aaaaaa},
+		{NSOPTION_sys_colour_FieldText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_GrayText, DISABLEDTEXTPEN, 0x00777777},
+		{NSOPTION_sys_colour_Highlight, SELECTPEN, 0x00ee0000},
+		{NSOPTION_sys_colour_HighlightText, SELECTTEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_LinkText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_Mark, FILLPEN, 0x00000000},
+		{NSOPTION_sys_colour_MarkText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_SelectedItem, FILLPEN, 0x00000000},
+		{NSOPTION_sys_colour_SelectedItemText, TEXTPEN, 0x00000000},
+		{NSOPTION_sys_colour_VisitedText, TEXTPEN, 0x00000000},
+	};
+	struct pcm *entry;
+
+	for (mapidx=0; mapidx < MAP_SIZE; mapidx++) {
+		entry = &pen_colour_map[mapidx];
+		sel_colour = nscolour_from_pen(screen, entry->pen, entry->def_colour);
+
+		if (nsoptions_default[entry->option].value.c == nsoptions[entry->option].value.c) {
+			nsoptions[entry->option].value.c = sel_colour;
+		}
+		nsoptions_default[entry->option].value.c = sel_colour;
+	}
 
 	return NSERROR_OK;
 }
+
+#endif /* __amigaos4__ */
 
 /* exported interface documented in amiga/gui.h */
 STRPTR ami_gui_get_screen_title(void)
@@ -1016,34 +1060,8 @@ static void ami_set_screen_defaults(struct Screen *screen)
 	nsoption_default_set_int(redraw_tile_size_y, screen->Height);
 
 	/* set system colours for amiga ui */
-	colour_option_from_pen(FILLPEN, NSOPTION_sys_colour_ActiveBorder, screen, 0x00000000);
-	colour_option_from_pen(FILLPEN, NSOPTION_sys_colour_ActiveCaption, screen, 0x00dddddd);
-	colour_option_from_pen(BACKGROUNDPEN, NSOPTION_sys_colour_AppWorkspace, screen, 0x00eeeeee);
-	colour_option_from_pen(BACKGROUNDPEN, NSOPTION_sys_colour_Background, screen, 0x00aa0000);
-	colour_option_from_pen(FOREGROUNDPEN, NSOPTION_sys_colour_ButtonFace, screen, 0x00aaaaaa);
-	colour_option_from_pen(FORESHINEPEN, NSOPTION_sys_colour_ButtonHighlight, screen, 0x00cccccc);
-	colour_option_from_pen(FORESHADOWPEN, NSOPTION_sys_colour_ButtonShadow, screen, 0x00bbbbbb);
-	colour_option_from_pen(TEXTPEN, NSOPTION_sys_colour_ButtonText, screen, 0x00000000);
-	colour_option_from_pen(FILLTEXTPEN, NSOPTION_sys_colour_CaptionText, screen, 0x00000000);
-	colour_option_from_pen(DISABLEDTEXTPEN, NSOPTION_sys_colour_GrayText, screen, 0x00777777);
-	colour_option_from_pen(SELECTPEN, NSOPTION_sys_colour_Highlight, screen, 0x00ee0000);
-	colour_option_from_pen(SELECTTEXTPEN, NSOPTION_sys_colour_HighlightText, screen, 0x00000000);
-	colour_option_from_pen(INACTIVEFILLPEN, NSOPTION_sys_colour_InactiveBorder, screen, 0x00000000);
-	colour_option_from_pen(INACTIVEFILLPEN, NSOPTION_sys_colour_InactiveCaption, screen, 0x00ffffff);
-	colour_option_from_pen(INACTIVEFILLTEXTPEN, NSOPTION_sys_colour_InactiveCaptionText, screen, 0x00cccccc);
-	colour_option_from_pen(BACKGROUNDPEN, NSOPTION_sys_colour_InfoBackground, screen, 0x00aaaaaa);/* This is wrong, HelpHint backgrounds are pale yellow but doesn't seem to be a DrawInfo pen defined for it. */
-	colour_option_from_pen(TEXTPEN, NSOPTION_sys_colour_InfoText, screen, 0x00000000);
-	colour_option_from_pen(MENUBACKGROUNDPEN, NSOPTION_sys_colour_Menu, screen, 0x00aaaaaa);
-	colour_option_from_pen(MENUTEXTPEN, NSOPTION_sys_colour_MenuText, screen, 0x00000000);
-	colour_option_from_pen(AMINS_SCROLLERPEN, NSOPTION_sys_colour_Scrollbar, screen, 0x00aaaaaa);
-	colour_option_from_pen(FORESHADOWPEN, NSOPTION_sys_colour_ThreeDDarkShadow, screen, 0x00555555);
-	colour_option_from_pen(FOREGROUNDPEN, NSOPTION_sys_colour_ThreeDFace, screen, 0x00dddddd);
-	colour_option_from_pen(FORESHINEPEN, NSOPTION_sys_colour_ThreeDHighlight, screen, 0x00aaaaaa);
-	colour_option_from_pen(HALFSHINEPEN, NSOPTION_sys_colour_ThreeDLightShadow, screen, 0x00999999);
-	colour_option_from_pen(HALFSHADOWPEN, NSOPTION_sys_colour_ThreeDShadow, screen, 0x00777777);
-	colour_option_from_pen(BACKGROUNDPEN, NSOPTION_sys_colour_Window, screen, 0x00aaaaaa);
-	colour_option_from_pen(INACTIVEFILLPEN, NSOPTION_sys_colour_WindowFrame, screen, 0x00000000);
-	colour_option_from_pen(TEXTPEN, NSOPTION_sys_colour_WindowText, screen, 0x00000000);
+	system_colours_from_pen(screen);
+
 #else
 	nsoption_default_set_int(redraw_tile_size_x, 100);
 	nsoption_default_set_int(redraw_tile_size_y, 100);
@@ -1455,7 +1473,7 @@ static void gui_init2(int argc, char** argv)
 
 	hotlist_init(nsoption_charp(hotlist_file),
 			nsoption_charp(hotlist_file));
-	search_web_select_provider(nsoption_int(search_provider));
+	search_web_select_provider(nsoption_charp(search_web_provider));
 
 	if (notalreadyrunning && 
 	    (nsoption_bool(startup_no_window) == false))
@@ -2916,12 +2934,22 @@ static BOOL ami_gui_event(void *w)
 
 					case GID_TOOLBARLAYOUT:
 						/* Need fixing: never gets here */
-						search_web_select_provider(-1);
 					break;
 
 					case GID_SEARCH_ICON:
-						GetAttr(CHOOSER_Selected, gwin->objects[GID_SEARCH_ICON], (ULONG *)&storage);
-						search_web_select_provider(storage);
+#ifdef __amigaos4__
+					{
+						char *prov = NULL;
+						GetAttr(CHOOSER_SelectedNode, gwin->objects[GID_SEARCH_ICON],(ULONG *)&storage);
+						if(storage != NULL) {
+							GetChooserNodeAttrs((struct Node *)storage, CNA_Text, (ULONG *)&prov, TAG_DONE);
+							nsoption_set_charp(search_web_provider, (char *)strdup(prov));
+						}
+					}
+#else
+					/* TODO: Fix for OS<3.2 */
+#endif
+						search_web_select_provider(nsoption_charp(search_web_provider));
 					break;
 
 					case GID_SEARCHSTRING:
@@ -3184,8 +3212,17 @@ static BOOL ami_gui_event(void *w)
 				amiga_icon_superimpose_favicon_internal(gwin->gw->favicon,
 					gwin->dobj);
 				HideWindow(gwin->win);
+				if(strlen(gwin->wintitle) > 23) {
+					strncpy(gwin->icontitle, gwin->wintitle, 20);
+					gwin->icontitle[20] = '.';
+					gwin->icontitle[21] = '.';
+					gwin->icontitle[22] = '.';
+					gwin->icontitle[23] = '\0';
+				} else {
+					strlcpy(gwin->icontitle, gwin->wintitle, 23);
+				}
 				gwin->appicon = AddAppIcon((ULONG)gwin->objects[OID_MAIN],
-									(ULONG)gwin, gwin->win->Title, appport,
+									(ULONG)gwin, gwin->icontitle, appport,
 									0, gwin->dobj, NULL);
 
 				cur_gw = NULL;
@@ -4014,7 +4051,7 @@ static bool ami_gui_hotlist_add(void *userdata, int level, int item,
 	if(item > AMI_GUI_TOOLBAR_MAX) return false;
 	if(is_folder == true) return false;
 
-	if(utf8_from_local_encoding(title,
+	if(utf8_to_local_encoding(title,
 		(strlen(title) < NSA_MAX_HOTLIST_BUTTON_LEN) ? strlen(title) : NSA_MAX_HOTLIST_BUTTON_LEN,
 		&utf8title) != NSERROR_OK)
 		return false;
@@ -4316,10 +4353,6 @@ void ami_gui_tabs_toggle_all(void)
 	} while((node = nnode));
 }
 
-static void ami_gui_search_ico_refresh(void *p)
-{
-	search_web_select_provider(-1);
-}
 
 /**
  * Count windows, and optionally tabs.
@@ -4369,19 +4402,6 @@ void ami_gui_adjust_scale(struct gui_window *gw, float adjustment)
 	ami_schedule_redraw(gw->shared, true);
 }
 
-void ami_gui_switch_to_new_tab(struct gui_window_2 *gwin)
-{
-	if(nsoption_bool(new_tab_is_active) == true) return;
-
-	/* Switch to the just-opened tab (if new_tab_is_active, we already did!) */
-	RefreshSetGadgetAttrs((struct Gadget *)gwin->objects[GID_TABS],
-							gwin->win, NULL,
-							CLICKTAB_CurrentNode, gwin->last_new_tab,
-							TAG_DONE);
-
-	ami_switch_tab(gwin, false);
-}
-
 nserror ami_gui_new_blank_tab(struct gui_window_2 *gwin)
 {
 	nsurl *url;
@@ -4391,7 +4411,7 @@ nserror ami_gui_new_blank_tab(struct gui_window_2 *gwin)
 	error = nsurl_create(nsoption_charp(homepage_url), &url);
 	if (error == NSERROR_OK) {
 		error = browser_window_create(BW_CREATE_HISTORY |
-					      BW_CREATE_TAB,
+					      BW_CREATE_TAB | BW_CREATE_FOREGROUND,
 					      url,
 					      NULL,
 					      gwin->gw->bw,
@@ -4402,8 +4422,6 @@ nserror ami_gui_new_blank_tab(struct gui_window_2 *gwin)
 		amiga_warn_user(messages_get_errorcode(error), 0);
 		return error;
 	}
-
-	ami_gui_switch_to_new_tab(gwin);
 
 	return NSERROR_OK;
 }
@@ -4825,7 +4843,7 @@ gui_window_create(struct browser_window *bw,
 							CLICKTAB_Labels, &g->shared->tab_list,
 							TAG_DONE);
 
-		if(nsoption_bool(new_tab_is_active)) {
+		if(flags & GW_CREATE_FOREGROUND) {
 			RefreshSetGadgetAttrs((struct Gadget *)g->shared->objects[GID_TABS],
 							g->shared->win, NULL,
 							CLICKTAB_Current, g->tab,
@@ -4839,7 +4857,7 @@ gui_window_create(struct browser_window *bw,
 
 		g->shared->next_tab++;
 
-		if(nsoption_bool(new_tab_is_active)) ami_switch_tab(g->shared,false);
+		if(flags & GW_CREATE_FOREGROUND) ami_switch_tab(g->shared,false);
 
 		ami_update_buttons(g->shared);
 		ami_schedule(0, ami_gui_refresh_favicon, g->shared);
@@ -4909,7 +4927,7 @@ gui_window_create(struct browser_window *bw,
 											TAG_DONE);
 		AddTail(&g->shared->tab_list,g->tab_node);
 
-		g->shared->web_search_list = ami_gui_opts_websearch();
+		g->shared->web_search_list = ami_gui_opts_websearch(NULL);
 		g->shared->search_bm = NULL;
 
 		g->shared->tabs=1;
@@ -5432,8 +5450,6 @@ gui_window_create(struct browser_window *bw,
 		UnlockPubScreen(NULL,scrn);
 		locked_screen = FALSE;
 	}
-
-	ami_schedule(0, ami_gui_search_ico_refresh, NULL);
 
 	ScreenToFront(scrn);
 
@@ -6541,6 +6557,7 @@ int main(int argc, char** argv)
 	struct netsurf_table amiga_table = {
 		.misc = &amiga_misc_table,
 		.window = &amiga_window_table,
+		.corewindow = amiga_core_window_table,
 		.clipboard = amiga_clipboard_table,
 		.download = amiga_download_table,
 		.fetch = &amiga_fetch_table,

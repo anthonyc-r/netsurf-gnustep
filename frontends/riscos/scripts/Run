@@ -33,15 +33,18 @@ SetMacro NetSurf$ChoicesSave <Choices$Write>.WWW.NetSurf.Choices
 RMEnsure UtilityModule 3.00 Error NetSurf needs RISC OS 3 or later
 
 | Ensure Nested WIMP is installed
-| http://acorn.riscos.com/ (in the universal boot archive)
-RMEnsure WindowManager 3.80 Error NetSurf requires the Nested Window Manager. This can be obtained by downloading the Universal Boot sequence from http://acorn.riscos.com/
+| http://www.riscos.com/ftp_space/generic/uniboot/ (i.e. install universal boot)
+RMEnsure WindowManager 3.80 Error NetSurf requires the Nested Window Manager. This can be obtained by downloading the Universal Boot sequence from http://www.riscos.com/ftp_space/generic/uniboot/
 
 | Check for various key resources - can't do much if they don't exist
 If "<System$Path>" = "" Then Set System$Path_Message System resources not found.
 If "<Wimp$ScrapDir>" = "" Then Error Scrap resource not found.
 If "<InetDBase$Path>" = "" Then Error Internet resources can not be found
-If "<Unicode$Path>" = "" Then Error NetSurf requires the !Unicode resource. This can be found, along with the Iconv module, at http://www.netsurf-browser.org/projects/iconv/
+If "<Unicode$Path>" = "" Then Error NetSurf requires the !Unicode resource. This can be found, along with the Iconv module, at https://www.netsurf-browser.org/projects/iconv/
 If "<Inet$MimeMappings>" = "" Then Set Inet$MimeMappings InetDBase:MimeMap
+
+| Use OS copy of root CA bundle, if present
+IfThere InetDBase:CertData Then Set NetSurf$CABundle InetDBase:CertData Else Set NetSurf$CABundle NetSurf:Resources.ca-bundle
 
 | Define this alias for clarity
 | Syntax: NetSurfRMLoad <Path to module>
@@ -64,6 +67,10 @@ RMEnsure DrawFile 1.30 Error NetSurf requires the DrawFile module. This can be d
 | Ensure SharedUnixLibrary is installed
 RMEnsure SharedUnixLibrary 1.07 NetSurfRMLoad System:Modules.SharedULib
 RMEnsure SharedUnixLibrary 1.07 Error NetSurf requires SharedUnixLibrary 1.07 or later. Please use the RISC OS Configure app to update the computer's !System directory from the NetSurf archive.
+
+| Ensure ARMEABISupport is installed
+|RMEnsure ARMEABISupport 1.04 NetSurfRMLoad System:Modules.ARMEABISupport
+|RMEnsure ARMEABISupport 1.04 Error NetSurf requires ARMEABISupport 1.04 or later. Please use the RISC OS Configure app to update the computer's !System directory from the NetSurf archive.
 
 | Load AcornURI if it isn't already
 Unset NetSurf$Start_URI_Handler

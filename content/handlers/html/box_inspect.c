@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <dom/dom.h>
 
+#include "utils/utils.h"
 #include "utils/nsurl.h"
 #include "utils/errors.h"
 #include "netsurf/types.h"
@@ -212,7 +213,7 @@ box_move_xy(struct box *b, enum box_walk_dir dir, int *x, int *y)
 			rb = b;
 			break;
 		}
-		/* fall through */
+		fallthrough;
 
 	case BOX_WALK_NEXT_SIBLING:
 		do {
@@ -660,7 +661,7 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 	if (box->max_width != UNKNOWN_MAX_WIDTH) {
 		fprintf(stream, "min%i max%i ", box->min_width, box->max_width);
 	}
-	fprintf(stream, "(%i %i %i %i) ",
+	fprintf(stream, "desc(%i %i %i %i) ",
 		box->descendant_x0, box->descendant_y0,
 		box->descendant_x1, box->descendant_y1);
 
@@ -722,6 +723,14 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 
 	case BOX_TEXT:
 		fprintf(stream, "TEXT ");
+		break;
+
+	case BOX_FLEX:
+		fprintf(stream, "FLEX ");
+		break;
+
+	case BOX_INLINE_FLEX:
+		fprintf(stream, "INLINE_FLEX ");
 		break;
 
 	default:

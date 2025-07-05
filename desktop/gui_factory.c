@@ -20,10 +20,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "utils/config.h"
 #include "utils/errors.h"
 #include "utils/file.h"
+#include "utils/inet.h"
 #include "netsurf/bitmap.h"
 #include "content/hlcache.h"
 #include "content/backing_store.h"
@@ -35,6 +37,7 @@
 #include "netsurf/fetch.h"
 #include "netsurf/misc.h"
 #include "netsurf/window.h"
+#include "netsurf/core_window.h"
 #include "netsurf/search.h"
 #include "netsurf/clipboard.h"
 #include "netsurf/utf8.h"
@@ -202,6 +205,75 @@ static nserror verify_window_register(struct gui_window_table *gwt)
 }
 
 
+static nserror gui_default_corewindow_invalidate(struct core_window *cw, const struct rect *rect)
+{
+	return NSERROR_OK;
+}
+
+static nserror gui_default_corewindow_set_extent(struct core_window *cw, int width, int height)
+{
+	return NSERROR_OK;
+}
+
+static nserror gui_default_corewindow_set_scroll(struct core_window *cw, int x, int y)
+{
+	return NSERROR_OK;
+}
+
+static nserror gui_default_corewindow_get_scroll(const struct core_window *cw, int *x, int *y)
+{
+	return NSERROR_OK;
+}
+
+static nserror gui_default_corewindow_get_dimensions(const struct core_window *cw, int *width, int *height)
+{
+	return NSERROR_OK;
+}
+
+static nserror gui_default_corewindow_dragstatus(struct core_window *cw, core_window_drag_status ds)
+{
+	return NSERROR_OK;
+}
+
+static struct core_window_table default_corewindow_table = {
+	.invalidate = gui_default_corewindow_invalidate,
+	.set_extent = gui_default_corewindow_set_extent,
+	.set_scroll = gui_default_corewindow_set_scroll,
+	.get_scroll = gui_default_corewindow_get_scroll,
+	.get_dimensions = gui_default_corewindow_get_dimensions,
+	.drag_status = gui_default_corewindow_dragstatus,
+};
+
+/** verify corewindow window table is valid */
+static nserror verify_corewindow_register(struct core_window_table *cwt)
+{
+	/* check table is present */
+	if (cwt == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+
+	/* all enties are mandantory */
+	if (cwt->invalidate == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+	if (cwt->set_extent == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+	if (cwt->set_scroll == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+	if (cwt->get_scroll == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+	if (cwt->get_dimensions == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+	if (cwt->drag_status == NULL) {
+		return NSERROR_BAD_PARAMETER;
+	}
+
+	return NSERROR_OK;
+}
 
 static struct gui_download_window *
 gui_default_download_create(download_context *ctx, struct gui_window *parent)
@@ -472,6 +544,16 @@ static char *gui_default_mimetype(const char *path)
 	return strdup(guit->fetch->filetype(path));
 }
 
+static int gui_default_socket_open(int domain, int type, int protocol)
+{
+	return (int) socket(domain, type, protocol);
+}
+
+static int gui_default_socket_close(int fd)
+{
+	return (int) ns_close_socket(fd);
+}
+
 /** verify fetch table is valid */
 static nserror verify_fetch_register(struct gui_fetch_table *gft)
 {
@@ -497,6 +579,12 @@ static nserror verify_fetch_register(struct gui_fetch_table *gft)
 	}
 	if (gft->mimetype == NULL) {
 		gft->mimetype = gui_default_mimetype;
+	}
+	if (gft->socket_open == NULL) {
+		gft->socket_open = gui_default_socket_open;
+	}
+	if (gft->socket_close == NULL) {
+		gft->socket_close = gui_default_socket_close;
 	}
 
 	return NSERROR_OK;
@@ -560,10 +648,6 @@ static nserror verify_bitmap_register(struct gui_bitmap_table *gbt)
 		return NSERROR_BAD_PARAMETER;
 	}
 
-	if (gbt->test_opaque == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
-
 	if (gbt->get_buffer == NULL) {
 		return NSERROR_BAD_PARAMETER;
 	}
@@ -577,14 +661,6 @@ static nserror verify_bitmap_register(struct gui_bitmap_table *gbt)
 	}
 
 	if (gbt->get_height == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
-
-	if (gbt->get_bpp == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
-
-	if (gbt->save == NULL) {
 		return NSERROR_BAD_PARAMETER;
 	}
 
@@ -745,6 +821,17 @@ nserror netsurf_register(struct netsurf_table *gt)
 	}
 
 	/* optional tables */
+
+	/* core window table */
+	if (gt->corewindow == NULL) {
+		/* set default core window table */
+		gt->corewindow = &default_corewindow_table;
+	}
+	err = verify_corewindow_register(gt->corewindow);
+	if (err != NSERROR_OK) {
+		return err;
+	}
+
 
 	/* file table */
 	if (gt->file == NULL) {

@@ -28,6 +28,12 @@
 #endif
 #endif
 
+#if defined(__GLIBC__)
+#if __GLIBC_PREREQ(2, 38)
+#define NS_NEW_GLIBC
+#endif
+#endif
+
 /* Try to detect which features the target OS supports */
 
 #if (defined(_GNU_SOURCE) && \
@@ -43,6 +49,7 @@ char *strndup(const char *s, size_t n);
 #endif
 
 #if ((defined(_GNU_SOURCE) ||			\
+      defined(NS_NEW_GLIBC) || \
       defined(__APPLE__) ||			\
       defined(__HAIKU__) ||			\
       defined(__NetBSD__) ||			\
@@ -75,6 +82,7 @@ char *strcasestr(const char *haystack, const char *needle);
  *  UnixLib if building for RISC OS.
  */
 #if ((defined(_GNU_SOURCE) && !defined(__APPLE__)) ||	\
+     defined(NS_NEW_GLIBC) || \
      defined(__riscos__) || \
      defined(NetBSD_v8))
 #define HAVE_STRCHRNUL
@@ -144,6 +152,15 @@ char *realpath(const char *path, char *resolved_path);
 #if (defined(_WIN32) ||				\
      defined(__serenity__))
 #undef HAVE_SCANDIR
+#endif
+
+#define HAVE_DIRFD
+#define HAVE_UNLINKAT
+#define HAVE_FSTATAT
+#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__))
+#undef HAVE_DIRFD
+#undef HAVE_UNLINKAT
+#undef HAVE_FSTATAT
 #endif
 
 #define HAVE_REGEX

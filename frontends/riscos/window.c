@@ -833,6 +833,7 @@ ro_gui_window_toolbar_click(void *data,
 	if (action_type == TOOLBAR_ACTION_URL) {
 		switch (action.url) {
 		case TOOLBAR_URL_DRAG_URL:
+		case TOOLBAR_URL_DRAG_FAVICON:
 		{
 			gui_save_type save_type;
 			nserror err;
@@ -1312,7 +1313,7 @@ ro_gui_window_handle_local_keypress(struct gui_window *g,
 	case IS_WIMP_KEY + wimp_KEY_F1:	/* Help. */
 	{
 		nserror error = nsurl_create(
-				"http://www.netsurf-browser.org/documentation/",
+				"https://www.netsurf-browser.org/documentation/",
 				&url);
 		if (error == NSERROR_OK) {
 			error = browser_window_create(BW_CREATE_HISTORY,
@@ -2574,7 +2575,7 @@ ro_gui_window_menu_select(wimp_w w,
 
 		/* help actions */
 	case HELP_OPEN_CONTENTS:
-		error = nsurl_create("http://www.netsurf-browser.org/documentation/", &url);
+		error = nsurl_create("https://www.netsurf-browser.org/documentation/", &url);
 		if (error == NSERROR_OK) {
 			error = browser_window_create(BW_CREATE_HISTORY,
 						      url,
@@ -2586,7 +2587,7 @@ ro_gui_window_menu_select(wimp_w w,
 		break;
 
 	case HELP_OPEN_GUIDE:
-		error = nsurl_create("http://www.netsurf-browser.org/documentation/guide", &url);
+		error = nsurl_create("https://www.netsurf-browser.org/documentation/guide", &url);
 		if (error == NSERROR_OK) {
 			error = browser_window_create(BW_CREATE_HISTORY,
 						      url,
@@ -2598,7 +2599,7 @@ ro_gui_window_menu_select(wimp_w w,
 		break;
 
 	case HELP_OPEN_INFORMATION:
-		error = nsurl_create("http://www.netsurf-browser.org/documentation/info", &url);
+		error = nsurl_create("https://www.netsurf-browser.org/documentation/info", &url);
 		if (error == NSERROR_OK) {
 			error = browser_window_create(BW_CREATE_HISTORY,
 						      url,
@@ -3594,7 +3595,8 @@ static void gui_window_set_title(struct gui_window *g, const char *title)
 					title, scale_disp);
 		}
 	} else {
-		strncpy(g->title, title, sizeof(g->title));
+		strncpy(g->title, title, sizeof(g->title) - 1);
+		g->title[sizeof(g->title)-1] = 0;
 	}
 
 	ro_gui_set_window_title(g->window, g->title);
@@ -4568,7 +4570,7 @@ ro_gui_window_iconise(struct gui_window *g, wimp_full_message_window_info *wi)
 
 	/* create the thumbnail sprite */
 	bitmap = riscos_bitmap_create(width, height,
-			BITMAP_NEW | BITMAP_OPAQUE | BITMAP_CLEAR_MEMORY);
+			BITMAP_OPAQUE | BITMAP_CLEAR);
 	if (!bitmap) {
 		NSLOG(netsurf, INFO, "Thumbnail initialisation failed.");
 		return;

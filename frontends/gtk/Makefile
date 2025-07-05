@@ -11,6 +11,8 @@
 NETSURF_FEATURE_RSVG_CFLAGS := -DWITH_RSVG
 NETSURF_FEATURE_VIDEO_CFLAGS := -DWITH_VIDEO
 
+# determine if the rsvg library API version
+RSVG_API := $(shell $(PKG_CONFIG) --atleast-version=2.46 librsvg-2.0 && echo 246)
 $(eval $(call pkg_config_find_and_add_enabled,RSVG,librsvg-2.0,SVG))
 $(eval $(call pkg_config_find_and_add_enabled,VIDEO,gstreamer-0.10,Video))
 
@@ -32,13 +34,19 @@ ifeq ($(NETSURF_GTK_MAJOR),2)
 GTKDEPFLAGS += -DGTK_DISABLE_DEPRECATED
 endif
 
+# C library API control
+ifeq ($(HOST),FreeBSD)
+CAPIFLAGS :=
+else
+CAPIFLAGS := -D_XOPEN_SOURCE=700 \
+               -D_POSIX_C_SOURCE=200809L
+endif
 
 GTKCFLAGS := -std=c99 -Dgtk -Dnsgtk -g \
 		$(GTKDEPFLAGS) \
+		$(CAPIFLAGS) \
 		-D_BSD_SOURCE \
 		-D_DEFAULT_SOURCE \
-		-D_XOPEN_SOURCE=700 \
-		-D_POSIX_C_SOURCE=200809L \
 		-D_NETBSD_SOURCE \
 		-DGTK_RESPATH=\"$(NETSURF_GTK_RES_PATH)\"
 

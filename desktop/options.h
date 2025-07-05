@@ -34,8 +34,8 @@
 #include "netsurf/types.h"
 
 /* defines for system colour table */
-#define NSOPTION_SYS_COLOUR_START NSOPTION_sys_colour_ActiveBorder
-#define NSOPTION_SYS_COLOUR_END NSOPTION_sys_colour_WindowText
+#define NSOPTION_SYS_COLOUR_START NSOPTION_sys_colour_AccentColor
+#define NSOPTION_SYS_COLOUR_END NSOPTION_sys_colour_VisitedText
 
 #endif
 
@@ -104,6 +104,9 @@ NSOPTION_INTEGER(disc_cache_age, 28)
 /** Whether to block advertisements */
 NSOPTION_BOOL(block_advertisements, false)
 
+/** Control popups e.g. noniteractive opening windows with window.open */
+NSOPTION_BOOL(disable_popups, false)
+
 /** Disable website tracking, see	                
  * http://www.w3.org/Submission/2011/SUBM-web-tracking-protection-20110224/#dnt-uas */
 NSOPTION_BOOL(do_not_track, false)
@@ -122,6 +125,9 @@ NSOPTION_BOOL(animate_images, true)
 
 /** Whether to execute javascript */
 NSOPTION_BOOL(enable_javascript, false)
+
+/** Whether to allow Author level CSS. */
+NSOPTION_BOOL(author_level_css, true)
 
 /** Maximum time (in seconds) to wait for a script to run */
 NSOPTION_INTEGER(script_timeout, 10)
@@ -151,7 +157,7 @@ NSOPTION_STRING(homepage_url, NULL)
 NSOPTION_BOOL(search_url_bar, false)
 
 /** default web search provider */
-NSOPTION_INTEGER(search_provider, 0)
+NSOPTION_STRING(search_web_provider, NULL)
 
 /** URL completion in url bar */
 NSOPTION_BOOL(url_suggestion, true)
@@ -217,11 +223,16 @@ NSOPTION_UINT(curl_fetch_timeout, 30)
 /** Suppress debug output from cURL. */
 NSOPTION_BOOL(suppress_curl_debug, true)
 
+/******** appearnce of new browser views ********/
+
 /** Whether to allow target="_blank" */
 NSOPTION_BOOL(target_blank, true)
 
-/** Whether second mouse button opens in new tab */
+/** auxillary (second) mouse button opens in new tab */
 NSOPTION_BOOL(button_2_tab, true)
+
+/** control if new view (window or tab) opens in foreground */
+NSOPTION_BOOL(foreground_new, false)
 
 /******** PDF / Print options ********/
 
@@ -255,35 +266,29 @@ NSOPTION_BOOL(enable_PDF_compression, true)
 /** setting a password and encoding PDF documents */
 NSOPTION_BOOL(enable_PDF_password, false)
 
+/** whether to prefer dark mode (light on dark) */
+NSOPTION_BOOL(prefer_dark_mode, false)
+
 /******** System colours ********/
-NSOPTION_COLOUR(sys_colour_ActiveBorder, 0x00d3d3d3)
-NSOPTION_COLOUR(sys_colour_ActiveCaption, 0x00f1f1f1)
-NSOPTION_COLOUR(sys_colour_AppWorkspace, 0x00f1f1f1)
-NSOPTION_COLOUR(sys_colour_Background, 0x006e6e6e)
+NSOPTION_COLOUR(sys_colour_AccentColor, 0x00666666)
+NSOPTION_COLOUR(sys_colour_AccentColorText, 0x00ffffff)
+NSOPTION_COLOUR(sys_colour_ActiveText, 0x000000ee)
+NSOPTION_COLOUR(sys_colour_ButtonBorder, 0x004e4e4e)
 NSOPTION_COLOUR(sys_colour_ButtonFace, 0x00f9f9f9)
-NSOPTION_COLOUR(sys_colour_ButtonHighlight, 0x00ffffff)
-NSOPTION_COLOUR(sys_colour_ButtonShadow, 0x00aeaeae)
 NSOPTION_COLOUR(sys_colour_ButtonText, 0x004c4c4c)
-NSOPTION_COLOUR(sys_colour_CaptionText, 0x004c4c4c)
-NSOPTION_COLOUR(sys_colour_GrayText, 0x00505050)
+NSOPTION_COLOUR(sys_colour_Canvas, 0x00f1f1f1)
+NSOPTION_COLOUR(sys_colour_CanvasText, 0x00000000)
+NSOPTION_COLOUR(sys_colour_Field, 0x00f1f1f1)
+NSOPTION_COLOUR(sys_colour_FieldText, 0x00000000)
+NSOPTION_COLOUR(sys_colour_GrayText, 0x00a6a6a6)
 NSOPTION_COLOUR(sys_colour_Highlight, 0x00c00800)
 NSOPTION_COLOUR(sys_colour_HighlightText, 0x00ffffff)
-NSOPTION_COLOUR(sys_colour_InactiveBorder, 0x00f1f1f1)
-NSOPTION_COLOUR(sys_colour_InactiveCaption, 0x00e6e6e6)
-NSOPTION_COLOUR(sys_colour_InactiveCaptionText, 0x00a6a6a6)
-NSOPTION_COLOUR(sys_colour_InfoBackground, 0x008fdfef)
-NSOPTION_COLOUR(sys_colour_InfoText, 0x00000000)
-NSOPTION_COLOUR(sys_colour_Menu, 0x00f1f1f1)
-NSOPTION_COLOUR(sys_colour_MenuText, 0x004e4e4e)
-NSOPTION_COLOUR(sys_colour_Scrollbar, 0x00cccccc)
-NSOPTION_COLOUR(sys_colour_ThreeDDarkShadow, 0x00aeaeae)
-NSOPTION_COLOUR(sys_colour_ThreeDFace, 0x00f9f9f9)
-NSOPTION_COLOUR(sys_colour_ThreeDHighlight, 0x00ffffff)
-NSOPTION_COLOUR(sys_colour_ThreeDLightShadow, 0x00ffffff)
-NSOPTION_COLOUR(sys_colour_ThreeDShadow, 0x00d5d5d5)
-NSOPTION_COLOUR(sys_colour_Window, 0x00f1f1f1)
-NSOPTION_COLOUR(sys_colour_WindowFrame, 0x004e4e4e)
-NSOPTION_COLOUR(sys_colour_WindowText, 0x00000000)
+NSOPTION_COLOUR(sys_colour_LinkText, 0x00ee0000)
+NSOPTION_COLOUR(sys_colour_Mark, 0x0000ffff)
+NSOPTION_COLOUR(sys_colour_MarkText, 0x00000000)
+NSOPTION_COLOUR(sys_colour_SelectedItem, 0x00e48435)
+NSOPTION_COLOUR(sys_colour_SelectedItemText, 0x00ffffff)
+NSOPTION_COLOUR(sys_colour_VisitedText, 0x008b1a55)
 
 /** Filter for non-verbose logging */
 NSOPTION_STRING(log_filter, NETSURF_BUILTIN_LOG_FILTER)

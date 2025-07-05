@@ -75,7 +75,7 @@ gui_window_create(struct browser_window *bw,
 		  struct gui_window *existing,
 		  gui_window_create_flags flags)
 {
-	struct gui_window *ret = calloc(sizeof(*ret), 1);
+	struct gui_window *ret = calloc(1, sizeof(*ret));
 	if (ret == NULL)
 		return NULL;
 
@@ -631,7 +631,7 @@ monkey_window_handle_exec(int argc, char **argv)
 		moutf(MOUT_ERROR, "WINDOW NUM BAD");
 	} else {
 		/* Gather argv[4] onward into a string to pass to js_exec */
-		int total = 0;
+		int total = 1;
 		for (int i = 4; i < argc; ++i) {
 			total += strlen(argv[i]) + 1;
 		}

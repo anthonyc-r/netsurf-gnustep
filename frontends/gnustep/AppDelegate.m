@@ -94,11 +94,12 @@ static NSMenuItem *menuItemForItem(id item) {
 			[menu addItem: menuItem];
 		}
 		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [item name]
-			action: nil keyEquivalent: nil];
+			action: (SEL)nil keyEquivalent: nil];
 		[menuItem setSubmenu: menu];
 		return [menuItem autorelease];
 	} else {
 		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [item name]
+
 			action: @selector(open) keyEquivalent: nil];
 		[menuItem setTarget: item];
 		return [menuItem autorelease];

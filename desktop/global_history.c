@@ -266,9 +266,9 @@ static nserror global_history_create_treeview_field_data(
 	const char *title = (data->title != NULL) ?
 			data->title : messages_get("NoTitle");
 	char buffer[16];
-	const char *last_visited;
-	char *last_visited2;
-	int len;
+	struct tm *lvtime;
+	char *last_visited = NULL;
+	size_t len = 0;
 
 	e->data[GH_TITLE].field = gh_ctx.fields[GH_TITLE].field;
 	e->data[GH_TITLE].value = strdup(title);
@@ -279,16 +279,18 @@ static nserror global_history_create_treeview_field_data(
 	e->data[GH_URL].value = nsurl_access(e->url);
 	e->data[GH_URL].value_len = nsurl_length(e->url);
 
-	last_visited = ctime(&data->last_visit);
-	last_visited2 = strdup(last_visited);
-	if (last_visited2 != NULL) {
-		assert(last_visited2[24] == '\n');
-		last_visited2[24] = '\0';
+	if ((lvtime = localtime(&data->last_visit)) != NULL) {
+		const size_t lvsize = 256;
+		last_visited = malloc(lvsize);
+		if (last_visited != NULL) {
+			len = strftime(last_visited, lvsize,
+					"%a %b %e %H:%M:%S %Y", lvtime);
+		}
 	}
 
 	e->data[GH_LAST_VISIT].field = gh_ctx.fields[GH_LAST_VISIT].field;
-	e->data[GH_LAST_VISIT].value = last_visited2;
-	e->data[GH_LAST_VISIT].value_len = (last_visited2 != NULL) ? 24 : 0;
+	e->data[GH_LAST_VISIT].value = last_visited;
+	e->data[GH_LAST_VISIT].value_len = len;
 
 	len = snprintf(buffer, 16, "%u", data->visits);
 	if (len == 16) {
@@ -721,8 +723,7 @@ struct treeview_callback_table gh_tree_cb_t = {
 
 
 /* Exported interface, documented in global_history.h */
-nserror global_history_init(struct core_window_callback_table *cw_t,
-		void *core_window_handle)
+nserror global_history_init(void *core_window_handle)
 {
 	nserror err;
 
@@ -753,7 +754,7 @@ nserror global_history_init(struct core_window_callback_table *cw_t,
 	/* Create the global history treeview */
 	err = treeview_create(&gh_ctx.tree, &gh_tree_cb_t,
 			N_FIELDS, gh_ctx.fields,
-			cw_t, core_window_handle,
+			core_window_handle,
 			TREEVIEW_NO_MOVES | TREEVIEW_DEL_EMPTY_DIRS |
 			TREEVIEW_SEARCHABLE);
 	if (err != NSERROR_OK) {

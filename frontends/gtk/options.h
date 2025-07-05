@@ -41,17 +41,11 @@ NSOPTION_BOOL(show_single_tab, false)
 /* size of buttons */
 NSOPTION_INTEGER(button_type, 0)
 
-/* disallow popup windows */
-NSOPTION_BOOL(disable_popups, false)
-
 /* number of days to keep history data */
 NSOPTION_INTEGER(history_age, 0)
 
 /* show urls in local history browser */
 NSOPTION_BOOL(hover_urls, false)
-
-/* bring new tabs to front */
-NSOPTION_BOOL(focus_new, false)
 
 /* new tabs are blank instead of homepage */
 NSOPTION_BOOL(new_blank, false)

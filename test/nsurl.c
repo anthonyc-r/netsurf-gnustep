@@ -161,13 +161,18 @@ static const struct test_pairs create_tests[] = {
 	{ "http://%7a%7A/", "http://zz/" },
 
 	/* bad escape */
-	{ "http://%1g%G0/", "http://%1g%g0/" },
+	{ "http://%1g%G0/", NULL },
 
 	{ "    http://www.ns-b.org/",		"http://www.ns-b.org/" },
 	{ "http://www.ns-b.org/    ",		"http://www.ns-b.org/" },
 	{ "http://www.ns-b.org    ",		"http://www.ns-b.org/" },
 	{ "http://www.ns-b.org/?q   ",		"http://www.ns-b.org/?q" },
 	{ "http://www.ns-b.org/#f    ",		"http://www.ns-b.org/#f" },
+
+	/* Regression check from security report */
+	{ "http://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfff",
+	  "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafff/"
+	}
 };
 
 /**
@@ -1289,6 +1294,11 @@ static const struct test_pairs utf8_tests[] = {
 	{ "http://a.xn--11b4c3d/a", "http://a.कॉम/a"  },
 	{ "https://smog.xn--3oq18vl8pn36a/test", "https://smog.大众汽车/test"},
 
+
+	/* Regression check from security report */
+	{ "http://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfff",
+	  "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaafff/"
+	}
 };
 
 
@@ -1302,6 +1312,7 @@ START_TEST(nsurl_get_utf8_test)
 	const struct test_pairs *tst = &utf8_tests[_i];
 	char *utf8out;
 	size_t utf8out_len;
+	size_t tstres_len;
 
 	/* not testing create, this should always succeed */
 	err = nsurl_create(tst->test, &url);
@@ -1310,6 +1321,11 @@ START_TEST(nsurl_get_utf8_test)
 	err = nsurl_get_utf8(url, &utf8out, &utf8out_len);
 	ck_assert(err == NSERROR_OK);
 
+	/* ensure length is correct */
+	tstres_len = strlen(tst->res);
+	ck_assert_uint_eq(tstres_len, utf8out_len);
+
+	/* ensure string matches */
 	ck_assert_str_eq(utf8out, tst->res);
 
 	free(utf8out);

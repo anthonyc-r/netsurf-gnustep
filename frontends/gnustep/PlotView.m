@@ -32,6 +32,7 @@
 #import "utils/messages.h"
 #import "netsurf/content_type.h"
 #import "netsurf/form.h"
+#import "desktop/browser_history.h"
 
 #define colour_red_component( c )		(((c) >>  0) & 0xFF)
 #define colour_green_component( c )		(((c) >>  8) & 0xFF)
@@ -400,7 +401,7 @@ static const struct plotter_table gnustep_plotters = {
 			action: @selector(paste:) keyEquivalent: @""];
 		[popupMenu addItem: [NSMenuItem separatorItem]];
 		id<NSMenuItem> item = [popupMenu addItemWithTitle: @"Developer" 
-			action: nil keyEquivalent: @""];
+			action: (SEL)nil keyEquivalent: @""];
 		[popupMenu setSubmenu: [self developerOptionsMenu] forItem: item];
 	}
 	[NSMenu popUpContextMenu: popupMenu withEvent: event forView: self];

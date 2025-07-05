@@ -40,6 +40,15 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 
+#define ns_close_socket close
+
+#ifdef WITH_AMISSL
+/* AmiSSL needs everything to be using bsdsocket directly to avoid conflicts */
+#include <proto/bsdsocket.h>
+#undef ns_close_socket
+#define ns_close_socket CloseSocket
+#endif
+
 #else
 
 #include <winsock2.h>
@@ -48,6 +57,8 @@
 #ifndef EAFNOSUPPORT
 #define EAFNOSUPPORT WSAEAFNOSUPPORT
 #endif
+
+#define ns_close_socket closesocket
 
 #endif
 

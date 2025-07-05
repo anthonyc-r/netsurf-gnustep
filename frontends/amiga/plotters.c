@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-09, 2012-13 Chris Young <chris@unsatisfactorysoftware.co.uk>
+ * Copyright 2008-2025 Chris Young <chris@unsatisfactorysoftware.co.uk>
  *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
  *
@@ -85,8 +85,6 @@ struct gui_globals {
 	struct MinList *shared_pens;
 	bool managed_pen_list;
 	bool palette_mapped;
-	ULONG apen;
-	ULONG open;
 	LONG apen_num;
 	LONG open_num;
 	int width;  /* size of bm and    */
@@ -126,11 +124,34 @@ struct gui_globals *ami_plot_ra_alloc(ULONG width, ULONG height, bool force32bit
 	if(depth < 16) {
 		gg->palette_mapped = true;
 		if(force32bit == false) palette_mapped = true;
+		
+		bitmap_set_format(&(bitmap_fmt_t) {
+			.layout = BITMAP_LAYOUT_ARGB8888,
+			.pma = true,
+		});
+   	
+		NSLOG(netsurf, INFO, "Set bitmap format to 0xAARRGGBB (native endian) (PMA)");
+		
 	} else {
 		gg->palette_mapped = false;
-		if(force32bit == false) palette_mapped = false;
+		
+		bitmap_set_format(&(bitmap_fmt_t) {
+			.layout = BITMAP_LAYOUT_ARGB8888,
+			.pma = false,
+		});
+   	
+		NSLOG(netsurf, INFO, "Set bitmap format to 0xAARRGGBB (native endian)");
+
 	}
 #else
+ 	bitmap_set_format(&(bitmap_fmt_t) {
+		.layout = BITMAP_LAYOUT_ARGB8888,
+		.pma = true,
+	});
+   	
+ 	NSLOG(netsurf, INFO, "Set bitmap format to 0xAARRGGBB (native endian) (PMA)");
+
+
 	/* Friend BitMaps are weird.
 	 * For OS4, we shouldn't use a friend BitMap here (see below).
 	 * For OS3 AGA, we get no display blitted if we use a friend BitMap,
@@ -144,16 +165,12 @@ struct gui_globals *ami_plot_ra_alloc(ULONG width, ULONG height, bool force32bit
 		if((depth > 8) && (force32bit == false)) friend = scrn->RastPort.BitMap;
 	}
 
-	/* OS3 is locked to using palette-mapped display even on RTG.
-	 * To change this, comment out the below and build with the similar OS4 lines above.
-	 * Various bits of RTG code are OS4-only and OS3 versions will need to be written,
-	 * however a brief test reveals a negative performance benefit, so this lock to a
-	 * palette-mapped display is most likely permanent.
-	 */
-#warning OS3 locked to palette-mapped modes
-	gg->palette_mapped = true;
-	palette_mapped = true;
-	if(depth > 8) depth = 8;
+	if(depth < 16) {
+		gg->palette_mapped = true;
+		if(force32bit == false) palette_mapped = true;
+	} else {
+		gg->palette_mapped = false;
+	}
 #endif
 
 	/* Probably need to fix this next line */
@@ -224,8 +241,6 @@ struct gui_globals *ami_plot_ra_alloc(ULONG width, ULONG height, bool force32bit
 		}
 	}
 
-	gg->apen = 0x00000000;
-	gg->open = 0x00000000;
 	gg->apen_num = -1;
 	gg->open_num = -1;
 
@@ -302,8 +317,6 @@ void ami_clearclipreg(struct gui_globals *gg)
 	gg->rect.MaxX = scrn->Width-1;
 	gg->rect.MaxY = scrn->Height-1;
 
-	gg->apen = 0x00000000;
-	gg->open = 0x00000000;
 	gg->apen_num = -1;
 	gg->open_num = -1;
 }
@@ -354,8 +367,6 @@ void ami_plot_release_pens(struct MinList *shared_pens)
 
 static void ami_plot_setapen(struct gui_globals *glob, struct RastPort *rp, ULONG colr)
 {
-	if(glob->apen == colr) return;
-
 #ifdef __amigaos4__
 	if(glob->palette_mapped == false) {
 		SetRPAttrs(rp, RPTAG_APenColor,
@@ -367,14 +378,10 @@ static void ami_plot_setapen(struct gui_globals *glob, struct RastPort *rp, ULON
 		LONG pen = ami_plot_obtain_pen(glob->shared_pens, colr);
 		if((pen != -1) && (pen != glob->apen_num)) SetAPen(rp, pen);
 	}
-
-	glob->apen = colr;
 }
 
 static void ami_plot_setopen(struct gui_globals *glob, struct RastPort *rp, ULONG colr)
 {
-	if(glob->open == colr) return;
-
 #ifdef __amigaos4__
 	if(glob->palette_mapped == false) {
 		SetRPAttrs(rp, RPTAG_OPenColor,
@@ -386,8 +393,6 @@ static void ami_plot_setopen(struct gui_globals *glob, struct RastPort *rp, ULON
 		LONG pen = ami_plot_obtain_pen(glob->shared_pens, colr);
 		if((pen != -1) && (pen != glob->open_num)) SetOPen(rp, pen);
 	}
-
-	glob->open = colr;
 }
 
 void ami_plot_clear_bbox(struct RastPort *rp, struct IBox *bbox)

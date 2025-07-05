@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 - 2012 Chris Young <chris@unsatisfactorysoftware.co.uk>
+ * Copyright 2009 - 2025 Chris Young <chris@unsatisfactorysoftware.co.uk>
  *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
  *
@@ -94,6 +94,7 @@ enum
 	GID_OPTS_FROMLOCALE,
 	GID_OPTS_HISTORY,
 	GID_OPTS_JAVASCRIPT,
+	GID_OPTS_ENABLECSS,
 	GID_OPTS_REFERRAL,
 	GID_OPTS_DONOTTRACK,
 	GID_OPTS_FASTSCROLL,
@@ -102,6 +103,9 @@ enum
 	GID_OPTS_SCREENNAME,
 	GID_OPTS_WIN_SIMPLE,
 	GID_OPTS_THEME,
+	GID_OPTS_THEMEPAGE,
+	GID_OPTS_DARK,
+	GID_OPTS_LIGHT,
 	GID_OPTS_PTRTRUE,
 	GID_OPTS_PTROS,
 	GID_OPTS_PROXY,
@@ -210,6 +214,7 @@ enum
 #define OPTS_LAST LAB_OPTS_LAST
 #define OPTS_MAX_TABS 10
 #define OPTS_MAX_SCREEN 4
+#define OPTS_MAX_THEMEPAGE 3
 #define OPTS_MAX_PROXY 5
 #define OPTS_MAX_NATIVEBM 4
 #define OPTS_MAX_DITHER 4
@@ -227,11 +232,13 @@ struct ami_gui_opts_window {
 #ifndef __amigaos4__
 	struct List clicktablist;
 	struct List screenoptslist;
+	struct List pagethemeoptslist;
 	struct List proxyoptslist;
 	struct List nativebmoptslist;
 	struct List ditheroptslist;
 	struct List fontoptslist;
 #endif
+	int websearch_idx;
 };
 
 static BOOL ami_gui_opts_event(void *w);
@@ -246,6 +253,7 @@ static struct ami_gui_opts_window *gow = NULL;
 
 static CONST_STRPTR tabs[OPTS_MAX_TABS];
 static STRPTR screenopts[OPTS_MAX_SCREEN];
+static CONST_STRPTR pagethemeopts[OPTS_MAX_THEMEPAGE];
 static CONST_STRPTR proxyopts[OPTS_MAX_PROXY];
 static CONST_STRPTR nativebmopts[OPTS_MAX_NATIVEBM];
 static CONST_STRPTR ditheropts[OPTS_MAX_DITHER];
@@ -333,6 +341,10 @@ static void ami_gui_opts_setup(struct ami_gui_opts_window *gow)
 	screenopts[2] = (char *)ami_utf8_easy((char *)messages_get("ScreenPublic"));
 	screenopts[3] = NULL;
 
+	pagethemeopts[0] = (char *)ami_utf8_easy((char *)messages_get("Light"));
+	pagethemeopts[1] = (char *)ami_utf8_easy((char *)messages_get("Dark"));
+	pagethemeopts[2] = NULL;
+
 	proxyopts[0] = (char *)ami_utf8_easy((char *)messages_get("ProxyNone"));
 	proxyopts[1] = (char *)ami_utf8_easy((char *)messages_get("ProxyNoAuth"));
 	proxyopts[2] = (char *)ami_utf8_easy((char *)messages_get("ProxyBasic"));
@@ -349,7 +361,8 @@ static void ami_gui_opts_setup(struct ami_gui_opts_window *gow)
 	ditheropts[2] = (char *)ami_utf8_easy((char *)messages_get("High"));
 	ditheropts[3] = NULL;
 
-	websearch_list = ami_gui_opts_websearch();
+	gow->websearch_idx = 0;
+	websearch_list = ami_gui_opts_websearch(&gow->websearch_idx);
 
 	gadlab[GID_OPTS_HOMEPAGE] = (char *)ami_utf8_easy((char *)messages_get("HomePageURL"));
 	gadlab[GID_OPTS_HOMEPAGE_DEFAULT] = (char *)ami_utf8_easy((char *)messages_get("HomePageDefault"));
@@ -359,10 +372,15 @@ static void ami_gui_opts_setup(struct ami_gui_opts_window *gow)
 	gadlab[GID_OPTS_FROMLOCALE] = (char *)ami_utf8_easy((char *)messages_get("LocaleLang"));
 	gadlab[GID_OPTS_HISTORY] = (char *)ami_utf8_easy((char *)messages_get("HistoryAge"));
 	gadlab[GID_OPTS_JAVASCRIPT] = (char *)ami_utf8_easy((char *)messages_get("EnableJS"));
+	gadlab[GID_OPTS_ENABLECSS] = (char *)ami_utf8_easy((char *)messages_get("EnableCSS"));
 	gadlab[GID_OPTS_REFERRAL] = (char *)ami_utf8_easy((char *)messages_get("SendReferer"));
 	gadlab[GID_OPTS_DONOTTRACK] = (char *)ami_utf8_easy((char *)messages_get("DoNotTrack"));
 	gadlab[GID_OPTS_FASTSCROLL] = (char *)ami_utf8_easy((char *)messages_get("FastScrolling"));
 	gadlab[GID_OPTS_WIN_SIMPLE] = (char *)ami_utf8_easy((char *)messages_get("SimpleRefresh"));
+	gadlab[GID_OPTS_THEME] = (char *)ami_utf8_easy((char *)messages_get("ThemeGUI"));
+	gadlab[GID_OPTS_THEMEPAGE] = (char *)ami_utf8_easy((char *)messages_get("ThemePage"));
+	gadlab[GID_OPTS_DARK] = (char *)ami_utf8_easy((char *)messages_get("Dark"));
+	gadlab[GID_OPTS_LIGHT] = (char *)ami_utf8_easy((char *)messages_get("Light"));
 	gadlab[GID_OPTS_PTRTRUE] = (char *)ami_utf8_easy((char *)messages_get("TrueColour"));
 	gadlab[GID_OPTS_PTROS] = (char *)ami_utf8_easy((char *)messages_get("OSPointers"));
 	gadlab[GID_OPTS_PROXY] = (char *)ami_utf8_easy((char *)messages_get("ProxyType"));
@@ -466,6 +484,7 @@ static void ami_gui_opts_setup(struct ami_gui_opts_window *gow)
 #ifndef __amigaos4__
 	ami_gui_opts_array_to_list(&gow->clicktablist, tabs, NSA_LIST_CLICKTAB);
 	ami_gui_opts_array_to_list(&gow->screenoptslist, screenopts, NSA_LIST_RADIO);
+	ami_gui_opts_array_to_list(&gow->pagethemeoptslist, pagethemeopts, NSA_LIST_CHOOSER);
 	ami_gui_opts_array_to_list(&gow->proxyoptslist, proxyopts, NSA_LIST_CHOOSER);
 	ami_gui_opts_array_to_list(&gow->nativebmoptslist, nativebmopts, NSA_LIST_CHOOSER);
 	ami_gui_opts_array_to_list(&gow->ditheroptslist, ditheropts, NSA_LIST_CHOOSER);
@@ -497,6 +516,7 @@ static void ami_gui_opts_free(struct ami_gui_opts_window *gow)
 #ifndef __amigaos4__
 	ami_gui_opts_free_list(&gow->clicktablist, NSA_LIST_CLICKTAB);
 	ami_gui_opts_free_list(&gow->screenoptslist, NSA_LIST_RADIO);
+	ami_gui_opts_free_list(&gow->pagethemeoptslist, NSA_LIST_CHOOSER);
 	ami_gui_opts_free_list(&gow->proxyoptslist, NSA_LIST_CHOOSER);
 	ami_gui_opts_free_list(&gow->nativebmoptslist, NSA_LIST_CHOOSER);
 	ami_gui_opts_free_list(&gow->ditheroptslist, NSA_LIST_CHOOSER);
@@ -858,6 +878,23 @@ void ami_gui_opts_open(void)
 										GETFILE_ReadOnly, TRUE,
 										GETFILE_FullFileExpand, FALSE,
 									GetFileEnd,
+									CHILD_Label, LabelObj,
+										LABEL_Text, gadlab[GID_OPTS_THEME],
+									LabelEnd,
+									LAYOUT_AddChild, gow->objects[GID_OPTS_THEMEPAGE] = ChooserObj,
+										GA_ID, GID_OPTS_THEMEPAGE,
+										GA_RelVerify, TRUE,
+										CHOOSER_PopUp, TRUE,
+#ifdef __amigaos4__
+										CHOOSER_LabelArray, pagethemeopts,
+#else
+										CHOOSER_Labels, &gow->pagethemeoptslist,
+#endif
+										CHOOSER_Selected, nsoption_bool(prefer_dark_mode),
+									ChooserEnd,
+									CHILD_Label, LabelObj,
+										LABEL_Text, gadlab[GID_OPTS_THEMEPAGE],
+									LabelEnd,
 								LayoutEnd, // theme
 								CHILD_WeightedHeight, 0,
 								LAYOUT_AddChild, LayoutVObj,
@@ -1314,7 +1351,7 @@ void ami_gui_opts_open(void)
       	              						GA_ID, GID_OPTS_TAB_ACTIVE,
          	        	   					GA_RelVerify, TRUE,
          	     	      					GA_Text, gadlab[GID_OPTS_TAB_ACTIVE],
-         	     	      					GA_Selected, !nsoption_bool(new_tab_is_active),
+         	     	      					GA_Selected, !nsoption_bool(foreground_new),
             	    					CheckBoxEnd,
 										LAYOUT_AddChild, gow->objects[GID_OPTS_TAB_LAST] = CheckBoxObj,
       	              						GA_ID, GID_OPTS_TAB_LAST,
@@ -1439,7 +1476,7 @@ void ami_gui_opts_open(void)
 											GA_RelVerify, TRUE,
 											CHOOSER_PopUp, TRUE,
 											CHOOSER_Labels, websearch_list,
-											CHOOSER_Selected, nsoption_int(search_provider),
+											CHOOSER_Selected, gow->websearch_idx,
 											CHOOSER_MaxLabels, 40,
 										ChooserEnd,
 										CHILD_Label, LabelObj,
@@ -1465,6 +1502,12 @@ void ami_gui_opts_open(void)
 										GA_Text, gadlab[GID_OPTS_SELECTMENU],
 										GA_Selected, !nsoption_bool(core_select_menu),
 										GA_Disabled, !ami_selectmenu_is_safe(),
+           	    					CheckBoxEnd,
+	        	        			LAYOUT_AddChild, gow->objects[GID_OPTS_ENABLECSS] = CheckBoxObj,
+										GA_ID, GID_OPTS_ENABLECSS,
+										GA_RelVerify, TRUE,
+										GA_Text, gadlab[GID_OPTS_ENABLECSS],
+										GA_Selected, nsoption_bool(author_level_css),
            	    					CheckBoxEnd,
 								LayoutEnd, // misc
 								CHILD_WeightedHeight, 0,
@@ -1658,8 +1701,10 @@ void ami_gui_opts_open(void)
 static void ami_gui_opts_use(bool save)
 {
 	ULONG data, id = 0;
+	struct Node *tmp_node = NULL;
 	struct TextAttr *tattr;
 	char *dot;
+	char *label = NULL;
 	bool rescan_fonts = false;
 	bool old_tab_always_show;
 
@@ -1709,7 +1754,16 @@ static void ami_gui_opts_use(bool save)
 	} else {
 		nsoption_set_bool(do_not_track, false);
 	}
-	
+
+	GetAttr(GA_Selected,gow->objects[GID_OPTS_ENABLECSS],(ULONG *)&data);
+	if (data) {
+		nsoption_set_bool(author_level_css, true);
+	} else {
+		nsoption_set_bool(author_level_css, false);
+	}
+
+	ami_gui_menu_set_checked(NULL, M_CSS, nsoption_bool(author_level_css));
+
 	GetAttr(GA_Selected,gow->objects[GID_OPTS_FASTSCROLL],(ULONG *)&data);
 	if (data) {
 		nsoption_set_bool(faster_scroll, true);
@@ -1753,6 +1807,13 @@ static void ami_gui_opts_use(bool save)
 	
 	GetAttr(GETFILE_Drawer,gow->objects[GID_OPTS_THEME],(ULONG *)&data);
 	nsoption_set_charp(theme, (char *)strdup((char *)data));
+
+	GetAttr(CHOOSER_Selected,gow->objects[GID_OPTS_THEMEPAGE],(ULONG *)&data);
+	if(data) {
+		nsoption_set_bool(prefer_dark_mode, true);
+	} else {
+		nsoption_set_bool(prefer_dark_mode, false);
+	}
 
 	GetAttr(GA_Selected,gow->objects[GID_OPTS_PTRTRUE],(ULONG *)&data);
 	if (data) {
@@ -1914,9 +1975,9 @@ static void ami_gui_opts_use(bool save)
 
 	GetAttr(GA_Selected,gow->objects[GID_OPTS_TAB_ACTIVE],(ULONG *)&data);
 	if (data) {
-		nsoption_set_bool(new_tab_is_active, false);
+		nsoption_set_bool(foreground_new, false);
 	} else {
-		nsoption_set_bool(new_tab_is_active, true);
+		nsoption_set_bool(foreground_new, true);
 	}
 
 	GetAttr(GA_Selected,gow->objects[GID_OPTS_TAB_LAST],(ULONG *)&data);
@@ -1952,8 +2013,18 @@ static void ami_gui_opts_use(bool save)
 	if(old_tab_always_show != nsoption_bool(tab_always_show))
 		ami_gui_tabs_toggle_all();
 	
-	GetAttr(CHOOSER_Selected,gow->objects[GID_OPTS_SEARCH_PROV],(ULONG *)&nsoption_int(search_provider));
-	search_web_select_provider(nsoption_int(search_provider));
+#ifdef __amigaos4__
+	GetAttr(CHOOSER_SelectedNode, gow->objects[GID_OPTS_SEARCH_PROV],(ULONG *)&tmp_node);
+	if(tmp_node != NULL) {
+		GetChooserNodeAttrs(tmp_node, CNA_Text, (ULONG *)&label, TAG_DONE);
+		nsoption_set_charp(search_web_provider, strdup((char *)label));
+	}
+#else
+	GetAttr(CHOOSER_Selected, gow->objects[GID_OPTS_SEARCH_PROV],(ULONG *)&gow->websearch_idx);
+	/* TODO: convert back to string, only required OS<3.2 */
+#endif
+	
+	search_web_select_provider(nsoption_charp(search_web_provider));
 
 	GetAttr(GA_Selected,gow->objects[GID_OPTS_CLIPBOARD],(ULONG *)&data);
 	if (data) {
@@ -2076,6 +2147,8 @@ static BOOL ami_gui_opts_event(void *w)
 			break;
 
 			case WMHI_GADGETHELP:
+#ifdef __amigaos4__
+				/* FIXME: this is firing on OS3.2 without HELP being pressed */
 				if((result & WMHI_GADGETMASK) == 0) {
 					/* Pointer not over our window */
 					ami_help_open(AMI_HELP_MAIN, ami_gui_get_screen());
@@ -2083,6 +2156,7 @@ static BOOL ami_gui_opts_event(void *w)
 					/* TODO: Make this sensitive to the tab the user is currently on */
 					ami_help_open(AMI_HELP_PREFS, ami_gui_get_screen());
 				}
+#endif
 			break;
 			
 			case WMHI_GADGETUP:
@@ -2262,12 +2336,13 @@ static BOOL ami_gui_opts_event(void *w)
 	return FALSE;
 }
 
-struct List *ami_gui_opts_websearch(void)
+struct List *ami_gui_opts_websearch(int *idx)
 {
 	struct List *list;
 	struct Node *node;
 	const char *name;
 	int iter;
+	int i = 0;
 
 	list = malloc(sizeof(struct List));
 	NewList(list);
@@ -2279,6 +2354,12 @@ struct List *ami_gui_opts_websearch(void)
 		iter = search_web_iterate_providers(iter, &name)) {
 			node = AllocChooserNode(CNA_Text, name, TAG_DONE);
 			AddTail(list, node);
+			if(idx != NULL) {
+				if((nsoption_charp(search_web_provider)) && (strcmp(name, nsoption_charp(search_web_provider)) == 0)) {
+					*idx = i;
+				}
+			}
+		i++;
 	}
 
 	return list;

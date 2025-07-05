@@ -66,6 +66,7 @@
 #include "atari/filetype.h"
 #include "atari/bitmap.h"
 #include "atari/font.h"
+#include "atari/treeview.h"
 #include "cflib.h"
 
 static bool atari_quit = false;
@@ -1107,6 +1108,7 @@ int main(int argc, char** argv)
     struct netsurf_table atari_table = {
 	.misc = &atari_misc_table,
 	.window = &atari_window_table,
+	.corewindow = atari_core_window_table,
 	.clipboard = &atari_clipboard_table,
 	.download = atari_download_table,
 	.fetch = &atari_fetch_table,

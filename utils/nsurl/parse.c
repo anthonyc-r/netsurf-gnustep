@@ -32,6 +32,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <libwapcaplet/libwapcaplet.h>
 #include <stdlib.h>
 #include <string.h>
@@ -925,6 +926,7 @@ static nserror nsurl__create_from_section(const char * const url_s,
 				/* valid idna encoding */
 				if (lwc_intern_string(host, host_len,
 						&url->host) != lwc_error_ok) {
+					free(host);
 					return NSERROR_NOMEM;
 				}
 				free(host);
@@ -1256,6 +1258,46 @@ void nsurl__calc_hash(nsurl *url)
 	url->hash = hash;
 }
 
+/**
+ * Check that a hostname is valid
+ *
+ * Valid hostnames are valid DNS names.  This means they must consist only of
+ * the ASCII characters a-z A-Z 0-9 '.', '_', or '-'.
+ *
+ * Unfortunately we also need to deal with IPv6 literals which are constrained
+ * but strange.  Surrounded by '[' and ']' there are hex digits and colons
+ *
+ * \param host	The hostname to check
+ * \return NSERROR_OK if the hostname is valid
+ */
+static nserror nsurl__check_host_valid(lwc_string *host)
+{
+	const char *chptr = lwc_string_data(host);
+	size_t nchrs = lwc_string_length(host);
+
+	if (*chptr == '[' && chptr[nchrs-1] == ']') {
+		/* Treat this as an IPv6 Literal */
+		chptr++;
+		nchrs -= 2;
+		while (nchrs--) {
+			const char ch = *chptr++;
+			if (!ascii_is_hex(ch) && ch != ':') {
+				/* Not hex digit or colon */
+				return NSERROR_INVALID;
+			}
+		}
+		return NSERROR_OK;
+	}
+
+	while (nchrs--) {
+		const char ch = *chptr++;
+		if (!ascii_is_alphanumerical(ch) && !(ch == '.' || ch == '-' || ch == '_')) {
+			/* Not alphanumeric dot or dash */
+			return NSERROR_INVALID;
+		}
+	}
+	return NSERROR_OK;
+}
 
 /******************************************************************************
  * NetSurf URL Public API                                                     *
@@ -1310,6 +1352,11 @@ nserror nsurl_create(const char * const url_s, nsurl **url)
 			&match) == lwc_error_ok && match == true)) {
 		/* http, https must have host */
 		if (c.host == NULL) {
+			nsurl__components_destroy(&c);
+			return NSERROR_BAD_URL;
+		}
+		/* host names must be a-z, 0-9, hyphen, underscore, and dot only */
+		if (nsurl__check_host_valid(c.host) != NSERROR_OK) {
 			nsurl__components_destroy(&c);
 			return NSERROR_BAD_URL;
 		}

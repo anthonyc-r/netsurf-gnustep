@@ -62,6 +62,11 @@
 #include "desktop/hotlist.h"
 #include "desktop/knockout.h"
 #include "desktop/browser_history.h"
+#include "desktop/theme.h"
+
+#ifdef WITH_THEME_INSTALL
+#include "desktop/theme.h"
+#endif
 
 /**
  * smallest scale that can be applied to a browser window
@@ -2398,7 +2403,6 @@ browser_window_scroll_at_point_internal(struct browser_window *bw,
 					int x, int y,
 					int scrx, int scry)
 {
-	bool handled_scroll = false;
 	assert(bw != NULL);
 
 	/* Handle (i)frame scroll offset (core-managed browser windows only) */
@@ -2438,18 +2442,9 @@ browser_window_scroll_at_point_internal(struct browser_window *bw,
 		return true;
 	}
 
-	/* Try to scroll this window, if scroll not already handled */
-	if (handled_scroll == false) {
-		if (bw->scroll_y && scrollbar_scroll(bw->scroll_y, scry)) {
-			handled_scroll = true;
-		}
-
-		if (bw->scroll_x && scrollbar_scroll(bw->scroll_x, scrx)) {
-			handled_scroll = true;
-		}
-	}
-
-	return handled_scroll;
+	/* Try to scroll this window. */
+	return (int)scrollbar_scroll(bw->scroll_y, scry) |
+		(int)scrollbar_scroll(bw->scroll_x, scrx);
 }
 
 
@@ -4345,6 +4340,10 @@ browser_window_find_target(struct browser_window *bw,
 	hlcache_handle *c;
 	int rdepth;
 	nserror error;
+	int flags = BW_CREATE_HISTORY | BW_CREATE_CLONE;
+
+	if (nsoption_bool(foreground_new))
+		flags |= BW_CREATE_FOREGROUND;
 
 	/* use the base target if we don't have one */
 	c = bw->current_content;
@@ -4386,13 +4385,8 @@ browser_window_find_target(struct browser_window *bw,
 		 * OR
 		 * - button_2 opens in new tab and the link target is "_blank"
 		 */
-		error = browser_window_create(BW_CREATE_TAB |
-					      BW_CREATE_HISTORY |
-					      BW_CREATE_CLONE,
-					      NULL,
-					      NULL,
-					      bw,
-					      &bw_target);
+		flags |= BW_CREATE_TAB;
+		error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
 		if (error != NSERROR_OK) {
 			return bw;
 		}
@@ -4413,12 +4407,7 @@ browser_window_find_target(struct browser_window *bw,
 		 * - button_2 doesn't open in new tabs and the link target is
 		 *   "_blank"
 		 */
-		error = browser_window_create(BW_CREATE_HISTORY |
-					      BW_CREATE_CLONE,
-					      NULL,
-					      NULL,
-					      bw,
-					      &bw_target);
+		error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
 		if (error != NSERROR_OK) {
 			return bw;
 		}
@@ -4452,11 +4441,7 @@ browser_window_find_target(struct browser_window *bw,
 	if (!nsoption_bool(target_blank))
 		return bw;
 
-	error = browser_window_create(BW_CREATE_CLONE | BW_CREATE_HISTORY,
-				      NULL,
-				      NULL,
-				      bw,
-				      &bw_target);
+	error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
 	if (error != NSERROR_OK) {
 		return bw;
 	}

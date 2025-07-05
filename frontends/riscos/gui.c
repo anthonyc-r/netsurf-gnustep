@@ -56,6 +56,7 @@
 #include "netsurf/url_db.h"
 #include "desktop/save_complete.h"
 #include "desktop/hotlist.h"
+#include "desktop/searchweb.h"
 #include "content/backing_store.h"
 
 #include "riscos/gui.h"
@@ -72,6 +73,8 @@
 #include "riscos/help.h"
 #include "riscos/query.h"
 #include "riscos/window.h"
+#include "riscos/toolbar.h"
+#include "riscos/corewindow.h"
 #include "riscos/iconbar.h"
 #include "riscos/local_history.h"
 #include "riscos/global_history.h"
@@ -84,7 +87,6 @@
 #include "riscos/ucstables.h"
 #include "riscos/filetype.h"
 #include "riscos/font.h"
-#include "riscos/toolbar.h"
 #include "riscos/content-handlers/artworks.h"
 #include "riscos/content-handlers/draw.h"
 #include "riscos/content-handlers/sprite.h"
@@ -94,6 +96,7 @@ bool riscos_done = false;
 extern bool ro_plot_patterned_lines;
 
 int os_version = 0;
+bool os_alpha_sprite_supported = false;
 
 const char * const __dynamic_da_name = "NetSurf";	/**< For UnixLib. */
 int __dynamic_da_max_size = 128 * 1024 * 1024;	/**< For UnixLib. */
@@ -143,27 +146,6 @@ static ns_wimp_message_list task_messages = {
 		message_URI_PROCESS,
 		message_URI_RETURN_RESULT,
 		message_INET_SUITE_OPEN_URL,
-#ifdef WITH_PLUGIN
-		message_PLUG_IN_OPENING,
-		message_PLUG_IN_CLOSED,
-		message_PLUG_IN_RESHAPE_REQUEST,
-		message_PLUG_IN_FOCUS,
-		message_PLUG_IN_URL_ACCESS,
-		message_PLUG_IN_STATUS,
-		message_PLUG_IN_BUSY,
-		message_PLUG_IN_STREAM_NEW,
-		message_PLUG_IN_STREAM_WRITE,
-		message_PLUG_IN_STREAM_WRITTEN,
-		message_PLUG_IN_STREAM_DESTROY,
-		message_PLUG_IN_OPEN,
-		message_PLUG_IN_CLOSE,
-		message_PLUG_IN_RESHAPE,
-		message_PLUG_IN_STREAM_AS_FILE,
-		message_PLUG_IN_NOTIFY,
-		message_PLUG_IN_ABORT,
-		message_PLUG_IN_ACTION,
-		/* message_PLUG_IN_INFORMED, (not provided by oslib) */
-#endif
 		message_PRINT_SAVE,
 		message_PRINT_ERROR,
 		message_PRINT_TYPE_ODD,
@@ -304,8 +286,36 @@ set_colour_from_wimp(struct nsoption_s *opts,
  */
 static nserror set_defaults(struct nsoption_s *defaults)
 {
+	int idx;
+	static const struct {
+		enum nsoption_e option;
+		wimp_colour wcol;
+		colour c;
+	} sys_colour_map[]= {
+		{ NSOPTION_sys_colour_AccentColor, wimp_COLOUR_CREAM, 0x00dddddd },
+		{ NSOPTION_sys_colour_AccentColorText, wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_sys_colour_ActiveText, wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_sys_colour_ButtonBorder, wimp_COLOUR_VERY_LIGHT_GREY,0x00aa0000 },
+		{ NSOPTION_sys_colour_ButtonFace, wimp_COLOUR_VERY_LIGHT_GREY, 0x00aaaaaa },
+		{ NSOPTION_sys_colour_ButtonText,  wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_sys_colour_Canvas, wimp_COLOUR_VERY_LIGHT_GREY, 0x00aaaaaa },
+		{ NSOPTION_sys_colour_CanvasText, wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_sys_colour_Field, wimp_COLOUR_WHITE, 0x00ffffff },
+		{ NSOPTION_sys_colour_FieldText, wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_sys_colour_GrayText, wimp_COLOUR_MID_LIGHT_GREY, 0x00777777 },
+		{ NSOPTION_sys_colour_Highlight, wimp_COLOUR_BLACK, 0x00ee0000 },
+		{ NSOPTION_sys_colour_HighlightText, wimp_COLOUR_WHITE, 0x00ffffff },
+		{ NSOPTION_sys_colour_LinkText, wimp_COLOUR_BLACK, 0x00ee0000 },
+		{ NSOPTION_sys_colour_Mark, wimp_COLOUR_VERY_LIGHT_GREY,0x00eeeeee },
+		{ NSOPTION_sys_colour_MarkText, wimp_COLOUR_BLACK, 0x00000000},
+		{ NSOPTION_sys_colour_SelectedItem, wimp_COLOUR_MID_LIGHT_GREY, 0x00777777 },
+		{ NSOPTION_sys_colour_SelectedItemText, wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_sys_colour_VisitedText, wimp_COLOUR_BLACK, 0x00000000 },
+		{ NSOPTION_LISTEND, 0, 0},
+	};
+
 	/* Set defaults for absent option strings */
-	nsoption_setnull_charp(ca_bundle, strdup("NetSurf:Resources.ca-bundle"));
+	nsoption_setnull_charp(ca_bundle, strdup("<NetSurf$CABundle>"));
 	nsoption_setnull_charp(cookie_file, strdup("NetSurf:Cookies"));
 	nsoption_setnull_charp(cookie_jar, strdup(CHOICES_PREFIX "Cookies"));
 
@@ -328,35 +338,13 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	nsoption_set_int(treeview_font_size, 12 * 10);
 
 	/* set default system colours for riscos ui */
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_ActiveBorder, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_CREAM, NSOPTION_sys_colour_ActiveCaption, 0x00dddddd);
-	set_colour_from_wimp(defaults, wimp_COLOUR_VERY_LIGHT_GREY, NSOPTION_sys_colour_AppWorkspace, 0x00eeeeee);
-	set_colour_from_wimp(defaults, wimp_COLOUR_VERY_LIGHT_GREY, NSOPTION_sys_colour_Background, 0x00aa0000);/* \TODO -- Check */
-	set_colour_from_wimp(defaults, wimp_COLOUR_VERY_LIGHT_GREY, NSOPTION_sys_colour_ButtonFace, 0x00aaaaaa);
-	set_colour_from_wimp(defaults, wimp_COLOUR_DARK_GREY, NSOPTION_sys_colour_ButtonHighlight, 0x00cccccc);/* \TODO -- Check */
-	set_colour_from_wimp(defaults, wimp_COLOUR_MID_DARK_GREY, NSOPTION_sys_colour_ButtonShadow, 0x00bbbbbb);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_ButtonText, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_CaptionText, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_MID_LIGHT_GREY, NSOPTION_sys_colour_GrayText, 0x00777777);/* \TODO -- Check */
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_Highlight, 0x00ee0000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_WHITE, NSOPTION_sys_colour_HighlightText, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_InactiveBorder, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_LIGHT_GREY, NSOPTION_sys_colour_InactiveCaption, 0x00ffffff);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_InactiveCaptionText, 0x00cccccc);
-	set_colour_from_wimp(defaults, wimp_COLOUR_CREAM, NSOPTION_sys_colour_InfoBackground, 0x00aaaaaa);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_InfoText, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_WHITE, NSOPTION_sys_colour_Menu, 0x00aaaaaa);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_MenuText, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_LIGHT_GREY, NSOPTION_sys_colour_Scrollbar, 0x00aaaaaa);/* \TODO -- Check */
-	set_colour_from_wimp(defaults, wimp_COLOUR_MID_DARK_GREY, NSOPTION_sys_colour_ThreeDDarkShadow, 0x00555555);
-	set_colour_from_wimp(defaults, wimp_COLOUR_VERY_LIGHT_GREY, NSOPTION_sys_colour_ThreeDFace, 0x00dddddd);
-	set_colour_from_wimp(defaults, wimp_COLOUR_WHITE, NSOPTION_sys_colour_ThreeDHighlight, 0x00aaaaaa);
-	set_colour_from_wimp(defaults, wimp_COLOUR_WHITE, NSOPTION_sys_colour_ThreeDLightShadow, 0x00999999);
-	set_colour_from_wimp(defaults, wimp_COLOUR_MID_DARK_GREY, NSOPTION_sys_colour_ThreeDShadow, 0x00777777);
-	set_colour_from_wimp(defaults, wimp_COLOUR_VERY_LIGHT_GREY, NSOPTION_sys_colour_Window, 0x00aaaaaa);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_WindowFrame, 0x00000000);
-	set_colour_from_wimp(defaults, wimp_COLOUR_BLACK, NSOPTION_sys_colour_WindowText, 0x00000000);
-
+	for (idx = 0; sys_colour_map[idx].option != NSOPTION_LISTEND; idx++) {
+		set_colour_from_wimp(defaults,
+				     sys_colour_map[idx].wcol,
+				     sys_colour_map[idx].option,
+				     sys_colour_map[idx].c);
+	}
+	
 	return NSERROR_OK;
 }
 
@@ -1110,6 +1098,28 @@ static void ro_gui_check_resolvers(void)
 	}
 }
 
+/**
+ * Determine whether the OS version supports alpha channels.
+ *
+ * \return true iff alpha channels are supported, false otherwise.
+ */
+static bool ro_gui__os_alpha_sprites_supported(void)
+{
+	os_error *error;
+	int var_val;
+	bits psr;
+
+	psr = 0;
+	error = xos_read_mode_variable(alpha_SPRITE_MODE,
+			os_MODEVAR_MODE_FLAGS, &var_val, &psr);
+	if (error) {
+		NSLOG(netsurf, ERROR, "xos_read_mode_variable: 0x%x: %s",
+				error->errnum, error->errmess);
+		return false;
+	}
+
+	return (var_val == (1 << 15));
+}
 
 /**
  * Initialise the RISC OS specific GUI.
@@ -1151,6 +1161,10 @@ static nserror gui_init(int argc, char** argv)
 	 * (remember that it's preferable to check for specific features
 	 * being present) */
 	xos_byte(osbyte_IN_KEY, 0, 0xff, &os_version, NULL);
+
+	os_alpha_sprite_supported = ro_gui__os_alpha_sprites_supported();
+	NSLOG(netsurf, INFO, "OS supports alpha sprites: %s",
+			os_alpha_sprite_supported ? "yes" : "no");
 
 	/* the first release version of the A9home OS is incapable of
 	   plotting patterned lines (presumably a fault in the hw acceleration) */
@@ -1198,22 +1212,19 @@ static nserror gui_init(int argc, char** argv)
 	if (!NETSURF_DIR)
 		die("Failed duplicating NetSurf directory string");
 
+        /* web search engine */
+	search_web_init("NetSurf:Resources.SearchEngines");
+	search_web_select_provider(nsoption_charp(search_web_provider));
+
 	/* Initialise filename allocator */
 	filename_initialise();
 
 	/* Initialise save complete functionality */
 	save_complete_init();
 
-	/* Initialise the font subsystem */
-	nsfont_init();
-
-	/* Load in visited URLs, Cookies, and hostlist */
+	/* Load in visited URLs and Cookies */
 	urldb_load(nsoption_charp(url_path));
 	urldb_load_cookies(nsoption_charp(cookie_file));
-	hotlist_init(nsoption_charp(hotlist_path),
-			nsoption_bool(external_hotlists) ?
-					NULL :
-					nsoption_charp(hotlist_save));
 
 	/* Initialise with the wimp */
 	error = xwimp_initialise(wimp_VERSION_RO38, task_name,
@@ -1243,6 +1254,15 @@ static nserror gui_init(int argc, char** argv)
 			ro_gui_selection_drag_claim);
 	ro_message_register_route(message_WINDOW_INFO,
 			ro_msg_window_info);
+
+	/* Initialise the font subsystem (must be after Wimp_Initialise) */
+	nsfont_init();
+
+	/* Initialise the hotlist (must be after fonts) */
+	hotlist_init(nsoption_charp(hotlist_path),
+			nsoption_bool(external_hotlists) ?
+					NULL :
+					nsoption_charp(hotlist_save));
 
 	/* Initialise global information */
 	ro_gui_get_screen_properties();
@@ -1750,51 +1770,6 @@ static void ro_gui_user_message(wimp_event_no event, wimp_message *message)
 				ro_url_message_received(message);
 			}
 			break;
-#ifdef WITH_PLUGIN
-		case message_PLUG_IN_OPENING:
-			plugin_opening(message);
-			break;
-		case message_PLUG_IN_CLOSED:
-			plugin_closed(message);
-			break;
-		case message_PLUG_IN_RESHAPE_REQUEST:
-			plugin_reshape_request(message);
-			break;
-		case message_PLUG_IN_FOCUS:
-			break;
-		case message_PLUG_IN_URL_ACCESS:
-			plugin_url_access(message);
-			break;
-		case message_PLUG_IN_STATUS:
-			plugin_status(message);
-			break;
-		case message_PLUG_IN_BUSY:
-			break;
-		case message_PLUG_IN_STREAM_NEW:
-			plugin_stream_new(message);
-			break;
-		case message_PLUG_IN_STREAM_WRITE:
-			break;
-		case message_PLUG_IN_STREAM_WRITTEN:
-			plugin_stream_written(message);
-			break;
-		case message_PLUG_IN_STREAM_DESTROY:
-			break;
-		case message_PLUG_IN_OPEN:
-			if (event == wimp_USER_MESSAGE_ACKNOWLEDGE)
-				plugin_open_msg(message);
-			break;
-		case message_PLUG_IN_CLOSE:
-			if (event == wimp_USER_MESSAGE_ACKNOWLEDGE)
-				plugin_close_msg(message);
-			break;
-		case message_PLUG_IN_RESHAPE:
-		case message_PLUG_IN_STREAM_AS_FILE:
-		case message_PLUG_IN_NOTIFY:
-		case message_PLUG_IN_ABORT:
-		case message_PLUG_IN_ACTION:
-			break;
-#endif
 		case message_PRINT_SAVE:
 			if (event == wimp_USER_MESSAGE_ACKNOWLEDGE)
 				ro_print_save_bounce(message);
@@ -2470,6 +2445,7 @@ int main(int argc, char** argv)
 	struct netsurf_table riscos_table = {
 		.misc = &riscos_misc_table,
 		.window = riscos_window_table,
+		.corewindow = riscos_core_window_table,
 		.clipboard = riscos_clipboard_table,
 		.download = riscos_download_table,
 		.fetch = &riscos_fetch_table,

@@ -44,6 +44,7 @@
 #include "netsurf/browser.h"
 #include "netsurf/browser_window.h"
 #include "netsurf/netsurf.h"
+#include "netsurf/bitmap.h"
 #include "content/fetch.h"
 #include "content/backing_store.h"
 #include "desktop/save_complete.h"
@@ -64,6 +65,7 @@
 #include "gtk/toolbar_items.h"
 #include "gtk/scaffolding.h"
 #include "gtk/window.h"
+#include "gtk/corewindow.h"
 #include "gtk/schedule.h"
 #include "gtk/selection.h"
 #include "gtk/search.h"
@@ -131,12 +133,16 @@ uint32_t gtk_gui_gdkkey_to_nskey(GdkEventKey *key)
 	case GDK_KEY(BackSpace):
 		if (key->state & GDK_SHIFT_MASK)
 			return NS_KEY_DELETE_LINE_START;
+		else if (key->state & GDK_CONTROL_MASK)
+			return NS_KEY_DELETE_WORD_LEFT;
 		else
 			return NS_KEY_DELETE_LEFT;
 
 	case GDK_KEY(Delete):
 		if (key->state & GDK_SHIFT_MASK)
 			return NS_KEY_DELETE_LINE_END;
+		else if (key->state & GDK_CONTROL_MASK)
+			return NS_KEY_DELETE_WORD_RIGHT;
 		else
 			return NS_KEY_DELETE_RIGHT;
 
@@ -148,10 +154,14 @@ uint32_t gtk_gui_gdkkey_to_nskey(GdkEventKey *key)
 
 	case GDK_KEY(Left):
 	case GDK_KEY(KP_Left):
+		if (key->state & GDK_CONTROL_MASK)
+			return NS_KEY_WORD_LEFT;
 		return NS_KEY_LEFT;
 
 	case GDK_KEY(Right):
 	case GDK_KEY(KP_Right):
+		if (key->state & GDK_CONTROL_MASK)
+			return NS_KEY_WORD_RIGHT;
 		return NS_KEY_RIGHT;
 
 	case GDK_KEY(Up):
@@ -939,7 +949,7 @@ static nserror nsgtk_setup(int argc, char** argv, char **respath)
 		      resource_filename);
 		free(resource_filename);
 	}
-	search_web_select_provider(nsoption_int(search_provider));
+	search_web_select_provider(nsoption_charp(search_web_provider));
 
 	/* Default favicon */
 	res = nsgdk_pixbuf_new_from_resname("favicon.png", &favicon_pixbuf);
@@ -971,6 +981,11 @@ static nserror nsgtk_setup(int argc, char** argv, char **respath)
 	 */
 	browser_set_dpi(gdk_screen_get_resolution(gdk_screen_get_default()));
 	NSLOG(netsurf, INFO, "Set CSS DPI to %d", browser_get_dpi());
+
+	bitmap_set_format(&(bitmap_fmt_t) {
+		.layout = BITMAP_LAYOUT_ARGB8888,
+		.pma = true,
+	});
 
 	filepath_sfinddef(respath, buf, "mime.types", "/etc/");
 	gtk_fetch_filetype_init(buf);
@@ -1170,6 +1185,7 @@ int main(int argc, char** argv)
 	struct netsurf_table nsgtk_table = {
 		.misc = nsgtk_misc_table,
 		.window = nsgtk_window_table,
+		.corewindow = nsgtk_core_window_table,
 		.clipboard = nsgtk_clipboard_table,
 		.download = nsgtk_download_table,
 		.fetch = nsgtk_fetch_table,
